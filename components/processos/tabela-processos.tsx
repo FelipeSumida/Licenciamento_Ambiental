@@ -43,7 +43,13 @@ export function TabelaProcessos({
     return processos.filter((p) => {
       const casaBusca =
         !termo ||
-        [p.processo, p.empreendimento, p.denominacao, p.interessado, p.trecho]
+        [
+          p.processo,
+          p.empreendimento,
+          p.denominacao,
+          p.interessado,
+          ...p.trechos.map((t) => `${t.rodovia} ${t.kmInicial} ${t.kmFinal}`),
+        ]
           .filter(Boolean)
           .some((campo) => campo.toLowerCase().includes(termo))
       const casaSituacao = situacao === TODOS || p.situacao === situacao
@@ -195,14 +201,13 @@ function EstadoVazio({ temProcessos }: { temProcessos: boolean }) {
             </p>
           </div>
           {!temProcessos && (
-            <Button
-              render={<Link href="/processos/novo" />}
-              size="sm"
-              className="mt-1"
+            <Link
+              href="/processos/novo"
+              className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
             >
               <Plus className="size-4" />
               Novo processo
-            </Button>
+            </Link>
           )}
         </div>
       </TableCell>

@@ -55,14 +55,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </nav>
 
         <div className="mt-auto hidden p-3 lg:block">
-          <Button
-            render={<Link href="/processos/novo" />}
-            className="w-full"
-            size="sm"
+          <Link
+            href="/processos"
+            className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-muted cursor-pointer"
           >
-            <Plus className="size-4" />
-            Novo processo
-          </Button>
+            Processos
+          </Link>
         </div>
       </aside>
 

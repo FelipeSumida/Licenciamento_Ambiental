@@ -92,12 +92,13 @@ export default function DetalheProcessoPage({
               </p>
             </div>
             <div className="flex gap-2">
-              <Button asChild variant="outline" size="sm">
-                <Link href={`/processos/${id}/editar`}>
-                  <Pencil className="size-4" />
-                  Editar
-                </Link>
-              </Button>
+              <Link
+                href={`/processos/${id}/editar`}
+                className="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm hover:bg-muted cursor-pointer"
+              >
+                <Pencil className="size-4" />
+                Editar
+              </Link>
               <Button
                 variant="outline"
                 size="sm"
@@ -117,7 +118,16 @@ export default function DetalheProcessoPage({
               </CardHeader>
               <CardContent className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
                 <Info label="Empreendimento" valor={processo.empreendimento} />
-                <Info label="Trecho" valor={processo.trecho} />
+                <Info
+                  label="Trecho"
+                  valor={
+                    processo.trechos.length > 0
+                      ? processo.trechos
+                          .map((t) => `${t.rodovia} - KM ${t.kmInicial} ao KM ${t.kmFinal}`)
+                          .join("\n")
+                      : "Sem trechos registrados."
+                  }
+                />
                 <Info label="Interessado" valor={processo.interessado} />
                 <Info label="Classificação" valor={processo.classificacao} />
                 <Info label="Divisão CAP" valor={processo.divisaoCap} />
@@ -147,18 +157,20 @@ export default function DetalheProcessoPage({
               </CardHeader>
               <CardContent>
                 <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
-                  {processo.pendencias || "Sem pendências registradas."}
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="lg:col-span-3">
-              <CardHeader>
-                <CardTitle className="text-base">Histórico</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
-                  {processo.historico || "Sem histórico registrado."}
+                  {processo.pendencias.length > 0 ? (
+                    <div className="space-y-4">
+                      {processo.pendencias.map((pendencia, index) => (
+                        <div key={index} className="rounded-md border p-3">
+                          <p className="font-medium">Pendência {index + 1}</p>
+                          <p>{pendencia.descricao || "Sem descrição."}</p>
+                          <p>Situação: {pendencia.situacao}</p>
+                          <p>Prazo: {formatarData(pendencia.prazo)}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p>Sem pendências registradas.</p>
+                  )}
                 </p>
               </CardContent>
             </Card>

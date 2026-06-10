@@ -33,6 +33,23 @@ export const DIVISOES_CAP = [
 
 export type DivisaoCap = (typeof DIVISOES_CAP)[number]
 
+export type Trecho = {
+  rodovia: string
+  kmInicial: string
+  kmFinal: string
+}
+
+export type Pendencia = {
+  descricao: string
+  classificacao: Classificacao
+  divisaoCap: DivisaoCap
+  situacao: SituacaoProcesso
+  dataEntrada: string | null
+  prazo: string | null
+  dataSaida: string | null
+  historico: string
+}
+
 export interface Processo {
   id: string
   /** Nº do processo, ex: CETESB.022396/2017-48 */
@@ -42,12 +59,12 @@ export interface Processo {
   /** Denominação, ex: RODOVIA BUNJIRO NAKAO */
   denominacao: string
   /** Trecho, ex: KM 45+250 E O KM 74+000 */
-  trecho: string
+  trechos: Trecho[]
   /** Interessado, ex: DER, Concessionária Rota Sorocabana */
   interessado: string
   classificacao: Classificacao
   /** Texto das pendências */
-  pendencias: string[]
+  pendencias: Pendencia[]
   /** ISO date string (yyyy-mm-dd) */
   dataEntrada: string | null
   /** Prazo (ISO date string) */
@@ -56,7 +73,6 @@ export interface Processo {
   dataSaida: string | null
   divisaoCap: DivisaoCap | string
   /** Histórico do processo (texto longo) */
-  historico: string
   tecnicoResponsavel: string
   situacao: SituacaoProcesso
 }
