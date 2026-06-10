@@ -13,7 +13,6 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: 'Acompanhamento Comunique-se',
   description: 'Gestão de processos de licenciamento ambiental',
-  generator: 'v0.app',
   icons: {
     icon: [
       {

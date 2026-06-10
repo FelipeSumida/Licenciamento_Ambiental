@@ -57,7 +57,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="mt-auto hidden p-3 lg:block">
           <Link
             href="/processos"
-            className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-muted cursor-pointer"
+            className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium cursor-pointer transition-colors hover:bg-green-200 hover:text-green-900"
           >
             Processos
           </Link>
