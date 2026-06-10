@@ -47,7 +47,7 @@ export interface Processo {
   interessado: string
   classificacao: Classificacao
   /** Texto das pendências */
-  pendencias: string
+  pendencias: string[]
   /** ISO date string (yyyy-mm-dd) */
   dataEntrada: string | null
   /** Prazo (ISO date string) */

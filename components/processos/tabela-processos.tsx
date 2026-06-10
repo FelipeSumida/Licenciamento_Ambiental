@@ -191,7 +191,7 @@ function EstadoVazio({ temProcessos }: { temProcessos: boolean }) {
             <p className="text-sm text-muted-foreground">
               {temProcessos
                 ? "Ajuste a busca ou os filtros acima."
-                : "Conecte a API .NET ou cadastre um novo processo."}
+                : "Cadastre um novo processo!"}
             </p>
           </div>
           {!temProcessos && (

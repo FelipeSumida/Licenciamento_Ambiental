@@ -41,7 +41,7 @@ function estadoInicial(p?: Processo | null): ProcessoInput {
     trecho: p?.trecho ?? "",
     interessado: p?.interessado ?? "",
     classificacao: p?.classificacao ?? "LI",
-    pendencias: p?.pendencias ?? "",
+    pendencias: p?.pendencias ?? [""],
     dataEntrada: p?.dataEntrada ?? null,
     prazo: p?.prazo ?? null,
     dataSaida: p?.dataSaida ?? null,
@@ -82,7 +82,7 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
       router.refresh()
     } catch {
       toast.error(
-        "Não foi possível salvar. Verifique se a API .NET está conectada (NEXT_PUBLIC_API_URL).",
+        "Não foi possível salvar.",
       )
     } finally {
       setSalvando(false)
@@ -232,20 +232,49 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
         </CardHeader>
         <CardContent className="space-y-4">
           <Campo label="Pendências">
-            <Textarea
-              value={form.pendencias}
-              onChange={(e) => set("pendencias", e.target.value)}
-              rows={3}
-              placeholder="Descreva as pendências do processo..."
-            />
-          </Campo>
-          <Campo label="Histórico">
-            <Textarea
-              value={form.historico}
-              onChange={(e) => set("historico", e.target.value)}
-              rows={6}
-              placeholder="Registre os andamentos, despachos e datas..."
-            />
+            <div className="space-y-3">
+              {form.pendencias.map((pendencia: string, index: number) => (
+                <div key={index} className="flex gap-2">
+                  <Textarea
+                    value={pendencia}
+                    onChange={(e) => {
+                      const novasPendencias = [...form.pendencias]
+                      novasPendencias[index] = e.target.value
+                      set("pendencias", novasPendencias)
+                    }}
+                    rows={3}
+                    placeholder={`Descreva a pendência ${index + 1}...`}
+                    className="flex-1"
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const novasPendencias = form.pendencias.filter(
+                        (_: string, i: number) => i !== index
+                      )
+                      set(
+                        "pendencias",
+                        novasPendencias.length ? novasPendencias : [""]
+                      )
+                    }}
+                    className="rounded-md bg-red-500 px-3 text-white hover:bg-red-600"
+                  >
+                    🗑
+                  </button>
+                </div>
+              ))}
+
+              <button
+                type="button"
+                onClick={() =>
+                  set("pendencias", [...form.pendencias, ""])
+                }
+                className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
+              >
+                + Adicionar Pendência
+              </button>
+            </div>
           </Campo>
         </CardContent>
       </Card>
