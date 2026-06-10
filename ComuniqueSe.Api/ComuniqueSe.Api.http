@@ -1,0 +1,6 @@
+@ComuniqueSe.Api_HostAddress = http://localhost:5161
+
+GET {{ComuniqueSe.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

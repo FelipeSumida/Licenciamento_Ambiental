@@ -1,0 +1,7 @@
+C:\Users\ffsumida\Desktop\licenciamento_ambiental\ComuniqueSe.Api\obj\Debug\net8.0\ComuniqueSe.Api.csproj.AssemblyReference.cache
+C:\Users\ffsumida\Desktop\licenciamento_ambiental\ComuniqueSe.Api\obj\Debug\net8.0\ComuniqueSe.Api.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\ffsumida\Desktop\licenciamento_ambiental\ComuniqueSe.Api\obj\Debug\net8.0\ComuniqueSe.Api.AssemblyInfoInputs.cache
+C:\Users\ffsumida\Desktop\licenciamento_ambiental\ComuniqueSe.Api\obj\Debug\net8.0\ComuniqueSe.Api.AssemblyInfo.cs
+C:\Users\ffsumida\Desktop\licenciamento_ambiental\ComuniqueSe.Api\obj\Debug\net8.0\ComuniqueSe.Api.csproj.CoreCompileInputs.cache
+C:\Users\ffsumida\Desktop\licenciamento_ambiental\ComuniqueSe.Api\obj\Debug\net8.0\ComuniqueSe.Api.MvcApplicationPartsAssemblyInfo.cs
+C:\Users\ffsumida\Desktop\licenciamento_ambiental\ComuniqueSe.Api\obj\Debug\net8.0\ComuniqueSe.Api.MvcApplicationPartsAssemblyInfo.cache
