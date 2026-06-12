@@ -73,6 +73,7 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
 
   function novaPendencia(): Pendencia {
     return {
+      atribuidoA: "CAP",
       descricao: "",
       classificacao: "LI",
       divisaoCap: "Licenciamento",
@@ -305,6 +306,31 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
                     >
                       🗑
                     </button>
+                  </div>
+
+                  <div className="mb-4">
+                    <Label>Atribuído a</Label>
+
+                    <Select
+                      value={pendencia.atribuidoA}
+                      onValueChange={(value) =>
+                        setPendencia(
+                          index,
+                          "atribuidoA",
+                          value as "DE" | "DO" | "CAP"
+                        )
+                      }
+                    >
+                      <SelectTrigger className="w-40">
+                        <SelectValue />
+                      </SelectTrigger>
+
+                      <SelectContent>
+                        <SelectItem value="DE">DE</SelectItem>
+                        <SelectItem value="DO">DO</SelectItem>
+                        <SelectItem value="CAP">CAP</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <Campo label="Descrição da pendência">

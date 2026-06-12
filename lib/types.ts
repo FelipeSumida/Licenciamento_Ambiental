@@ -46,6 +46,7 @@ export type Historico = {
 }
 
 export type Pendencia = {
+  atribuidoA: "DE" | "DO" | "CAP"
   descricao: string
   classificacao: Classificacao
   divisaoCap: DivisaoCap
