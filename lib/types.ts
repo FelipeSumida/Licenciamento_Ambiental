@@ -34,9 +34,15 @@ export const DIVISOES_CAP = [
 export type DivisaoCap = (typeof DIVISOES_CAP)[number]
 
 export type Trecho = {
+  denominacao: string
   rodovia: string
   kmInicial: string
   kmFinal: string
+}
+
+export type Historico = {
+  texto: string
+  data: string | null
 }
 
 export type Pendencia = {
@@ -47,7 +53,7 @@ export type Pendencia = {
   dataEntrada: string | null
   prazo: string | null
   dataSaida: string | null
-  historico: string
+  historicos: Historico[]
 }
 
 export interface Processo {

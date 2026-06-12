@@ -34,12 +34,21 @@ import {
   type SituacaoProcesso,
 } from "@/lib/types"
 
+function novoTrecho() {
+    return {
+      denominacao: "",
+      rodovia: "",
+      kmInicial: "",
+      kmFinal: "",
+    }
+  }
+
 function estadoInicial(p?: Processo | null): ProcessoInput {
   return {
     processo: p?.processo ?? "",
     empreendimento: p?.empreendimento ?? "",
     denominacao: p?.denominacao ?? "",
-    trechos: p?.trechos ?? [],
+    trechos: p?.trechos ?? [novoTrecho()],
     interessado: p?.interessado ?? "",
     classificacao: p?.classificacao ?? "LI",
     pendencias: p?.pendencias ?? [],
@@ -71,7 +80,12 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
       dataEntrada: null,
       prazo: null,
       dataSaida: null,
-      historico: "",
+      historicos: [
+        {
+          texto: "",
+          data: null,
+        },
+      ],
     }
   }
 
@@ -88,17 +102,10 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
     set("pendencias", novasPendencias)
   }
 
-  function novoTrecho() {
-    return {
-      rodovia: "",
-      kmInicial: "",
-      kmFinal: "",
-    }
-  }
 
   function setTrecho(
     index: number,
-    campo: "rodovia" | "kmInicial" | "kmFinal",
+    campo: "denominacao" | "rodovia" | "kmInicial" | "kmFinal",
     valor: string
   ) {
     const novos = [...form.trechos]
@@ -153,61 +160,74 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
             />
           </Campo>
           <Campo label="Empreendimento">
-            <Input
+            <Select
               value={form.empreendimento}
-              onChange={(e) => set("empreendimento", e.target.value)}
-              placeholder="SP-000"
-            />
-          </Campo>
-          <Campo label="Denominação">
-            <Input
-              value={form.denominacao}
-              onChange={(e) => set("denominacao", e.target.value)}
-              placeholder="RODOVIA ..."
-            />
+              onValueChange={(value) =>
+                set("empreendimento", value as ProcessoInput["empreendimento"])
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione..." />
+              </SelectTrigger>
+
+              <SelectContent>
+                <SelectItem value="Gerencial">Gerencial</SelectItem>
+                <SelectItem value="Rodovia">Rodovia</SelectItem>
+                <SelectItem value="NÃO APLICÁVEL">NÃO APLICÁVEL</SelectItem>
+              </SelectContent>
+            </Select>
           </Campo>
           
           <div className="sm:col-span-2 space-y-4">
             <Campo label="Rodovias e KM">
-              <div className="space-y-4 rounded-lg border p-4">
+              <div className="space-y-6 rounded-lg border p-6">
                 {form.trechos.map((trecho, index) => (
                   <div
                     key={index}
                     className="grid grid-cols-12 gap-3 items-end"
                   >
-                    <div className="col-span-8">
-                      <Label>Rodovia</Label>
+                    <div className="col-span-12 space-y-3">
+                      <div className="col-span-12">
+                        <Label>Denominação</Label>
+                        <Input
+                          value={trecho.denominacao}
+                          onChange={(e) =>
+                            setTrecho(index, "denominacao", e.target.value)
+                          }
+                          placeholder="Ex.: RODOVIA RAPOSO TAVARES"
+                        />
+                      </div>
 
-                      <Input
-                        value={trecho.rodovia}
-                        onChange={(e) =>
-                          setTrecho(index, "rodovia", e.target.value)
-                        }
-                        placeholder="Ex.: Estrada Municipal XYZ"
-                      />
-                    </div>
+                      <div className="col-span-8">
+                        <Label>Rodovia</Label>
+                        <Input
+                          value={trecho.rodovia}
+                          onChange={(e) =>
+                            setTrecho(index, "rodovia", e.target.value)
+                          }
+                          placeholder="Ex.: Estrada Municipal XYZ"
+                        />
+                      </div>
 
-                    <div className="col-span-2">
-                      <Label>KM Inicial</Label>
+                      <div className="col-span-2">
+                        <Label>KM Inicial</Label>
+                        <Input
+                          value={trecho.kmInicial}
+                          onChange={(e) =>
+                            setTrecho(index, "kmInicial", e.target.value)
+                          }
+                        />
+                      </div>
 
-                      <Input
-                        value={trecho.kmInicial}
-                        onChange={(e) =>
-                          setTrecho(index, "kmInicial", e.target.value)
-                        }
-                      />
-                    </div>
-
-                    <div className="col-span-2">
-                      <Label>KM Final</Label>
-
-                      <Input
-                        value={trecho.kmFinal}
-                        onChange={(e) =>
-                          setTrecho(index, "kmFinal", e.target.value)
-                        }
-                      />
-                    </div>
+                      <div className="col-span-2">
+                        <Label>KM Final</Label>
+                        <Input
+                          value={trecho.kmFinal}
+                          onChange={(e) =>
+                            setTrecho(index, "kmFinal", e.target.value)
+                          }
+                        />
+                      </div>
 
                     <div className="col-span-12 flex justify-end">
                       <button
@@ -224,7 +244,8 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
                       </button>
                     </div>
                   </div>
-                ))}
+                </div>
+              ))}
 
                 <button
                   type="button"
@@ -297,15 +318,65 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
                     />
                   </Campo>
 
-                  <Campo label="Histórico da pendência">
-                    <Textarea
-                      value={pendencia.historico}
-                      onChange={(e) =>
-                        setPendencia(index, "historico", e.target.value)
-                      }
-                      rows={4}
-                      placeholder="Registre os andamentos, despachos e observações desta pendência..."
-                    />
+                  <Campo label="Históricos">
+
+                    {pendencia.historicos.map((hist, histIndex) => (
+                      <div
+                        key={histIndex}
+                        className="mb-3 rounded border p-3"
+                      >
+                        <Textarea
+                          value={hist.texto}
+                          placeholder="Registro do histórico..."
+                          rows={3}
+                          onChange={(e) => {
+                            const novosHistoricos = [...pendencia.historicos]
+                            novosHistoricos[histIndex].texto = e.target.value
+
+                            const novasPendencias = [...form.pendencias]
+                            novasPendencias[index].historicos = novosHistoricos
+
+                            set("pendencias", novasPendencias)
+                          }}
+                        />
+
+                        <button
+                          type="button"
+                          className="mt-2 rounded bg-red-500 px-2 py-1 text-white"
+                          onClick={() => {
+                            const novosHistoricos =
+                              pendencia.historicos.filter(
+                                (_, i) => i !== histIndex
+                              )
+
+                            const novasPendencias = [...form.pendencias]
+                            novasPendencias[index].historicos = novosHistoricos
+
+                            set("pendencias", novasPendencias)
+                          }}
+                        >
+                          Excluir histórico
+                        </button>
+                      </div>
+                    ))}
+
+                    <button
+                      type="button"
+                      className="rounded bg-green-600 px-3 py-2 text-white"
+                      onClick={() => {
+                        const novasPendencias = [...form.pendencias]
+
+                        novasPendencias[index].historicos.push({
+                          texto: "",
+                          data: null,
+                        })
+
+                        set("pendencias", novasPendencias)
+                      }}
+                    >
+                      + Adicionar Histórico
+                    </button>
+
                   </Campo>
 
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
