@@ -106,10 +106,10 @@ export function TabelaProcessos({
             <TableHeader>
               <TableRow className="bg-muted/50">
                 <TableHead className="whitespace-nowrap">Processo</TableHead>
-                <TableHead className="whitespace-nowrap">Empreend.</TableHead>
+                <TableHead className="whitespace-nowrap">Empreendimento</TableHead>
                 <TableHead className="min-w-48">Denominação</TableHead>
                 <TableHead className="whitespace-nowrap">Interessado</TableHead>
-                <TableHead className="whitespace-nowrap">Classif.</TableHead>
+                <TableHead className="whitespace-nowrap">Classificação</TableHead>
                 <TableHead className="whitespace-nowrap">Divisão CAP</TableHead>
                 <TableHead className="whitespace-nowrap">Entrada</TableHead>
                 <TableHead className="whitespace-nowrap">Situação</TableHead>

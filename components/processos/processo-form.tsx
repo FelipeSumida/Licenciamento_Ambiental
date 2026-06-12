@@ -232,7 +232,7 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
                     <div className="col-span-12 flex justify-end">
                       <button
                         type="button"
-                        className="rounded bg-red-500 px-3 py-2 text-white cursor-pointer"
+                        className="cursor-pointer rounded bg-red-500 px-3 py-2 text-white hover:bg-red-700"
                         onClick={() =>
                           set(
                             "trechos",
@@ -249,7 +249,7 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
 
                 <button
                   type="button"
-                  className="cursor-pointer rounded bg-green-600 px-4 py-2 text-white"
+                  className="cursor-pointer rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700"
                   onClick={() =>
                     set("trechos", [...form.trechos, novoTrecho()])
                   }
@@ -301,7 +301,7 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
                         )
                         set("pendencias", novasPendencias)
                       }}
-                      className="rounded-md bg-red-500 px-3 py-2 text-white hover:bg-red-600"
+                      className="cursor-pointer rounded-md bg-red-500 px-3 py-2 text-white hover:bg-red-600"
                     >
                       🗑
                     </button>
@@ -342,7 +342,7 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
 
                         <button
                           type="button"
-                          className="mt-2 rounded bg-red-500 px-2 py-1 text-white"
+                          className="cursor-pointer mt-2 rounded bg-red-500 px-2 py-1 text-white hover:bg-red-700"
                           onClick={() => {
                             const novosHistoricos =
                               pendencia.historicos.filter(
@@ -362,7 +362,7 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
 
                     <button
                       type="button"
-                      className="rounded bg-green-600 px-3 py-2 text-white"
+                      className="cursor-pointer rounded bg-green-600 px-3 py-2 text-white hover:bg-green-700"
                       onClick={() => {
                         const novasPendencias = [...form.pendencias]
 
