@@ -46,7 +46,8 @@ export type Historico = {
 }
 
 export type Pendencia = {
-  atribuidoA: "DE" | "DO" | "CAP"
+  atribuidoA: ("DE" | "DO" | "CAP" | "Regional")[]
+  regionais: string[]
   descricao: string
   classificacao: Classificacao
   divisaoCap: DivisaoCap

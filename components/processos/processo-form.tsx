@@ -73,7 +73,8 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
 
   function novaPendencia(): Pendencia {
     return {
-      atribuidoA: "CAP",
+      atribuidoA: [],
+      regionais: [],
       descricao: "",
       classificacao: "LI",
       divisaoCap: "Licenciamento",
@@ -308,29 +309,58 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
                     </button>
                   </div>
 
-                  <div className="mb-4">
+                  <div className="mb-4 space-y-3">
                     <Label>Atribuído a</Label>
 
-                    <Select
-                      value={pendencia.atribuidoA}
-                      onValueChange={(value) =>
-                        setPendencia(
-                          index,
-                          "atribuidoA",
-                          value as "DE" | "DO" | "CAP"
-                        )
-                      }
-                    >
-                      <SelectTrigger className="w-40">
-                        <SelectValue />
-                      </SelectTrigger>
+                    <div className="flex flex-wrap gap-3">
+                      {["DE", "DO", "CAP", "Regional"].map((opcao) => (
+                        <label key={opcao} className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={pendencia.atribuidoA.includes(
+                              opcao as "DE" | "DO" | "CAP" | "Regional"
+                            )}
+                            onChange={(e) => {
+                              const valor = opcao as "DE" | "DO" | "CAP" | "Regional"
 
-                      <SelectContent>
-                        <SelectItem value="DE">DE</SelectItem>
-                        <SelectItem value="DO">DO</SelectItem>
-                        <SelectItem value="CAP">CAP</SelectItem>
-                      </SelectContent>
-                    </Select>
+                              const novoAtribuidoA = e.target.checked
+                                ? [...pendencia.atribuidoA, valor]
+                                : pendencia.atribuidoA.filter((item) => item !== valor)
+
+                              setPendencia(index, "atribuidoA", novoAtribuidoA)
+                            }}
+                          />
+
+                          {opcao}
+                        </label>
+                      ))}
+                    </div>
+
+                    {pendencia.atribuidoA.includes("Regional") && (
+                      <div className="space-y-2 rounded-md border p-3">
+                        <Label>Regionais</Label>
+
+                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                          {Array.from({ length: 14 }, (_, i) => `CGR${i + 1}`).map((regional) => (
+                            <label key={regional} className="flex items-center gap-2">
+                              <input
+                                type="checkbox"
+                                checked={pendencia.regionais.includes(regional)}
+                                onChange={(e) => {
+                                  const novasRegionais = e.target.checked
+                                    ? [...pendencia.regionais, regional]
+                                    : pendencia.regionais.filter((r) => r !== regional)
+
+                                  setPendencia(index, "regionais", novasRegionais)
+                                }}
+                              />
+
+                              {regional}
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <Campo label="Descrição da pendência">
