@@ -154,8 +154,9 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
       }
 
       router.refresh()
-    } catch {
-      toast.error("Não foi possível salvar.")
+    } catch (error) {
+      console.error("Erro ao salvar processo:", error)
+      toast.error("Não foi possível salvar. Veja o console.")
     } finally {
       setSalvando(false)
     }
@@ -403,6 +404,25 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
                         key={histIndex}
                         className="mb-3 rounded border p-3"
                       >
+
+                        <div className="mb-3">
+                          <Label>Data do histórico</Label>
+
+                          <Input
+                            type="date"
+                            value={hist.data ?? ""}
+                            onChange={(e) => {
+                              const novosHistoricos = [...pendencia.historicos]
+                              novosHistoricos[histIndex].data = e.target.value
+
+                              const novasPendencias = [...form.pendencias]
+                              novasPendencias[index].historicos = novosHistoricos
+
+                              set("pendencias", novasPendencias)
+                            }}
+                          />
+                        </div>
+
                         <Textarea
                           value={hist.texto}
                           placeholder="Registro do histórico..."

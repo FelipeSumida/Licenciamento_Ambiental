@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\buildMultiTargeting\ComuniqueSe.Api.props" />
+</Project>

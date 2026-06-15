@@ -121,7 +121,7 @@ export default function DetalheProcessoPage({
                 <Info
                   label="Trecho"
                   valor={
-                    processo.trechos.length > 0
+                    processo.trechos?.length > 0
                       ? processo.trechos
                           .map((t) => `${t.rodovia} - KM ${t.kmInicial} ao KM ${t.kmFinal}`)
                           .join("\n")
@@ -156,22 +156,20 @@ export default function DetalheProcessoPage({
                 <CardTitle className="text-base">Pendências</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
-                  {processo.pendencias.length > 0 ? (
+                <div className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
+                  {processo.pendencias?.length > 0 ? (
                     <div className="space-y-4">
-                      {processo.pendencias.map((pendencia, index) => (
+                      {processo.pendencias?.map((pendencia, index) => (
                         <div key={index} className="rounded-md border p-3">
                           <p className="font-medium">Pendência {index + 1}</p>
                           <p>{pendencia.descricao || "Sem descrição."}</p>
-                          <p>Situação: {pendencia.situacao}</p>
-                          <p>Prazo: {formatarData(pendencia.prazo)}</p>
                         </div>
                       ))}
                     </div>
                   ) : (
                     <p>Sem pendências registradas.</p>
                   )}
-                </p>
+                </div>
               </CardContent>
             </Card>
           </div>
