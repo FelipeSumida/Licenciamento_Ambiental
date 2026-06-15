@@ -122,11 +122,26 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+
     if (!form.processo.trim()) {
       toast.error("Informe o número do processo.")
       return
     }
+
+    for (let i = 0; i < form.pendencias.length; i++) {
+      const pendencia = form.pendencias[i]
+
+      if (
+        pendencia.atribuidoA.includes("Regional") &&
+        pendencia.regionais.length === 0
+      ) {
+        toast.error(`Pendência ${i + 1}: selecione pelo menos uma Regional.`)
+        return
+      }
+    }
+
     setSalvando(true)
+
     try {
       if (editando && processo) {
         await atualizarProcesso(processo.id, form)
@@ -137,11 +152,10 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
         toast.success("Processo cadastrado com sucesso.")
         router.push(`/processos/${criado.id}`)
       }
+
       router.refresh()
     } catch {
-      toast.error(
-        "Não foi possível salvar.",
-      )
+      toast.error("Não foi possível salvar.")
     } finally {
       setSalvando(false)
     }
@@ -359,6 +373,14 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
                             </label>
                           ))}
                         </div>
+
+                        {pendencia.atribuidoA.includes("Regional") &&
+                          pendencia.regionais.length === 0 && (
+                            <p className="mt-2 text-sm text-red-500">
+                              Selecione pelo menos uma Regional.
+                            </p>
+                        )}
+                        
                       </div>
                     )}
                   </div>
