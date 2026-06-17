@@ -85,11 +85,14 @@ export default function DetalheProcessoPage({
                 <h1 className="font-mono text-xl font-semibold text-foreground">
                   {processo.processo}
                 </h1>
-                <SituacaoBadge situacao={processo.situacao} />
+                <SituacaoBadge
+                  situacao={
+                    processo.pendencias?.some((p) => p.situacao === "Aberta")
+                      ? "Aberta"
+                      : "Atendida"
+                  }
+                />
               </div>
-              <p className="text-sm text-muted-foreground">
-                {processo.denominacao || "Sem denominação"}
-              </p>
             </div>
             <div className="flex gap-2">
               <Link
@@ -100,12 +103,25 @@ export default function DetalheProcessoPage({
                 Editar
               </Link>
               <Button
+                type="button"
                 variant="outline"
-                size="sm"
-                className="text-destructive hover:text-destructive"
-                onClick={() => setConfirmar(true)}
+                className="h-10 px-4 cursor-pointer text-red-600 hover:text-red-700"
+                onClick={async () => {
+                  const confirmou = confirm("Tem certeza que deseja excluir este processo?")
+
+                  if (!confirmou) return
+
+                  try {
+                    await excluirProcesso(processo.id)
+                    router.push("/processos")
+                    router.refresh()
+                  } catch (error) {
+                    console.error("Erro ao excluir processo:", error)
+                    alert("Não foi possível excluir o processo.")
+                  }
+                }}
               >
-                <Trash2 className="size-4" />
+                <Trash2 className="mr-1 h-4 w-4" />
                 Excluir
               </Button>
             </div>
@@ -123,14 +139,16 @@ export default function DetalheProcessoPage({
                   valor={
                     processo.trechos?.length > 0
                       ? processo.trechos
-                          .map((t) => `${t.rodovia} - KM ${t.kmInicial} ao KM ${t.kmFinal}`)
+                          .map(
+                            (t) =>
+                              `${t.denominacao || "Sem denominação"} - ${t.rodovia || "Sem rodovia"} - KM ${t.kmInicial || "-"} ao KM ${t.kmFinal || "-"}`
+                          )
                           .join("\n")
                       : "Sem trechos registrados."
                   }
                 />
                 <Info label="Interessado" valor={processo.interessado} />
-                <Info label="Classificação" valor={processo.classificacao} />
-                <Info label="Divisão CAP" valor={processo.divisaoCap} />
+
                 <Info
                   label="Técnico responsável"
                   valor={processo.tecnicoResponsavel}
@@ -143,11 +161,38 @@ export default function DetalheProcessoPage({
                 <CardTitle className="text-base">Prazos</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Info label="Data de entrada" valor={formatarData(processo.dataEntrada)} />
-                <Separator />
-                <Info label="Prazo" valor={formatarData(processo.prazo)} />
-                <Separator />
-                <Info label="Data de saída" valor={formatarData(processo.dataSaida)} />
+                {processo.pendencias?.length > 0 ? (
+                  processo.pendencias.map((pendencia, index) => (
+                    <div key={index} className="space-y-3">
+                      <p className="text-sm font-medium">
+                        Pendência {index + 1}
+                      </p>
+
+                      <Info
+                        label="Data de entrada"
+                        valor={formatarData(pendencia.dataEntrada)}
+                      />
+
+                      <Separator />
+
+                      <Info
+                        label="Prazo"
+                        valor={formatarData(pendencia.prazo)}
+                      />
+
+                      <Separator />
+
+                      <Info
+                        label="Data de saída"
+                        valor={formatarData(pendencia.dataSaida)}
+                      />
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    Sem prazos registrados.
+                  </p>
+                )}
               </CardContent>
             </Card>
 
@@ -155,21 +200,77 @@ export default function DetalheProcessoPage({
               <CardHeader>
                 <CardTitle className="text-base">Pendências</CardTitle>
               </CardHeader>
+
               <CardContent>
-                <div className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
-                  {processo.pendencias?.length > 0 ? (
-                    <div className="space-y-4">
-                      {processo.pendencias?.map((pendencia, index) => (
-                        <div key={index} className="rounded-md border p-3">
-                          <p className="font-medium">Pendência {index + 1}</p>
-                          <p>{pendencia.descricao || "Sem descrição."}</p>
+                {processo.pendencias?.length > 0 ? (
+                  <div className="space-y-4">
+                    {processo.pendencias.map((pendencia, index) => (
+                      <div key={index} className="rounded-md border p-4 space-y-3">
+                        <h3 className="font-medium">Pendência {index + 1}</h3>
+
+                        <Info
+                          label="Atribuído a"
+                          valor={
+                            pendencia.atribuidoA?.length > 0
+                              ? pendencia.atribuidoA.join(", ")
+                              : "Não informado"
+                          }
+                        />
+
+                        {pendencia.atribuidoA?.includes("Regional") && (
+                          <Info
+                            label="Regionais"
+                            valor={
+                              pendencia.regionais?.length > 0
+                                ? pendencia.regionais.join(", ")
+                                : "Nenhuma regional selecionada"
+                            }
+                          />
+                        )}
+
+                        <Info
+                          label="Descrição"
+                          valor={pendencia.descricao || "Sem descrição."}
+                        />
+
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                          <Info label="Classificação" valor={pendencia.classificacao} />
+                          <Info label="Divisão CAP" valor={pendencia.divisaoCap} />
+                          <Info label="Situação" valor={pendencia.situacao} />
                         </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p>Sem pendências registradas.</p>
-                  )}
-                </div>
+
+                        <div>
+                          <p className="mb-2 text-xs font-medium uppercase text-muted-foreground">
+                            Históricos
+                          </p>
+
+                          {pendencia.historicos?.length > 0 ? (
+                            <div className="space-y-2">
+                              {pendencia.historicos.map((historico, histIndex) => (
+                                <div key={histIndex} className="rounded-md bg-muted p-3">
+                                  <p className="text-xs text-muted-foreground">
+                                    {formatarData(historico.data)}
+                                  </p>
+                                  <p className="text-sm">
+                                    {historico.texto || "Sem descrição do histórico."}
+                                  </p>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-sm text-muted-foreground">
+                              Sem históricos registrados.
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    Sem pendências registradas.
+                  </p>
+                )}
               </CardContent>
             </Card>
           </div>

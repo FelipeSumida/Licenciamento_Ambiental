@@ -23,6 +23,16 @@ import {
   YAxis,
 } from "recharts"
 
+const CORES_GRAFICO = [
+  "#16a34a",
+  "#2563eb",
+  "#ca8a04",
+  "#dc2626",
+  "#9333ea",
+  "#0891b2",
+  "#ea580c",
+]
+
 const PIE_COLORS = [
   "var(--chart-1)",
   "var(--chart-2)",
@@ -66,7 +76,14 @@ export function GraficoPorArea({
                 tick={{ fontSize: 12 }}
               />
               <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar dataKey="total" fill="var(--color-total)" radius={4} />
+              <Bar dataKey="total">
+                {dados.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={CORES_GRAFICO[index % CORES_GRAFICO.length]}
+                  />
+                ))}
+              </Bar>
             </BarChart>
           </ChartContainer>
         ) : (

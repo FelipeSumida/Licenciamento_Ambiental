@@ -410,7 +410,7 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
 
                           <Input
                             type="date"
-                            value={hist.data ?? ""}
+                            value={hist.data ? hist.data.substring(0, 10) : ""}
                             onChange={(e) => {
                               const novosHistoricos = [...pendencia.historicos]
                               novosHistoricos[histIndex].data = e.target.value

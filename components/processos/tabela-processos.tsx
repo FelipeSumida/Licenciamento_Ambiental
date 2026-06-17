@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from "react"
 import Link from "next/link"
-import { Search, Plus, FileX } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { Search, Plus, FileX, Trash2, Pencil } from "lucide-react"
 import {
   Table,
   TableBody,
@@ -21,8 +22,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+
 import { SituacaoBadge } from "@/components/situacao-badge"
 import { formatarData } from "@/lib/format"
+import { excluirProcesso } from "@/lib/api"
 import { CLASSIFICACOES, type Processo } from "@/lib/types"
 
 const TODOS = "__todos__"
@@ -34,13 +45,45 @@ export function TabelaProcessos({
   processos: Processo[]
   isLoading: boolean
 }) {
+  const router = useRouter()
+
   const [busca, setBusca] = useState("")
   const [situacao, setSituacao] = useState<string>(TODOS)
   const [classificacao, setClassificacao] = useState<string>(TODOS)
+  const [excluindoId, setExcluindoId] = useState<string | null>(null)
+
+  const [processoParaExcluir, setProcessoParaExcluir] = useState<Processo | null>(null)
+
+  async function handleExcluir(id: string) {
+    const confirmou = confirm("Tem certeza que deseja excluir este processo?")
+
+    if (!confirmou) return
+
+    try {
+      setExcluindoId(id)
+      await excluirProcesso(id)
+      router.refresh()
+      window.location.reload()
+    } catch (error) {
+      console.error("Erro ao excluir processo:", error)
+      alert("Não foi possível excluir o processo.")
+    } finally {
+      setExcluindoId(null)
+    }
+  }
 
   const filtrados = useMemo(() => {
     const termo = busca.trim().toLowerCase()
+
     return processos.filter((p) => {
+      const pendencias = p.pendencias ?? []
+      const trechos = p.trechos ?? []
+
+      const situacaoCalculada =
+        pendencias.length > 0 && pendencias.every((pendencia) => pendencia.situacao === "Atendida")
+          ? "Atendida"
+          : "Aberta"
+
       const casaBusca =
         !termo ||
         [
@@ -48,20 +91,31 @@ export function TabelaProcessos({
           p.empreendimento,
           p.denominacao,
           p.interessado,
-          ...p.trechos.map((t) => `${t.rodovia} ${t.kmInicial} ${t.kmFinal}`),
+          ...trechos.map(
+            (t) =>
+              `${t.denominacao} ${t.rodovia} ${t.kmInicial} ${t.kmFinal}`,
+          ),
+          ...pendencias.map(
+            (pendencia) =>
+              `${pendencia.descricao} ${pendencia.classificacao} ${pendencia.divisaoCap} ${pendencia.situacao}`,
+          ),
         ]
           .filter(Boolean)
           .some((campo) => campo.toLowerCase().includes(termo))
-      const casaSituacao = situacao === TODOS || p.situacao === situacao
+
+      const casaSituacao =
+        situacao === TODOS || situacaoCalculada === situacao
+
       const casaClassificacao =
-        classificacao === TODOS || p.classificacao === classificacao
+        classificacao === TODOS ||
+        pendencias.some((pendencia) => pendencia.classificacao === classificacao)
+
       return casaBusca && casaSituacao && casaClassificacao
     })
   }, [processos, busca, situacao, classificacao])
 
   return (
     <div className="space-y-4">
-      {/* Filtros */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -72,6 +126,7 @@ export function TabelaProcessos({
             className="pl-9"
           />
         </div>
+
         <Select value={situacao} onValueChange={(v) => setSituacao(v ?? TODOS)}>
           <SelectTrigger className="w-full sm:w-44">
             <SelectValue placeholder="Situação" />
@@ -82,6 +137,7 @@ export function TabelaProcessos({
             <SelectItem value="Atendida">Atendida</SelectItem>
           </SelectContent>
         </Select>
+
         <Select
           value={classificacao}
           onValueChange={(v) => setClassificacao(v ?? TODOS)}
@@ -106,15 +162,23 @@ export function TabelaProcessos({
             <TableHeader>
               <TableRow className="bg-muted/50">
                 <TableHead className="whitespace-nowrap">Processo</TableHead>
-                <TableHead className="whitespace-nowrap">Empreendimento</TableHead>
+                <TableHead className="whitespace-nowrap">
+                  Empreendimento
+                </TableHead>
                 <TableHead className="min-w-48">Denominação</TableHead>
                 <TableHead className="whitespace-nowrap">Interessado</TableHead>
-                <TableHead className="whitespace-nowrap">Classificação</TableHead>
+                <TableHead className="whitespace-nowrap">
+                  Classificação
+                </TableHead>
                 <TableHead className="whitespace-nowrap">Divisão CAP</TableHead>
                 <TableHead className="whitespace-nowrap">Entrada</TableHead>
                 <TableHead className="whitespace-nowrap">Situação</TableHead>
+                <TableHead className="whitespace-nowrap text-right">
+                  Ações
+                </TableHead>
               </TableRow>
             </TableHeader>
+
             <TableBody>
               {isLoading ? (
                 <EstadoLinha texto="Carregando processos..." />
@@ -128,31 +192,82 @@ export function TabelaProcessos({
                         href={`/processos/${p.id}`}
                         className="text-primary hover:underline"
                       >
-                        {p.processo}
+                        {p.processo || "Sem número"}
                       </Link>
                     </TableCell>
+
                     <TableCell className="whitespace-nowrap text-muted-foreground">
                       {p.empreendimento || "—"}
                     </TableCell>
+
                     <TableCell className="max-w-64 truncate">
-                      {p.denominacao || "—"}
+                      {p.trechos?.length
+                        ? p.trechos.map((t) => t.denominacao).join(", ")
+                        : "—"}
                     </TableCell>
+
                     <TableCell className="whitespace-nowrap text-muted-foreground">
                       {p.interessado || "—"}
                     </TableCell>
+
                     <TableCell className="whitespace-nowrap">
-                      <span className="rounded bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground">
-                        {p.classificacao}
-                      </span>
+                      <div className="flex flex-wrap gap-1">
+                        {p.pendencias?.length ? (
+                          [...new Set(p.pendencias.map((pendencia) => pendencia.classificacao))]
+                            .filter(Boolean)
+                            .map((classificacao) => (
+                              <span
+                                key={classificacao}
+                                className="rounded bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground"
+                              >
+                                {classificacao}
+                              </span>
+                            ))
+                        ) : (
+                          <span>—</span>
+                        )}
+                      </div>
                     </TableCell>
+
                     <TableCell className="whitespace-nowrap text-muted-foreground">
-                      {p.divisaoCap || "—"}
+                      {p.pendencias?.[0]?.divisaoCap || "—"}
                     </TableCell>
+
                     <TableCell className="whitespace-nowrap text-muted-foreground">
-                      {formatarData(p.dataEntrada)}
+                      {formatarData(p.pendencias?.[0]?.dataEntrada)}
                     </TableCell>
+
                     <TableCell>
-                      <SituacaoBadge situacao={p.situacao} />
+                      <SituacaoBadge
+                        situacao={
+                          p.pendencias?.some((pendencia) => pendencia.situacao === "Aberta")
+                            ? "Aberta"
+                            : "Atendida"
+                        }
+                      />
+                    </TableCell>
+
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Link
+                          href={`/processos/${p.id}/editar`}
+                          className="inline-flex h-10 items-center justify-center gap-1 rounded-md border px-3 text-sm hover:bg-muted"
+                        >
+                          <Pencil className="size-4" />
+                          Editar
+                        </Link>
+
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="h-10 px-3 cursor-pointer text-red-600 hover:text-red-700"
+                          disabled={excluindoId === p.id}
+                          onClick={() => setProcessoParaExcluir(p)}
+                        >
+                          <Trash2 className="size-4" />
+                          Excluir
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
@@ -164,8 +279,54 @@ export function TabelaProcessos({
 
       <p className="text-xs text-muted-foreground">
         {filtrados.length} processo(s) exibido(s)
-        {processos.length !== filtrados.length && ` de ${processos.length} no total`}
+        {processos.length !== filtrados.length &&
+          ` de ${processos.length} no total`}
       </p>
+
+      <Dialog
+        open={!!processoParaExcluir}
+        onOpenChange={() => setProcessoParaExcluir(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Excluir processo</DialogTitle>
+
+            <DialogDescription>
+              Tem certeza que deseja excluir o processo{" "}
+              <strong>
+                {processoParaExcluir?.processo || "sem número"}
+              </strong>
+              ?
+              <br />
+              Esta ação não poderá ser desfeita.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setProcessoParaExcluir(null)}
+            >
+              Cancelar
+            </Button>
+
+            <Button
+              type="button"
+              className="bg-red-600 text-white hover:bg-red-700"
+              onClick={() => {
+                if (processoParaExcluir) {
+                  handleExcluir(processoParaExcluir.id)
+                  setProcessoParaExcluir(null)
+                }
+              }}
+            >
+              Excluir
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
     </div>
   )
 }
@@ -173,7 +334,7 @@ export function TabelaProcessos({
 function EstadoLinha({ texto }: { texto: string }) {
   return (
     <TableRow>
-      <TableCell colSpan={8} className="py-10 text-center text-muted-foreground">
+      <TableCell colSpan={9} className="py-10 text-center text-muted-foreground">
         {texto}
       </TableCell>
     </TableRow>
@@ -183,11 +344,12 @@ function EstadoLinha({ texto }: { texto: string }) {
 function EstadoVazio({ temProcessos }: { temProcessos: boolean }) {
   return (
     <TableRow>
-      <TableCell colSpan={8} className="py-12">
+      <TableCell colSpan={9} className="py-12">
         <div className="flex flex-col items-center gap-3 text-center">
           <div className="flex size-12 items-center justify-center rounded-full bg-muted">
             <FileX className="size-6 text-muted-foreground" />
           </div>
+
           <div>
             <p className="font-medium text-foreground">
               {temProcessos
@@ -200,6 +362,7 @@ function EstadoVazio({ temProcessos }: { temProcessos: boolean }) {
                 : "Cadastre um novo processo!"}
             </p>
           </div>
+
           {!temProcessos && (
             <Link
               href="/processos/novo"

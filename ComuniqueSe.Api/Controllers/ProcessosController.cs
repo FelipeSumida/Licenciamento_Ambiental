@@ -74,6 +74,12 @@ public class ProcessosController : ControllerBase
         processoExistente.Situacao = processo.Situacao;
 
         _context.Trechos.RemoveRange(processoExistente.Trechos);
+
+        foreach (var pendencia in processoExistente.Pendencias)
+        {
+            _context.Historicos.RemoveRange(pendencia.Historicos);
+        }
+
         _context.Pendencias.RemoveRange(processoExistente.Pendencias);
 
         processoExistente.Trechos = processo.Trechos;
@@ -101,4 +107,50 @@ public class ProcessosController : ControllerBase
 
         return NoContent();
     }
+
+    [HttpGet("/api/dashboard/resumo")]
+    public async Task<IActionResult> GetResumoDashboard()
+    {
+        var processos = await _context.Processos
+            .Include(p => p.Pendencias)
+            .ToListAsync();
+
+        var abertos = processos.Count(p =>
+            p.Pendencias.Any(x => x.Situacao == "Aberta")
+        );
+
+        var concluidos = processos.Count(p =>
+            p.Pendencias.Any() &&
+            p.Pendencias.All(x => x.Situacao == "Atendida")
+        );
+
+        var porArea = processos
+            .SelectMany(p => p.Pendencias)
+            .GroupBy(p => p.DivisaoCap)
+            .Select(g => new
+            {
+                area = g.Key,
+                total = g.Count()
+            })
+            .ToList();
+
+        var porTematica = processos
+            .SelectMany(p => p.Pendencias)
+            .GroupBy(p => p.Classificacao)
+            .Select(g => new
+            {
+                classificacao = g.Key,
+                total = g.Count()
+            })
+            .ToList();
+
+        return Ok(new
+        {
+            abertos,
+            concluidos,
+            porArea,
+            porTematica
+        });
+    }
+
 }
