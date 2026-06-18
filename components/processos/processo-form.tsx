@@ -460,7 +460,7 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
 
                     <button
                       type="button"
-                      className="cursor-pointer rounded bg-green-600 px-3 py-2 text-white hover:bg-green-700"
+                      className="cursor-pointer rounded bg-green-600 px-3 py-2 text-white hover:bg-green-800"
                       onClick={() => {
                         const novasPendencias = [...form.pendencias]
 
@@ -623,5 +623,5 @@ function Campo({
       </Label>
       {children}
     </div>
-  )
+  ) 
 }
