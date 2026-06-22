@@ -2,6 +2,8 @@ using ComuniqueSe.Api.Data;
 using ComuniqueSe.Api.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http;
+using System.IO;
 
 namespace ComuniqueSe.Api.Controllers;
 
@@ -50,6 +52,36 @@ public class ProcessosController : ControllerBase
         return CreatedAtAction(nameof(GetProcesso), new { id = processo.Id }, processo);
     }
 
+    [HttpPost("{id}/anexo-fase")]
+    public async Task<IActionResult> UploadAnexoFase(int id, IFormFile arquivo)
+    {
+        var processo = await _context.Processos.FindAsync(id);
+
+        if (processo == null)
+            return NotFound();
+
+        if (arquivo == null || arquivo.Length == 0)
+            return BadRequest("Nenhum arquivo enviado.");
+
+        if (arquivo.ContentType != "application/pdf")
+            return BadRequest("Apenas arquivos PDF são permitidos.");
+
+        using var memoryStream = new MemoryStream();
+        await arquivo.CopyToAsync(memoryStream);
+
+        processo.AnexoFaseNome = arquivo.FileName;
+        processo.AnexoFaseTipo = arquivo.ContentType;
+        processo.AnexoFaseArquivo = memoryStream.ToArray();
+
+        await _context.SaveChangesAsync();
+
+        return Ok(new
+        {
+            processo.AnexoFaseNome,
+            processo.AnexoFaseTipo
+        });
+    }
+
     [HttpPut("{id}")]
     public async Task<IActionResult> PutProcesso(int id, Processo processo)
     {
@@ -72,6 +104,12 @@ public class ProcessosController : ControllerBase
         processoExistente.DataSaida = processo.DataSaida;
         processoExistente.TecnicoResponsavel = processo.TecnicoResponsavel;
         processoExistente.Situacao = processo.Situacao;
+        processoExistente.Fase = processo.Fase;
+        processoExistente.StatusFase = processo.StatusFase;
+        processoExistente.DataEmissaoFase = processo.DataEmissaoFase;
+        processoExistente.DataValidadeFase = processo.DataValidadeFase;
+        processoExistente.NumeroFase = processo.NumeroFase;
+        processoExistente.AnexoFase = processo.AnexoFase;
 
         _context.Trechos.RemoveRange(processoExistente.Trechos);
 

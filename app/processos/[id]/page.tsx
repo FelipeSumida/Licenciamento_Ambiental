@@ -153,6 +153,13 @@ export default function DetalheProcessoPage({
                   label="Técnico responsável"
                   valor={processo.tecnicoResponsavel}
                 />
+
+                <Info label="Fase" valor={processo.fase || "-"} />
+                <Info label="Situação da fase" valor={processo.statusFase || "-"} />
+                <Info label="N°" valor={processo.numeroFase || "-"} />
+                <Info label="Data de emissão" valor={formatarData(processo.dataEmissaoFase)} />
+                <Info label="Data de validade" valor={formatarData(processo.dataValidadeFase)} />
+                <Info label="Anexo PDF" valor={processo.anexoFase || "-"} />
               </CardContent>
             </Card>
 

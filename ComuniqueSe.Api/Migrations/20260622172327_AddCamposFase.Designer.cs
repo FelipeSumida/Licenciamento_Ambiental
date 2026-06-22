@@ -4,6 +4,7 @@ using ComuniqueSe.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ComuniqueSe.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260622172327_AddCamposFase")]
+    partial class AddCamposFase
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -106,18 +109,6 @@ namespace ComuniqueSe.Api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("AnexoFase")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<byte[]>("AnexoFaseArquivo")
-                        .HasColumnType("varbinary(max)");
-
-                    b.Property<string>("AnexoFaseNome")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("AnexoFaseTipo")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Classificacao")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -147,10 +138,6 @@ namespace ComuniqueSe.Api.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Interessado")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("NumeroFase")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 

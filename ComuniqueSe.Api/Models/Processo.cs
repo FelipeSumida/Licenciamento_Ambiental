@@ -19,9 +19,17 @@ public class Processo
     public DateTime? DataSaida { get; set; }
     public string TecnicoResponsavel { get; set; } = string.Empty;
     public string Situacao { get; set; } = "Aberta";
-
     public List<Trecho> Trechos { get; set; } = new();
     public List<Pendencia> Pendencias { get; set; } = new();
+    public string Fase { get; set; } = string.Empty;
+    public string StatusFase { get; set; } = string.Empty;
+    public DateTime? DataEmissaoFase { get; set; }
+    public DateTime? DataValidadeFase { get; set; }
+    public string NumeroFase { get; set; } = string.Empty;
+    public string? AnexoFase { get; set; }
+    public string? AnexoFaseNome { get; set; }
+    public string? AnexoFaseTipo { get; set; }
+    public byte[]? AnexoFaseArquivo { get; set; }
 }
 
 public class Trecho

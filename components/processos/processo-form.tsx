@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
-import { Loader2, Save } from "lucide-react"
+import { Loader2, Save, Paperclip } from "lucide-react"
 import {
   Card,
   CardContent,
@@ -58,6 +58,12 @@ function estadoInicial(p?: Processo | null): ProcessoInput {
     divisaoCap: p?.divisaoCap ?? "Licenciamento",
     tecnicoResponsavel: p?.tecnicoResponsavel ?? "",
     situacao: p?.situacao ?? "Aberta",
+    fase: p?.fase ?? "",
+    statusFase: p?.statusFase ?? "",
+    dataEmissaoFase: p?.dataEmissaoFase ?? null,
+    dataValidadeFase: p?.dataValidadeFase ?? null,
+    numeroFase: p?.numeroFase ?? "",
+    anexoFase: p?.anexoFase ?? null,
   }
 }
 
@@ -176,6 +182,104 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
               placeholder="CETESB.000000/0000-00"
             />
           </Campo>
+
+          <Campo label="Fase">
+            <Select
+              value={form.fase}
+              onValueChange={(value) => {
+                set("fase", value as ProcessoInput["fase"])
+                set("statusFase", "")
+                set("dataEmissaoFase", null)
+                set("dataValidadeFase", null)
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione a fase" />
+              </SelectTrigger>
+
+              <SelectContent>
+                <SelectItem value="CP">CP</SelectItem>
+                <SelectItem value="LP">LP</SelectItem>
+                <SelectItem value="LI">LI</SelectItem>
+                <SelectItem value="LO">LO</SelectItem>
+                <SelectItem value="ASV">ASV</SelectItem>
+              </SelectContent>
+            </Select>
+          </Campo>
+
+        {form.fase && (
+          <Campo label="Situação da fase">
+            <Select
+              value={form.statusFase}
+              onValueChange={(value) => {
+                set("statusFase", value as ProcessoInput["statusFase"])
+
+                if (value !== "Emitido") {
+                  set("dataEmissaoFase", null)
+                  set("dataValidadeFase", null)
+                  set("numeroFase", "")
+                  set("anexoFase", null)
+                }
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione a situação" />
+              </SelectTrigger>
+
+              <SelectContent>
+                <SelectItem value="Em andamento">Em andamento</SelectItem>
+                <SelectItem value="Emitido">Emitido</SelectItem>
+                <SelectItem value="Dispensado">Dispensado</SelectItem>
+              </SelectContent>
+            </Select>
+          </Campo>
+        )}
+
+          {form.statusFase === "Emitido" && (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Campo label="N°">
+                <Input
+                  value={form.numeroFase}
+                  onChange={(e) => set("numeroFase", e.target.value)}
+                  placeholder="Digite o número"
+                />
+              </Campo>
+
+              <Campo label="Data de emissão">
+                <Input
+                  type="date"
+                  value={form.dataEmissaoFase ?? ""}
+                  onChange={(e) => set("dataEmissaoFase", e.target.value || null)}
+                />
+              </Campo>
+
+              <Campo label="Data de validade">
+                <Input
+                  type="date"
+                  value={form.dataValidadeFase ?? ""}
+                  onChange={(e) => set("dataValidadeFase", e.target.value || null)}
+                />
+              </Campo>
+
+              <Campo label="Anexo PDF">
+                <label className="flex h-10 cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed bg-background px-4 text-sm text-muted-foreground hover:bg-muted">
+                  <Paperclip className="size-4" />
+                  {form.anexoFase ? form.anexoFase : "Selecionar PDF"}
+
+                  <Input
+                    type="file"
+                    accept="application/pdf"
+                    className="hidden"
+                    onChange={(e) => {
+                      const arquivo = e.target.files?.[0]
+                      set("anexoFase", arquivo ? arquivo.name : null)
+                    }}
+                  />
+                </label>
+              </Campo>
+            </div>
+          )}
+
           <Campo label="Empreendimento">
             <Select
               value={form.empreendimento}

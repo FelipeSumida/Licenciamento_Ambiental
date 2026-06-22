@@ -34,7 +34,7 @@ import {
 import { SituacaoBadge } from "@/components/situacao-badge"
 import { formatarData } from "@/lib/format"
 import { excluirProcesso } from "@/lib/api"
-import { CLASSIFICACOES, type Processo } from "@/lib/types"
+import { CLASSIFICACOES, type Processo, type DivisaoCap } from "@/lib/types"
 
 const TODOS = "__todos__"
 
@@ -51,6 +51,10 @@ export function TabelaProcessos({
   const [situacao, setSituacao] = useState<string>(TODOS)
   const [classificacao, setClassificacao] = useState<string>(TODOS)
   const [excluindoId, setExcluindoId] = useState<string | null>(null)
+  const [tecnicoResponsavel, setTecnicoResponsavel] = useState<string>(TODOS)
+  const [atribuidoFiltro, setAtribuidoFiltro] = useState(TODOS)
+  const [divisoesCapSelecionadas, setDivisoesCapSelecionadas] = useState<DivisaoCap[]>([])
+  const [rodoviasSelecionadas, setRodoviasSelecionadas] = useState<string[]>([])
 
   const [processoParaExcluir, setProcessoParaExcluir] = useState<Processo | null>(null)
 
@@ -72,6 +76,51 @@ export function TabelaProcessos({
     }
   }
 
+  const rodoviasDisponiveis = useMemo(() => {
+    return Array.from(
+      new Set(
+        processos
+          .flatMap((p) => p.trechos ?? [])
+          .map((t) => t.rodovia)
+          .filter(Boolean),
+      ),
+    ).sort()
+  }, [processos])
+
+  const atribuicoesDisponiveis = useMemo(() => {
+    return Array.from(
+      new Set(
+        processos.flatMap((p) =>
+          (p.pendencias ?? [])
+            .filter((pendencia) => pendencia.situacao === "Aberta")
+            .flatMap((pendencia) => pendencia.atribuidoA ?? [])
+        )
+      )
+    ).sort()
+  }, [processos])
+
+  const tecnicosDisponiveis = useMemo(() => {
+    return Array.from(
+      new Set(
+        processos
+          .map((p) => p.tecnicoResponsavel)
+          .filter(Boolean),
+      ),
+    ).sort()
+  }, [processos])
+
+  const divisoesCapDisponiveis = useMemo(() => {
+    return Array.from(
+      new Set(
+        processos.flatMap((p) =>
+          (p.pendencias ?? []).map(
+            (pendencia) => pendencia.divisaoCap
+          )
+        )
+      )
+    ).sort()
+  }, [processos])
+
   const filtrados = useMemo(() => {
     const termo = busca.trim().toLowerCase()
 
@@ -79,6 +128,33 @@ export function TabelaProcessos({
       const pendencias = p.pendencias ?? []
       const trechos = p.trechos ?? []
 
+      const rodoviasDoProcesso = trechos.map((t) => t.rodovia)
+
+      const casaRodovia =
+        rodoviasSelecionadas.length === 0 ||
+        rodoviasSelecionadas.every((rodovia) =>
+          rodoviasDoProcesso.includes(rodovia),
+        )
+
+      const casaTecnico =
+        tecnicoResponsavel === TODOS ||
+        p.tecnicoResponsavel === tecnicoResponsavel
+
+      const casaAtribuido =
+        atribuidoFiltro === TODOS ||
+        pendencias.some(
+          (pendencia) =>
+            pendencia.situacao === "Aberta" &&
+            (pendencia.atribuidoA ?? []).includes(atribuidoFiltro)
+        )
+      
+      const divisoesDoProcesso = pendencias.map((pendencia) => pendencia.divisaoCap)
+
+      const casaDivisaoCap =
+        divisoesCapSelecionadas.length === 0 ||
+        divisoesCapSelecionadas.every((divisao: DivisaoCap) =>
+          divisoesDoProcesso.includes(divisao)
+        )
       const situacaoCalculada =
         pendencias.length > 0 && pendencias.every((pendencia) => pendencia.situacao === "Atendida")
           ? "Atendida"
@@ -110,9 +186,26 @@ export function TabelaProcessos({
         classificacao === TODOS ||
         pendencias.some((pendencia) => pendencia.classificacao === classificacao)
 
-      return casaBusca && casaSituacao && casaClassificacao
+      return (
+        casaBusca &&
+        casaSituacao &&
+        casaClassificacao &&
+        casaRodovia &&
+        casaTecnico &&
+        casaAtribuido &&
+        casaDivisaoCap
+      )
     })
-  }, [processos, busca, situacao, classificacao])
+  }, [
+    processos,
+    busca,
+    situacao,
+    classificacao,
+    rodoviasSelecionadas,
+    tecnicoResponsavel,
+    atribuidoFiltro,
+    divisoesCapSelecionadas,
+  ])
 
   return (
     <div className="space-y-4">
@@ -154,6 +247,131 @@ export function TabelaProcessos({
             ))}
           </SelectContent>
         </Select>
+
+        <Select
+          value={tecnicoResponsavel}
+          onValueChange={(v) => setTecnicoResponsavel(v ?? TODOS)}
+        >
+          <SelectTrigger className="w-full sm:w-44">
+            <SelectValue placeholder="Técnico" />
+          </SelectTrigger>
+
+          <SelectContent>
+            <SelectItem value={TODOS}>
+              Todos os técnicos
+            </SelectItem>
+
+            {tecnicosDisponiveis.map((tecnico) => (
+              <SelectItem key={tecnico} value={tecnico}>
+                {tecnico}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={atribuidoFiltro}
+          onValueChange={(v) => setAtribuidoFiltro(v ?? TODOS)}
+        >
+          <SelectTrigger className="w-full sm:w-52">
+            <SelectValue placeholder="Pendências atribuídas a" />
+          </SelectTrigger>
+
+          <SelectContent>
+            <SelectItem value={TODOS}>
+              Todas atribuições
+            </SelectItem>
+
+            {atribuicoesDisponiveis.map((a) => (
+              <SelectItem key={a} value={a}>
+                {a}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <div className="relative">
+          <details className="w-full sm:w-56">
+            <summary className="flex h-10 cursor-pointer items-center justify-between rounded-md border bg-background px-3 text-sm">
+              {divisoesCapSelecionadas.length === 0
+                ? "Todas as divisões"
+                : `${divisoesCapSelecionadas.length} divisão(ões)`}
+            </summary>
+
+            <div className="absolute z-20 mt-2 max-h-64 w-56 overflow-y-auto rounded-md border bg-background p-3 shadow-md">
+              <button
+                type="button"
+                className="mb-2 text-xs text-primary hover:underline"
+                onClick={() => setDivisoesCapSelecionadas([])}
+              >
+                Limpar seleção
+              </button>
+
+              <div className="space-y-2">
+                {divisoesCapDisponiveis.map((divisao) => (
+                  <label key={divisao} className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={divisoesCapSelecionadas.includes(divisao)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setDivisoesCapSelecionadas((atual) => [...atual, divisao])
+                        } else {
+                          setDivisoesCapSelecionadas((atual) =>
+                            atual.filter((d) => d !== divisao),
+                          )
+                        }
+                      }}
+                    />
+                    {divisao}
+                  </label>
+                ))}
+              </div>
+            </div>
+          </details>
+        </div>
+
+        <div className="relative">
+          <details className="w-full sm:w-56">
+            <summary className="flex h-10 cursor-pointer items-center justify-between rounded-md border bg-background px-3 text-sm">
+              {rodoviasSelecionadas.length === 0
+                ? "Todas as rodovias"
+                : `${rodoviasSelecionadas.length} rodovia(s)`}
+            </summary>
+
+            <div className="absolute z-20 mt-2 max-h-64 w-56 overflow-y-auto rounded-md border bg-background p-3 shadow-md">
+              <button
+                type="button"
+                className="mb-2 text-xs text-primary hover:underline"
+                onClick={() => setRodoviasSelecionadas([])}
+              >
+                Limpar seleção
+              </button>
+
+              <div className="space-y-2">
+                {rodoviasDisponiveis.map((rodovia) => (
+                  <label key={rodovia} className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={rodoviasSelecionadas.includes(rodovia)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setRodoviasSelecionadas((atual) => [...atual, rodovia])
+                        } else {
+                          setRodoviasSelecionadas((atual) =>
+                            atual.filter((r) => r !== rodovia),
+                          )
+                        }
+                      }}
+                    />
+                    {rodovia}
+                  </label>
+                ))}
+              </div>
+            </div>
+          </details>
+        </div>
+
       </div>
 
       <Card className="overflow-hidden p-0">
@@ -266,7 +484,7 @@ export function TabelaProcessos({
                         >
                           <Trash2 className="size-4" />
                           Excluir
-                        </Button>
+                        </Button> 
                       </div>
                     </TableCell>
                   </TableRow>

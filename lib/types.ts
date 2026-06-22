@@ -46,7 +46,7 @@ export type Historico = {
 }
 
 export type Pendencia = {
-  atribuidoA: ("DE" | "DO" | "CAP" | "Regional")[]
+  atribuidoA: string[]
   regionais: string[]
   descricao: string
   classificacao: Classificacao
@@ -83,6 +83,12 @@ export interface Processo {
   /** Histórico do processo (texto longo) */
   tecnicoResponsavel: string
   situacao: SituacaoProcesso
+  fase: string
+  statusFase: string
+  dataEmissaoFase: string | null
+  dataValidadeFase: string | null
+  numeroFase: string
+  anexoFase: string | null
 }
 
 // Payload usado para criar/editar (sem id)
