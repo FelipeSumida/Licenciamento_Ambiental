@@ -34,7 +34,12 @@ import {
 import { SituacaoBadge } from "@/components/situacao-badge"
 import { formatarData } from "@/lib/format"
 import { excluirProcesso } from "@/lib/api"
-import { CLASSIFICACOES, type Processo, type DivisaoCap } from "@/lib/types"
+import {
+  CLASSIFICACOES,
+  DIVISOES_CAP,
+  type Processo,
+  type DivisaoCap,
+} from "@/lib/types"
 
 const TODOS = "__todos__"
 
@@ -209,169 +214,188 @@ export function TabelaProcessos({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Buscar por processo, empreendimento, interessado..."
-            value={busca}
-            onChange={(e) => setBusca(e.target.value)}
-            className="pl-9"
-          />
-        </div>
+      <div className="mb-5 rounded-xl border bg-white/70 p-4 shadow-sm">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-6">
+          <div className="relative md:col-span-2 xl:col-span-2">
+            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Buscar processo, empreendimento, interessado..."
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+              className="h-11 pl-9"
+            />
+          </div>
 
-        <Select value={situacao} onValueChange={(v) => setSituacao(v ?? TODOS)}>
-          <SelectTrigger className="w-full sm:w-44">
-            <SelectValue placeholder="Situação" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={TODOS}>Todas as situações</SelectItem>
-            <SelectItem value="Aberta">Aberta</SelectItem>
-            <SelectItem value="Atendida">Atendida</SelectItem>
-          </SelectContent>
-        </Select>
+          <div className="min-w-0">
+            <Select
+              value={situacao}
+              onValueChange={(v) => setSituacao(v as typeof TODOS | "Aberta" | "Atendida")}
+            >
+              <SelectTrigger className="h-11 w-full">
+                <SelectValue placeholder="Situação" />
+              </SelectTrigger>
 
-        <Select
-          value={classificacao}
-          onValueChange={(v) => setClassificacao(v ?? TODOS)}
-        >
-          <SelectTrigger className="w-full sm:w-44">
-            <SelectValue placeholder="Classificação" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={TODOS}>Todas as classes</SelectItem>
-            {CLASSIFICACOES.map((c) => (
-              <SelectItem key={c} value={c}>
-                {c}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+              <SelectContent>
+                <SelectItem value={TODOS}>Todas as situações</SelectItem>
+                <SelectItem value="Aberta">Aberta</SelectItem>
+                <SelectItem value="Atendida">Atendida</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-        <Select
-          value={tecnicoResponsavel}
-          onValueChange={(v) => setTecnicoResponsavel(v ?? TODOS)}
-        >
-          <SelectTrigger className="w-full sm:w-44">
-            <SelectValue placeholder="Técnico" />
-          </SelectTrigger>
+          <div className="min-w-0">
+            <Select
+              value={classificacao}
+              onValueChange={(v: any) => setClassificacao(v)}
+            >
+              <SelectTrigger className="h-11 w-full">
+                <SelectValue placeholder="Classificação" />
+              </SelectTrigger>
 
-          <SelectContent>
-            <SelectItem value={TODOS}>
-              Todos os técnicos
-            </SelectItem>
+              <SelectContent>
+                <SelectItem value={TODOS}>Todas as classificações</SelectItem>
 
-            {tecnicosDisponiveis.map((tecnico) => (
-              <SelectItem key={tecnico} value={tecnico}>
-                {tecnico}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+                {CLASSIFICACOES.map((c) => (
+                  <SelectItem key={c} value={c}>
+                    {c}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-        <Select
-          value={atribuidoFiltro}
-          onValueChange={(v) => setAtribuidoFiltro(v ?? TODOS)}
-        >
-          <SelectTrigger className="w-full sm:w-52">
-            <SelectValue placeholder="Pendências atribuídas a" />
-          </SelectTrigger>
+          <div className="min-w-0">
+            <Select
+              value={tecnicoResponsavel}
+              onValueChange={(v: any) => setTecnicoResponsavel(v)}
+            >
+              <SelectTrigger className="h-11 w-full">
+                <SelectValue placeholder="Técnico" />
+              </SelectTrigger>
 
-          <SelectContent>
-            <SelectItem value={TODOS}>
-              Todas atribuições
-            </SelectItem>
+              <SelectContent>
+                <SelectItem value={TODOS}>Todos os técnicos</SelectItem>
 
-            {atribuicoesDisponiveis.map((a) => (
-              <SelectItem key={a} value={a}>
-                {a}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+                {tecnicosDisponiveis.map((tecnico) => (
+                  <SelectItem key={tecnico} value={tecnico}>
+                    {tecnico}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-        <div className="relative">
-          <details className="w-full sm:w-56">
-            <summary className="flex h-10 cursor-pointer items-center justify-between rounded-md border bg-background px-3 text-sm">
-              {divisoesCapSelecionadas.length === 0
-                ? "Todas as divisões"
-                : `${divisoesCapSelecionadas.length} divisão(ões)`}
-            </summary>
+          <div className="min-w-0">
+            <Select
+              value={atribuidoFiltro}
+              onValueChange={(v: any) => setAtribuidoFiltro(v)}
+            >
+              <SelectTrigger className="h-11 w-full">
+                <SelectValue placeholder="Atribuído a" />
+              </SelectTrigger>
 
-            <div className="absolute z-20 mt-2 max-h-64 w-56 overflow-y-auto rounded-md border bg-background p-3 shadow-md">
-              <button
-                type="button"
-                className="mb-2 text-xs text-primary hover:underline"
-                onClick={() => setDivisoesCapSelecionadas([])}
-              >
-                Limpar seleção
-              </button>
+              <SelectContent>
+                <SelectItem value={TODOS}>Todos</SelectItem>
+                <SelectItem value="DE">DE</SelectItem>
+                <SelectItem value="DO">DO</SelectItem>
+                <SelectItem value="CAP">CAP</SelectItem>
+                <SelectItem value="Regional">Regional</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-              <div className="space-y-2">
-                {divisoesCapDisponiveis.map((divisao) => (
-                  <label key={divisao} className="flex items-center gap-2 text-sm">
+          <div className="min-w-0">
+            <details className="w-full">
+              <summary className="flex h-11 cursor-pointer items-center justify-between rounded-md border bg-background px-3 text-sm">
+                {divisoesCapSelecionadas.length === 0
+                  ? "Todas as divisões"
+                  : `${divisoesCapSelecionadas.length} selecionada(s)`}
+              </summary>
+
+              <div className="mt-2 space-y-2 rounded-md border bg-background p-3">
+                <button
+                  type="button"
+                  className="text-xs text-primary hover:underline"
+                  onClick={() => setDivisoesCapSelecionadas([])}
+                >
+                  Limpar seleção
+                </button>
+
+                {DIVISOES_CAP.map((divisao: DivisaoCap) => (
+                  <label
+                    key={divisao}
+                    className="flex items-center gap-2 text-sm"
+                  >
                     <input
                       type="checkbox"
                       checked={divisoesCapSelecionadas.includes(divisao)}
                       onChange={(e) => {
                         if (e.target.checked) {
-                          setDivisoesCapSelecionadas((atual) => [...atual, divisao])
+                          setDivisoesCapSelecionadas((atual) => [
+                            ...atual,
+                            divisao as DivisaoCap,
+                          ])
                         } else {
                           setDivisoesCapSelecionadas((atual) =>
-                            atual.filter((d) => d !== divisao),
+                            atual.filter((d) => d !== divisao)
                           )
                         }
                       }}
                     />
+
                     {divisao}
                   </label>
                 ))}
               </div>
-            </div>
-          </details>
-        </div>
+            </details>
+          </div>
 
-        <div className="relative">
-          <details className="w-full sm:w-56">
-            <summary className="flex h-10 cursor-pointer items-center justify-between rounded-md border bg-background px-3 text-sm">
-              {rodoviasSelecionadas.length === 0
-                ? "Todas as rodovias"
-                : `${rodoviasSelecionadas.length} rodovia(s)`}
-            </summary>
+          <div className="min-w-0">
+            <details className="w-full">
+              <summary className="flex h-11 cursor-pointer items-center justify-between rounded-md border bg-background px-3 text-sm">
+                {rodoviasSelecionadas.length === 0
+                  ? "Todas as rodovias"
+                  : `${rodoviasSelecionadas.length} selecionada(s)`}
+              </summary>
 
-            <div className="absolute z-20 mt-2 max-h-64 w-56 overflow-y-auto rounded-md border bg-background p-3 shadow-md">
-              <button
-                type="button"
-                className="mb-2 text-xs text-primary hover:underline"
-                onClick={() => setRodoviasSelecionadas([])}
-              >
-                Limpar seleção
-              </button>
+              <div className="mt-2 space-y-2 rounded-md border bg-background p-3">
+                <button
+                  type="button"
+                  className="text-xs text-primary hover:underline"
+                  onClick={() => setRodoviasSelecionadas([])}
+                >
+                  Limpar seleção
+                </button>
 
-              <div className="space-y-2">
                 {rodoviasDisponiveis.map((rodovia) => (
-                  <label key={rodovia} className="flex items-center gap-2 text-sm">
+                  <label
+                    key={rodovia}
+                    className="flex items-center gap-2 text-sm"
+                  >
                     <input
                       type="checkbox"
                       checked={rodoviasSelecionadas.includes(rodovia)}
                       onChange={(e) => {
                         if (e.target.checked) {
-                          setRodoviasSelecionadas((atual) => [...atual, rodovia])
+                          setRodoviasSelecionadas((atual) => [
+                            ...atual,
+                            rodovia,
+                          ])
                         } else {
                           setRodoviasSelecionadas((atual) =>
-                            atual.filter((r) => r !== rodovia),
+                            atual.filter((r) => r !== rodovia)
                           )
                         }
                       }}
                     />
+
                     {rodovia}
                   </label>
                 ))}
               </div>
-            </div>
-          </details>
+            </details>
+          </div>
         </div>
-
       </div>
 
       <Card className="overflow-hidden p-0">
