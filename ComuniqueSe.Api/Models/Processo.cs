@@ -30,6 +30,8 @@ public class Processo
     public string? AnexoFaseNome { get; set; }
     public string? AnexoFaseTipo { get; set; }
     public byte[]? AnexoFaseArquivo { get; set; }
+    public string IdentificacaoEmpreendimento { get; set; } = string.Empty;
+    public string CaracterizacaoEmpreendimento { get; set; } = string.Empty;
 }
 
 public class Trecho
@@ -41,8 +43,8 @@ public class Trecho
     public string Rodovia { get; set; } = "";
     public string KmInicial { get; set; } = "";
     public string KmFinal { get; set; } = "";
-
     public int ProcessoId { get; set; }
+    public List<FaseTrecho> Fases { get; set; } = new();
 }
 
 public class Pendencia

@@ -34,11 +34,15 @@ const CORES_GRAFICO = [
 ]
 
 const PIE_COLORS = [
-  "var(--chart-1)",
-  "var(--chart-2)",
-  "var(--chart-3)",
-  "var(--chart-4)",
-  "var(--chart-5)",
+  "#16a34a", // verde
+  "#2563eb", // azul
+  "#f59e0b", // amarelo
+  "#dc2626", // vermelho
+  "#9333ea", // roxo
+  "#06b6d4", // ciano
+  "#f97316", // laranja
+  "#ec4899", // rosa
+  "#64748b", // cinza
 ]
 
 export function GraficoPorArea({

@@ -134,6 +134,11 @@ export default function DetalheProcessoPage({
               </CardHeader>
               <CardContent className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
                 <Info label="Empreendimento" valor={processo.empreendimento} />
+
+                <Info label="Identificação do Empreendimento" valor={processo.identificacaoEmpreendimento || "-"} />
+
+                <Info label="Caracterização do Empreendimento" valor={processo.caracterizacaoEmpreendimento || "-"} />
+
                 <Info
                   label="Trecho"
                   valor={
@@ -154,12 +159,30 @@ export default function DetalheProcessoPage({
                   valor={processo.tecnicoResponsavel}
                 />
 
-                <Info label="Fase" valor={processo.fase || "-"} />
-                <Info label="Situação da fase" valor={processo.statusFase || "-"} />
-                <Info label="N°" valor={processo.numeroFase || "-"} />
-                <Info label="Data de emissão" valor={formatarData(processo.dataEmissaoFase)} />
-                <Info label="Data de validade" valor={formatarData(processo.dataValidadeFase)} />
-                <Info label="Anexo PDF" valor={processo.anexoFase || "-"} />
+                <div className="col-span-2">
+                  <p className="text-xs font-medium uppercase text-muted-foreground">
+                    Fases do trecho
+                  </p>
+
+                  <div className="mt-2 space-y-3">
+                    {processo.trechos?.flatMap((trecho) => trecho.fases ?? []).map((fase, index) => (
+                      <div key={index} className="rounded-md border bg-muted/40 p-3">
+                        <p className="mb-2 font-medium">
+                          Fase {index + 1}
+                        </p>
+
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                          <Info label="Fase" valor={fase.fase || "-"} />
+                          <Info label="Situação da fase" valor={fase.statusFase || "-"} />
+                          <Info label="N°" valor={fase.numeroFase || "-"} />
+                          <Info label="Data de emissão" valor={formatarData(fase.dataEmissaoFase)} />
+                          <Info label="Data de validade" valor={formatarData(fase.dataValidadeFase)} />
+                          <Info label="Anexo PDF" valor={fase.anexoFase || "-"} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </CardContent>
             </Card>
 

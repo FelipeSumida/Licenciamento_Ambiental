@@ -38,6 +38,16 @@ export type Trecho = {
   rodovia: string
   kmInicial: string
   kmFinal: string
+  fases: FaseTrecho[]
+}
+
+export type FaseTrecho = {
+  fase: string
+  statusFase: string
+  numeroFase: string
+  dataEmissaoFase: string | null
+  dataValidadeFase: string | null
+  anexoFase: string | null
 }
 
 export type Historico = {
@@ -89,6 +99,8 @@ export interface Processo {
   dataValidadeFase: string | null
   numeroFase: string
   anexoFase: string | null
+  identificacaoEmpreendimento: string
+  caracterizacaoEmpreendimento: string
 }
 
 // Payload usado para criar/editar (sem id)

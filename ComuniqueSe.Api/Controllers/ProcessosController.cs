@@ -23,6 +23,7 @@ public class ProcessosController : ControllerBase
     {
         return await _context.Processos
             .Include(p => p.Trechos)
+                .ThenInclude(t => t.Fases)
             .Include(p => p.Pendencias)
                 .ThenInclude(p => p.Historicos)
             .ToListAsync();
@@ -33,6 +34,7 @@ public class ProcessosController : ControllerBase
     {
         var processo = await _context.Processos
             .Include(p => p.Trechos)
+                .ThenInclude(t => t.Fases)
             .Include(p => p.Pendencias)
                 .ThenInclude(p => p.Historicos)
             .FirstOrDefaultAsync(p => p.Id == id);
@@ -87,6 +89,7 @@ public class ProcessosController : ControllerBase
     {
         var processoExistente = await _context.Processos
             .Include(p => p.Trechos)
+                .ThenInclude(t => t.Fases)
             .Include(p => p.Pendencias)
                 .ThenInclude(p => p.Historicos)
             .FirstOrDefaultAsync(p => p.Id == id);
@@ -110,8 +113,8 @@ public class ProcessosController : ControllerBase
         processoExistente.DataValidadeFase = processo.DataValidadeFase;
         processoExistente.NumeroFase = processo.NumeroFase;
         processoExistente.AnexoFase = processo.AnexoFase;
-
-        _context.Trechos.RemoveRange(processoExistente.Trechos);
+        processoExistente.IdentificacaoEmpreendimento = processo.IdentificacaoEmpreendimento;
+        processoExistente.CaracterizacaoEmpreendimento = processo.CaracterizacaoEmpreendimento;
 
         foreach (var pendencia in processoExistente.Pendencias)
         {
@@ -120,7 +123,25 @@ public class ProcessosController : ControllerBase
 
         _context.Pendencias.RemoveRange(processoExistente.Pendencias);
 
-        processoExistente.Trechos = processo.Trechos;
+        _context.Trechos.RemoveRange(processoExistente.Trechos);
+
+        processoExistente.Trechos = processo.Trechos.Select(t => new Trecho
+        {
+            Denominacao = t.Denominacao,
+            Rodovia = t.Rodovia,
+            KmInicial = t.KmInicial,
+            KmFinal = t.KmFinal,
+            Fases = (t.Fases ?? new List<FaseTrecho>()).Select(f => new FaseTrecho
+            {
+                Fase = f.Fase,
+                StatusFase = f.StatusFase,
+                NumeroFase = f.NumeroFase,
+                DataEmissaoFase = f.DataEmissaoFase,
+                DataValidadeFase = f.DataValidadeFase,
+                AnexoFase = f.AnexoFase
+            }).ToList()
+        }).ToList();
+
         processoExistente.Pendencias = processo.Pendencias;
 
         await _context.SaveChangesAsync();
@@ -133,6 +154,7 @@ public class ProcessosController : ControllerBase
     {
         var processo = await _context.Processos
             .Include(p => p.Trechos)
+                .ThenInclude(t => t.Fases)
             .Include(p => p.Pendencias)
                 .ThenInclude(p => p.Historicos)
             .FirstOrDefaultAsync(p => p.Id == id);

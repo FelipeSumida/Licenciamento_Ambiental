@@ -32,23 +32,49 @@ import {
   type Processo,
   type ProcessoInput,
   type SituacaoProcesso,
+  type FaseTrecho,
 } from "@/lib/types"
 
 function novoTrecho() {
-    return {
-      denominacao: "",
-      rodovia: "",
-      kmInicial: "",
-      kmFinal: "",
-    }
+  return {
+    denominacao: "",
+    rodovia: "",
+    kmInicial: "",
+    kmFinal: "",
+
+    fases: [
+      {
+        fase: "",
+        statusFase: "",
+        numeroFase: "",
+        dataEmissaoFase: null,
+        dataValidadeFase: null,
+        anexoFase: null,
+      },
+    ],
   }
+}
 
 function estadoInicial(p?: Processo | null): ProcessoInput {
   return {
     processo: p?.processo ?? "",
     empreendimento: p?.empreendimento ?? "",
     denominacao: p?.denominacao ?? "",
-    trechos: p?.trechos ?? [novoTrecho()],
+    trechos: (p?.trechos?.length ? p.trechos : [novoTrecho()]).map((trecho) => ({
+      ...trecho,
+      fases: trecho.fases?.length
+        ? trecho.fases
+        : [
+            {
+              fase: "",
+              statusFase: "",
+              numeroFase: "",
+              dataEmissaoFase: null,
+              dataValidadeFase: null,
+              anexoFase: null,
+            },
+          ],
+    })),
     interessado: p?.interessado ?? "",
     classificacao: p?.classificacao ?? "LI",
     pendencias: p?.pendencias ?? [],
@@ -64,6 +90,8 @@ function estadoInicial(p?: Processo | null): ProcessoInput {
     dataValidadeFase: p?.dataValidadeFase ?? null,
     numeroFase: p?.numeroFase ?? "",
     anexoFase: p?.anexoFase ?? null,
+    identificacaoEmpreendimento: p?.identificacaoEmpreendimento ?? "",
+    caracterizacaoEmpreendimento: p?.caracterizacaoEmpreendimento ?? "",
   }
 }
 
@@ -126,6 +154,75 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
     set("trechos", novos)
   }
 
+  function atualizarFaseTrecho(
+    trechoIndex: number,
+    faseIndex: number,
+    campo: keyof FaseTrecho,
+    valor: any
+  ) {
+    setForm((atual) => {
+      const trechos = [...atual.trechos]
+      const fases = [...(trechos[trechoIndex].fases ?? [])]
+
+      fases[faseIndex] = {
+        ...fases[faseIndex],
+        [campo]: valor,
+      }
+
+      trechos[trechoIndex] = {
+        ...trechos[trechoIndex],
+        fases,
+      }
+
+      return { ...atual, trechos }
+    })
+  }
+
+  function finalizarFaseTrecho(trechoIndex: number, faseIndex: number) {
+    setForm((atual) => {
+      const trechos = [...atual.trechos]
+      const fases = [...trechos[trechoIndex].fases]
+
+      if (faseIndex !== fases.length - 1) {
+        return atual
+      }
+
+      fases.push({
+        fase: "",
+        statusFase: "",
+        numeroFase: "",
+        dataEmissaoFase: null,
+        dataValidadeFase: null,
+        anexoFase: null,
+      })
+
+      trechos[trechoIndex] = {
+        ...trechos[trechoIndex],
+        fases,
+      }
+
+      return { ...atual, trechos }
+    })
+  }
+
+  function removerFaseTrecho(trechoIndex: number, faseIndex: number) {
+    setForm((atual) => {
+      const trechos = [...atual.trechos]
+      const fases = [...trechos[trechoIndex].fases]
+
+      if (fases.length === 1) return atual
+
+      fases.splice(faseIndex, 1)
+
+      trechos[trechoIndex] = {
+        ...trechos[trechoIndex],
+        fases,
+      }
+
+      return { ...atual, trechos }
+    })
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
 
@@ -183,102 +280,23 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
             />
           </Campo>
 
-          <Campo label="Fase">
-            <Select
-              value={form.fase}
-              onValueChange={(value) => {
-                set("fase", value as ProcessoInput["fase"])
-                set("statusFase", "")
-                set("dataEmissaoFase", null)
-                set("dataValidadeFase", null)
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione a fase" />
-              </SelectTrigger>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <Campo label="Identificação do Empreendimento">
+              <Input
+                value={form.identificacaoEmpreendimento ?? ""}
+                onChange={(e) => set("identificacaoEmpreendimento", e.target.value)}
+                placeholder="Digite a identificação do empreendimento"
+              />
+            </Campo>
 
-              <SelectContent>
-                <SelectItem value="CP">CP</SelectItem>
-                <SelectItem value="LP">LP</SelectItem>
-                <SelectItem value="LI">LI</SelectItem>
-                <SelectItem value="LO">LO</SelectItem>
-                <SelectItem value="ASV">ASV</SelectItem>
-              </SelectContent>
-            </Select>
-          </Campo>
-
-        {form.fase && (
-          <Campo label="Situação da fase">
-            <Select
-              value={form.statusFase}
-              onValueChange={(value) => {
-                set("statusFase", value as ProcessoInput["statusFase"])
-
-                if (value !== "Emitido") {
-                  set("dataEmissaoFase", null)
-                  set("dataValidadeFase", null)
-                  set("numeroFase", "")
-                  set("anexoFase", null)
-                }
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione a situação" />
-              </SelectTrigger>
-
-              <SelectContent>
-                <SelectItem value="Em andamento">Em andamento</SelectItem>
-                <SelectItem value="Emitido">Emitido</SelectItem>
-                <SelectItem value="Dispensado">Dispensado</SelectItem>
-              </SelectContent>
-            </Select>
-          </Campo>
-        )}
-
-          {form.statusFase === "Emitido" && (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Campo label="N°">
-                <Input
-                  value={form.numeroFase}
-                  onChange={(e) => set("numeroFase", e.target.value)}
-                  placeholder="Digite o número"
-                />
-              </Campo>
-
-              <Campo label="Data de emissão">
-                <Input
-                  type="date"
-                  value={form.dataEmissaoFase ?? ""}
-                  onChange={(e) => set("dataEmissaoFase", e.target.value || null)}
-                />
-              </Campo>
-
-              <Campo label="Data de validade">
-                <Input
-                  type="date"
-                  value={form.dataValidadeFase ?? ""}
-                  onChange={(e) => set("dataValidadeFase", e.target.value || null)}
-                />
-              </Campo>
-
-              <Campo label="Anexo PDF">
-                <label className="flex h-10 cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed bg-background px-4 text-sm text-muted-foreground hover:bg-muted">
-                  <Paperclip className="size-4" />
-                  {form.anexoFase ? form.anexoFase : "Selecionar PDF"}
-
-                  <Input
-                    type="file"
-                    accept="application/pdf"
-                    className="hidden"
-                    onChange={(e) => {
-                      const arquivo = e.target.files?.[0]
-                      set("anexoFase", arquivo ? arquivo.name : null)
-                    }}
-                  />
-                </label>
-              </Campo>
-            </div>
-          )}
+            <Campo label="Caracterização do Empreendimento">
+              <Input
+                value={form.caracterizacaoEmpreendimento ?? ""}
+                onChange={(e) => set("caracterizacaoEmpreendimento", e.target.value)}
+                placeholder="Digite a caracterização do empreendimento"
+              />
+            </Campo>
+          </div>
 
           <Campo label="Empreendimento">
             <Select
@@ -349,6 +367,148 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
                           }
                         />
                       </div>
+
+                      {trecho.fases.map((faseItem, faseIndex) => {
+                        const bloqueada =
+                          faseItem.statusFase === "Emitido" &&
+                          faseIndex < trecho.fases.length - 1
+
+                        return (
+                          <div
+                            key={faseIndex}
+                            className={`mt-4 rounded-md border p-4 ${
+                              bloqueada ? "bg-muted opacity-80" : "bg-background"
+                            }`}
+                          >
+
+                            <div className="flex items-center gap-2">
+                              {trecho.fases.length > 1 && (
+                                <button
+                                  type="button"
+                                  className="cursor-pointer rounded-md bg-red-500 px-3 py-1 text-xs text-white hover:bg-red-700"
+                                  onClick={() => removerFaseTrecho(index, faseIndex)}
+                                >
+                                  Apagar
+                                </button>
+                              )}
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                              <Campo label="Fase atual">
+                                <Select
+                                  value={faseItem.fase}
+                                  onValueChange={(value) =>
+                                    atualizarFaseTrecho(index, faseIndex, "fase", value)
+                                  }
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Selecione a fase" />
+                                  </SelectTrigger>
+
+                                  <SelectContent>
+                                    <SelectItem value="CP">CP</SelectItem>
+                                    <SelectItem value="LP">LP</SelectItem>
+                                    <SelectItem value="LI">LI</SelectItem>
+                                    <SelectItem value="LO">LO</SelectItem>
+                                    <SelectItem value="ASV">ASV</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </Campo>
+
+                              <Campo label="Situação">
+                                <Select
+                                  value={faseItem.statusFase}
+                                  onValueChange={(value) =>
+                                    atualizarFaseTrecho(index, faseIndex, "statusFase", value)
+                                  }
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Selecione a situação" />
+                                  </SelectTrigger>
+
+                                  <SelectContent>
+                                    <SelectItem value="Em andamento">Em andamento</SelectItem>
+                                    <SelectItem value="Emitido">Emitido</SelectItem>
+                                    <SelectItem value="Dispensado">Dispensado</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </Campo>
+                            </div>
+
+                            {faseItem.statusFase === "Emitido" && (
+                              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                <Campo label="N°">
+                                  <Input
+                                    value={faseItem.numeroFase ?? ""}
+                                    onChange={(e) =>
+                                      atualizarFaseTrecho(index, faseIndex, "numeroFase", e.target.value)
+                                    }
+                                    placeholder="Digite o número"
+                                    disabled={bloqueada}
+                                  />
+                                </Campo>
+
+                                <Campo label="Data de emissão">
+                                  <Input
+                                    type="date"
+                                    value={faseItem.dataEmissaoFase ?? ""}
+                                    onChange={(e) =>
+                                      atualizarFaseTrecho(index, faseIndex, "dataEmissaoFase", e.target.value || null)
+                                    }
+                                    disabled={bloqueada}
+                                  />
+                                </Campo>
+
+                                <Campo label="Data de validade">
+                                  <Input
+                                    type="date"
+                                    value={faseItem.dataValidadeFase ?? ""}
+                                    onChange={(e) =>
+                                      atualizarFaseTrecho(index, faseIndex, "dataValidadeFase", e.target.value || null)
+                                    }
+                                    disabled={bloqueada}
+                                  />
+                                </Campo>
+
+                                <Campo label="Anexo PDF">
+                                  <label className="flex h-10 cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed bg-background px-4 text-sm text-muted-foreground hover:bg-muted">
+                                    <Paperclip className="size-4" />
+                                    {faseItem.anexoFase ? faseItem.anexoFase : "Selecionar PDF"}
+
+                                    <Input
+                                      type="file"
+                                      accept="application/pdf"
+                                      className="hidden"
+                                      disabled={bloqueada}
+                                      onChange={(e) => {
+                                        const arquivo = e.target.files?.[0]
+                                        atualizarFaseTrecho(
+                                          index,
+                                          faseIndex,
+                                          "anexoFase",
+                                          arquivo ? arquivo.name : null
+                                        )
+                                      }}
+                                    />
+                                  </label>
+                                </Campo>
+
+                                {faseItem.statusFase === "Emitido" &&
+                                  faseIndex === trecho.fases.length - 1 && (
+                                  <button
+                                    type="button"
+                                    className="mt-4 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
+                                    onClick={() => finalizarFaseTrecho(index, faseIndex)}
+                                  >
+                                    Finalizar fase
+                                  </button>
+                                )}
+
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })}
 
                     <div className="col-span-12 flex justify-end">
                       <button
