@@ -543,7 +543,7 @@ export function TabelaProcessos({
               Esta ação não poderá ser desfeita.
             </DialogDescription>
           </DialogHeader>
-
+          
           <div className="flex justify-end gap-2">
             <Button
               type="button"

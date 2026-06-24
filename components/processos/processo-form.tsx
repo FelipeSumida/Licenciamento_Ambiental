@@ -271,32 +271,41 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
         <CardHeader>
           <CardTitle className="text-base">Identificação</CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Campo label="Nº do processo" required>
-            <Input
-              value={form.processo}
-              onChange={(e) => set("processo", e.target.value)}
-              placeholder="CETESB.000000/0000-00"
-            />
-          </Campo>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
+            <div className="lg:col-span-3">
+              <Campo label="N° do processo">
+                <Input
+                  value={form.processo}
+                  onChange={(e) => set("processo", e.target.value)}
+                  placeholder="CETESB-0000"
+                />
+              </Campo>
+            </div>
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <Campo label="Identificação do Empreendimento">
-              <Input
+            <div className="lg:col-span-4">
+              <Campo label="Identificação do Empreendimento">
+              <Textarea
                 value={form.identificacaoEmpreendimento ?? ""}
                 onChange={(e) => set("identificacaoEmpreendimento", e.target.value)}
                 placeholder="Digite a identificação do empreendimento"
+                className="min-h-24 resize-y"
               />
-            </Campo>
+              </Campo>
+            </div>
 
-            <Campo label="Caracterização do Empreendimento">
-              <Input
-                value={form.caracterizacaoEmpreendimento ?? ""}
-                onChange={(e) => set("caracterizacaoEmpreendimento", e.target.value)}
-                placeholder="Digite a caracterização do empreendimento"
-              />
-            </Campo>
+            <div className="lg:col-span-5">
+              <Campo label="Caracterização do Empreendimento">
+                <Textarea
+                  value={form.caracterizacaoEmpreendimento ?? ""}
+                  onChange={(e) => set("caracterizacaoEmpreendimento", e.target.value)}
+                  placeholder="Digite a caracterização do empreendimento"
+                  className="min-h-24 resize-y"
+                />
+              </Campo>
+            </div>
           </div>
+        
 
           <Campo label="Empreendimento">
             <Select
@@ -326,46 +335,65 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
                     className="grid grid-cols-12 gap-3 items-end"
                   >
                     <div className="col-span-12 space-y-3">
-                      <div className="col-span-12">
-                        <Label>Denominação</Label>
-                        <Input
-                          value={trecho.denominacao}
-                          onChange={(e) =>
-                            setTrecho(index, "denominacao", e.target.value)
-                          }
-                          placeholder="Ex.: RODOVIA RAPOSO TAVARES"
-                        />
-                      </div>
+                      <div className="rounded-lg border bg-muted/20 p-4">
+                        <div className="mb-4 flex items-center justify-between">
+                          <h3 className="font-medium">Rodovia</h3>
 
-                      <div className="col-span-8">
-                        <Label>Rodovia</Label>
-                        <Input
-                          value={trecho.rodovia}
-                          onChange={(e) =>
-                            setTrecho(index, "rodovia", e.target.value)
-                          }
-                          placeholder="Ex.: Estrada Municipal XYZ"
-                        />
-                      </div>
+                          <button
+                            type="button"
+                            className="rounded-md bg-red-500 px-3 py-2 text-xs text-white hover:bg-red-600"
+                            onClick={() =>
+                              set(
+                                "trechos",
+                                form.trechos.filter((_, i) => i !== index)
+                              )
+                            }
+                          >
+                            Apagar
+                          </button>
+                        </div>
 
-                      <div className="col-span-2">
-                        <Label>KM Inicial</Label>
-                        <Input
-                          value={trecho.kmInicial}
-                          onChange={(e) =>
-                            setTrecho(index, "kmInicial", e.target.value)
-                          }
-                        />
-                      </div>
+                        <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
+                          <div className="lg:col-span-3">
+                            <Campo label="Código">
+                              <Input
+                                value={trecho.rodovia}
+                                onChange={(e) => setTrecho(index, "rodovia", e.target.value)}
+                                placeholder="Ex: SLM-030"
+                              />
+                            </Campo>
+                          </div>
 
-                      <div className="col-span-2">
-                        <Label>KM Final</Label>
-                        <Input
-                          value={trecho.kmFinal}
-                          onChange={(e) =>
-                            setTrecho(index, "kmFinal", e.target.value)
-                          }
-                        />
+                          <div className="lg:col-span-5">
+                            <Campo label="Denominação">
+                              <Input
+                                value={trecho.denominacao}
+                                onChange={(e) => setTrecho(index, "denominacao", e.target.value)}
+                                placeholder="Nome da rodovia/trecho"
+                              />
+                            </Campo>
+                          </div>
+
+                          <div className="lg:col-span-2">
+                            <Campo label="KM Inicial">
+                              <Input
+                                value={trecho.kmInicial}
+                                onChange={(e) => setTrecho(index, "kmInicial", e.target.value)}
+                                placeholder="0"
+                              />
+                            </Campo>
+                          </div>
+
+                          <div className="lg:col-span-2">
+                            <Campo label="KM Final">
+                              <Input
+                                value={trecho.kmFinal}
+                                onChange={(e) => setTrecho(index, "kmFinal", e.target.value)}
+                                placeholder="0"
+                              />
+                            </Campo>
+                          </div>
+                        </div>
                       </div>
 
                       {trecho.fases.map((faseItem, faseIndex) => {
@@ -394,7 +422,13 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
                             </div>
 
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                              <Campo label="Fase atual">
+                              <Campo
+                                  label={
+                                    bloqueada
+                                      ? "Fase passada"
+                                      : "Fase atual"
+                                  }
+                                >
                                 <Select
                                   value={faseItem.fase}
                                   onValueChange={(value) =>
@@ -510,20 +544,20 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
                         )
                       })}
 
-                    <div className="col-span-12 flex justify-end">
-                      <button
-                        type="button"
-                        className="cursor-pointer rounded bg-red-500 px-3 py-2 text-white hover:bg-red-700"
-                        onClick={() =>
-                          set(
-                            "trechos",
-                            form.trechos.filter((_, i) => i !== index)
-                          )
-                        }
-                      >
-                        🗑
-                      </button>
-                    </div>
+                      <div className="col-span-12 flex justify-end">
+                        <button
+                          type="button"
+                          className="cursor-pointer rounded bg-red-500 px-3 py-2 text-white hover:bg-red-700"
+                          onClick={() =>
+                            set(
+                              "trechos",
+                              form.trechos.filter((_, i) => i !== index)
+                            )
+                          }
+                        >
+                          🗑
+                        </button>
+                      </div>
                   </div>
                 </div>
               ))}
@@ -555,6 +589,7 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
               placeholder="Nome do técnico"
             />
           </Campo>
+          
         </CardContent>
       </Card>
 

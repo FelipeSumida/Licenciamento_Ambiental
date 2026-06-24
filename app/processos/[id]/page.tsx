@@ -303,6 +303,7 @@ export default function DetalheProcessoPage({
                 )}
               </CardContent>
             </Card>
+
           </div>
         </>
       )}

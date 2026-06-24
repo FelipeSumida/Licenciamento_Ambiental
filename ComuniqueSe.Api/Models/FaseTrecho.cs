@@ -16,10 +16,9 @@ public class FaseTrecho
 
     public string NumeroFase { get; set; } = string.Empty;
 
-    public DateTime? DataEmissaoFase { get; set; }
-
-    public DateTime? DataValidadeFase { get; set; }
-
+    public string? DataEmissaoFase { get; set; }
+    public string? DataValidadeFase { get; set; }
+    
     public string? AnexoFase { get; set; }
 
     [JsonIgnore]
