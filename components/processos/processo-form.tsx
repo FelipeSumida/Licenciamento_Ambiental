@@ -4,6 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { Loader2, Save, Paperclip } from "lucide-react"
+import { Trash2 } from "lucide-react"
 import {
   Card,
   CardContent,
@@ -100,6 +101,11 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
   const editando = Boolean(processo)
   const [form, setForm] = useState<ProcessoInput>(estadoInicial(processo))
   const [salvando, setSalvando] = useState(false)
+  const [faseEditando, setFaseEditando] = useState<{
+    trecho: number
+    fase: number
+  } | null>(null)
+  const [fasePassadaAberta, setFasePassadaAberta] = useState(false)
 
   function set<K extends keyof ProcessoInput>(campo: K, valor: ProcessoInput[K]) {
     setForm((f) => ({ ...f, [campo]: valor }))
@@ -223,6 +229,21 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
     })
   }
 
+  function dataParaInput(valor?: string | null) {
+    if (!valor) return ""
+
+    if (valor.includes("T")) {
+      return valor.split("T")[0]
+    }
+
+    if (valor.includes("/")) {
+      const [dia, mes, ano] = valor.split("/")
+      return `${ano}-${mes}-${dia}`
+    }
+
+    return valor
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
 
@@ -338,19 +359,6 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
                       <div className="rounded-lg border bg-muted/20 p-4">
                         <div className="mb-4 flex items-center justify-between">
                           <h3 className="font-medium">Rodovia</h3>
-
-                          <button
-                            type="button"
-                            className="rounded-md bg-red-500 px-3 py-2 text-xs text-white hover:bg-red-600"
-                            onClick={() =>
-                              set(
-                                "trechos",
-                                form.trechos.filter((_, i) => i !== index)
-                              )
-                            }
-                          >
-                            Apagar
-                          </button>
                         </div>
 
                         <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
@@ -399,7 +407,19 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
                       {trecho.fases.map((faseItem, faseIndex) => {
                         const bloqueada =
                           faseItem.statusFase === "Emitido" &&
-                          faseIndex < trecho.fases.length - 1
+                          faseIndex < trecho.fases.length - 1 &&
+                          !(
+                            faseEditando?.trecho === index &&
+                            faseEditando?.fase === faseIndex
+                          )
+
+                        async function salvarAlteracoesFase() {
+                          await handleSubmit({
+                            preventDefault: () => {},
+                          } as React.FormEvent)
+
+                          setFaseEditando(null)
+                        }
 
                         return (
                           <div
@@ -409,7 +429,7 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
                             }`}
                           >
 
-                            <div className="flex items-center gap-2">
+                            <div className="flex justify-end gap-2 mb-2">
                               {trecho.fases.length > 1 && (
                                 <button
                                   type="button"
@@ -419,6 +439,32 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
                                   Apagar
                                 </button>
                               )}
+
+                              {faseItem.statusFase === "Emitido" && (
+                                <button
+                                  type="button"
+                                  className="cursor-pointer rounded-md bg-blue-600 px-3 py-1 text-xs text-white hover:bg-blue-800"
+                                  onClick={() =>
+                                    setFaseEditando({
+                                      trecho: index,
+                                      fase: faseIndex,
+                                    })
+                                  }
+                                >
+                                  Editar
+                                </button>
+                              )}
+
+                              {faseEditando?.trecho === index &&
+                                faseEditando?.fase === faseIndex && (
+                                  <button
+                                    type="button"
+                                    className="cursor-pointer rounded-md bg-green-600 px-3 py-1 text-xs text-white hover:bg-green-700"
+                                    onClick={salvarAlteracoesFase}
+                                  >
+                                    Salvar alterações
+                                  </button>
+                                )}
                             </div>
 
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -485,7 +531,7 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
                                 <Campo label="Data de emissão">
                                   <Input
                                     type="date"
-                                    value={faseItem.dataEmissaoFase ?? ""}
+                                    value={dataParaInput(faseItem.dataEmissaoFase)}
                                     onChange={(e) =>
                                       atualizarFaseTrecho(index, faseIndex, "dataEmissaoFase", e.target.value || null)
                                     }
@@ -496,7 +542,7 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
                                 <Campo label="Data de validade">
                                   <Input
                                     type="date"
-                                    value={faseItem.dataValidadeFase ?? ""}
+                                    value={dataParaInput(faseItem.dataValidadeFase)}
                                     onChange={(e) =>
                                       atualizarFaseTrecho(index, faseIndex, "dataValidadeFase", e.target.value || null)
                                     }
@@ -504,7 +550,7 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
                                   />
                                 </Campo>
 
-                                <Campo label="Anexo PDF">
+                                <Campo label="Anexo PDF (Licença)">
                                   <label className="flex h-10 cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed bg-background px-4 text-sm text-muted-foreground hover:bg-muted">
                                     <Paperclip className="size-4" />
                                     {faseItem.anexoFase ? faseItem.anexoFase : "Selecionar PDF"}
@@ -531,7 +577,7 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
                                   faseIndex === trecho.fases.length - 1 && (
                                   <button
                                     type="button"
-                                    className="mt-4 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
+                                    className="cursor-pointer mt-4 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-800"
                                     onClick={() => finalizarFaseTrecho(index, faseIndex)}
                                   >
                                     Finalizar fase
@@ -543,34 +589,35 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
                           </div>
                         )
                       })}
-
-                      <div className="col-span-12 flex justify-end">
-                        <button
-                          type="button"
-                          className="cursor-pointer rounded bg-red-500 px-3 py-2 text-white hover:bg-red-700"
-                          onClick={() =>
-                            set(
-                              "trechos",
-                              form.trechos.filter((_, i) => i !== index)
-                            )
-                          }
-                        >
-                          🗑
-                        </button>
-                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
 
-                <button
-                  type="button"
-                  className="cursor-pointer rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700"
-                  onClick={() =>
-                    set("trechos", [...form.trechos, novoTrecho()])
-                  }
-                >
-                  + Adicionar Trecho
-                </button>
+                <div className="mt-4 flex items-center gap-3">
+                  <button
+                    type="button"
+                    className="cursor-pointer rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700"
+                    onClick={() =>
+                      set("trechos", [...form.trechos, novoTrecho()])
+                    }
+                  >
+                    + Adicionar Trecho
+                  </button>
+
+                  
+                  <button
+                    type="button"
+                    className="cursor-pointer rounded-md bg-red-500 px-4 py-3 text-xs text-white hover:bg-red-700"
+                    onClick={() =>
+                      set(
+                        "trechos",
+                        form.trechos.filter((_, i) => i !== form.trechos.length - 1)
+                      )
+                    }
+                  >
+                    Apagar
+                  </button>
+                </div>
               </div>
             </Campo>
           </div>

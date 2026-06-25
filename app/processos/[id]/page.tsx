@@ -135,9 +135,59 @@ export default function DetalheProcessoPage({
               <CardContent className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
                 <Info label="Empreendimento" valor={processo.empreendimento} />
 
-                <Info label="Identificação do Empreendimento" valor={processo.identificacaoEmpreendimento || "-"} />
+                <div>
+                  <p className="text-xs font-medium uppercase text-muted-foreground">
+                    Identificação do Empreendimento
+                  </p>
 
-                <Info label="Caracterização do Empreendimento" valor={processo.caracterizacaoEmpreendimento || "-"} />
+                  <textarea
+                    readOnly
+                    value={processo.identificacaoEmpreendimento ?? ""}
+                    className="
+                      mt-1
+                      w-full
+                      min-h-[90px]
+                      max-h-[220px]
+                      resize-y
+                      overflow-y-auto
+                      overflow-x-hidden
+                      rounded-md
+                      border
+                      bg-muted/30
+                      p-3
+                      text-sm
+                      whitespace-pre-wrap
+                      break-words
+                    "
+                  />
+                </div>
+
+                <div>
+                  <p className="text-xs font-medium uppercase text-muted-foreground">
+                    Caracterização do Empreendimento
+                  </p>
+
+                  <textarea
+                    readOnly
+                    value={processo.caracterizacaoEmpreendimento ?? ""}
+                    className="
+                      mt-1
+                      w-full
+                      min-h-[90px]
+                      max-h-[220px]
+                      resize-y
+                      overflow-y-auto
+                      overflow-x-hidden
+                      rounded-md
+                      border
+                      bg-muted/30
+                      p-3
+                      text-sm
+                      whitespace-pre-wrap
+                      break-words
+                    "
+                  />
+                </div>
 
                 <Info
                   label="Trecho"
@@ -174,10 +224,34 @@ export default function DetalheProcessoPage({
                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                           <Info label="Fase" valor={fase.fase || "-"} />
                           <Info label="Situação da fase" valor={fase.statusFase || "-"} />
-                          <Info label="N°" valor={fase.numeroFase || "-"} />
-                          <Info label="Data de emissão" valor={formatarData(fase.dataEmissaoFase)} />
-                          <Info label="Data de validade" valor={formatarData(fase.dataValidadeFase)} />
-                          <Info label="Anexo PDF" valor={fase.anexoFase || "-"} />
+
+                          {fase.statusFase === "Emitido" && (
+                            <>
+                              <Info label="N°" valor={fase.numeroFase || "-"} />
+                              <Info label="Data de emissão" valor={formatarData(fase.dataEmissaoFase)} />
+                              <Info label="Data de validade" valor={formatarData(fase.dataValidadeFase)} />
+
+                              <div>
+                                <p className="text-xs font-medium uppercase text-muted-foreground">
+                                  Anexo PDF (Licença)
+                                </p>
+                              
+                                {fase.anexoFase ? (
+                                  <a
+                                    href={`http://localhost:5161/api/processos/${processo.id}/fases/${fase.id}/anexo`}
+                                    download
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-sm text-green-700 underline hover:text-green-800"
+                                  >
+                                    {fase.anexoFase}
+                                  </a>
+                                ) : (
+                                  <p>-</p>
+                                )}
+                              </div>
+                            </>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -299,6 +373,37 @@ export default function DetalheProcessoPage({
                 ) : (
                   <p className="text-sm text-muted-foreground">
                     Sem pendências registradas.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle className="text-base">Histórico de alterações</CardTitle>
+              </CardHeader>
+
+              <CardContent>
+                {processo.historicosAlteracoes?.length ? (
+                  <div className="space-y-3">
+                    {processo.historicosAlteracoes.map((historico) => (
+                      <div
+                        key={historico.id}
+                        className="rounded-md border bg-muted/40 p-4"
+                      >
+                        <p className="text-sm font-medium">
+                          {new Date(historico.dataHora).toLocaleString("pt-BR")}
+                        </p>
+
+                        <p className="mt-1 text-sm">
+                          {historico.descricao}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    Nenhuma alteração registrada.
                   </p>
                 )}
               </CardContent>

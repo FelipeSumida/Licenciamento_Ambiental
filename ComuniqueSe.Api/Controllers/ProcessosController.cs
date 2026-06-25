@@ -37,6 +37,7 @@ public class ProcessosController : ControllerBase
                 .ThenInclude(t => t.Fases)
             .Include(p => p.Pendencias)
                 .ThenInclude(p => p.Historicos)
+            .Include(p => p.HistoricosAlteracoes)
             .FirstOrDefaultAsync(p => p.Id == id);
 
         if (processo == null)
@@ -97,6 +98,23 @@ public class ProcessosController : ControllerBase
         if (processoExistente == null)
             return NotFound();
 
+        var alteracoes = new List<string>();
+
+        if (processoExistente.NumeroProcesso != processo.NumeroProcesso)
+            alteracoes.Add($"Nº do processo alterado de '{processoExistente.NumeroProcesso}' para '{processo.NumeroProcesso}'");
+
+        if (processoExistente.Interessado != processo.Interessado)
+            alteracoes.Add($"Interessado alterado de '{processoExistente.Interessado}' para '{processo.Interessado}'");
+
+        if (processoExistente.TecnicoResponsavel != processo.TecnicoResponsavel)
+            alteracoes.Add($"Técnico responsável alterado de '{processoExistente.TecnicoResponsavel}' para '{processo.TecnicoResponsavel}'");
+
+        if (processoExistente.IdentificacaoEmpreendimento != processo.IdentificacaoEmpreendimento)
+            alteracoes.Add("Identificação do empreendimento alterada");
+
+        if (processoExistente.CaracterizacaoEmpreendimento != processo.CaracterizacaoEmpreendimento)
+            alteracoes.Add("Caracterização do empreendimento alterada");
+
         processoExistente.NumeroProcesso = processo.NumeroProcesso;
         processoExistente.Empreendimento = processo.Empreendimento;
         processoExistente.Interessado = processo.Interessado;
@@ -143,6 +161,16 @@ public class ProcessosController : ControllerBase
         }).ToList();
 
         processoExistente.Pendencias = processo.Pendencias;
+
+        if (alteracoes.Any())
+        {
+            _context.HistoricosAlteracoes.Add(new HistoricoAlteracao
+            {
+                ProcessoId = processoExistente.Id,
+                DataHora = DateTime.Now,
+                Descricao = string.Join("\n", alteracoes)
+            });
+        }
 
         await _context.SaveChangesAsync();
 

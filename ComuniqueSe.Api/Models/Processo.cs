@@ -32,6 +32,7 @@ public class Processo
     public byte[]? AnexoFaseArquivo { get; set; }
     public string IdentificacaoEmpreendimento { get; set; } = string.Empty;
     public string CaracterizacaoEmpreendimento { get; set; } = string.Empty;
+    public List<HistoricoAlteracao> HistoricosAlteracoes { get; set; } = new();
 }
 
 public class Trecho

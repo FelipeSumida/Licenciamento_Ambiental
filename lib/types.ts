@@ -39,6 +39,7 @@ export type Trecho = {
 }
 
 export type FaseTrecho = {
+  id?: number
   fase: string
   statusFase: string
   numeroFase: string
@@ -88,7 +89,13 @@ export interface Processo {
   anexoFase: string | null
   identificacaoEmpreendimento: string
   caracterizacaoEmpreendimento: string
-}
+  historicosAlteracoes?: {
+    id: number
+    processoId: number
+    dataHora: string
+    descricao: string
+  }[]
+  }
 
 export type ProcessoInput = Omit<Processo, "id">
 

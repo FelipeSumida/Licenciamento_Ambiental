@@ -15,4 +15,5 @@ public class AppDbContext : DbContext
     public DbSet<Pendencia> Pendencias => Set<Pendencia>();
     public DbSet<Historico> Historicos => Set<Historico>();
     public DbSet<FaseTrecho> FasesTrecho => Set<FaseTrecho>();
+    public DbSet<HistoricoAlteracao> HistoricosAlteracoes => Set<HistoricoAlteracao>();
 }
