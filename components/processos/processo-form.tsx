@@ -106,6 +106,7 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
     fase: number
   } | null>(null)
   const [fasePassadaAberta, setFasePassadaAberta] = useState(false)
+  const hoje = new Date().toISOString().split("T")[0]
 
   function set<K extends keyof ProcessoInput>(campo: K, valor: ProcessoInput[K]) {
     setForm((f) => ({ ...f, [campo]: valor }))
@@ -532,6 +533,7 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
                                   <Input
                                     type="date"
                                     value={dataParaInput(faseItem.dataEmissaoFase)}
+                                    max={hoje}
                                     onChange={(e) =>
                                       atualizarFaseTrecho(index, faseIndex, "dataEmissaoFase", e.target.value || null)
                                     }
@@ -887,6 +889,7 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
                       <Input
                         type="date"
                         value={paraInputDate(pendencia.dataEntrada)}
+                        max={hoje}
                         onChange={(e) =>
                           setPendencia(index, "dataEntrada", e.target.value || null)
                         }
