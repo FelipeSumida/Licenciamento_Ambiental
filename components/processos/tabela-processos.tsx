@@ -191,6 +191,7 @@ export function TabelaProcessos({
         classificacao === TODOS ||
         pendencias.some((pendencia) => pendencia.classificacao === classificacao)
 
+
       return (
         casaBusca &&
         casaSituacao &&
@@ -212,6 +213,14 @@ export function TabelaProcessos({
     divisoesCapSelecionadas,
   ])
 
+  function faseAtual(p: Processo) {
+        const fases = p.trechos?.flatMap((t) => t.fases ?? []) ?? []
+
+        const faseAberta = fases.find((f) => f.statusFase !== "Emitido")
+
+        return faseAberta?.fase || fases.at(-1)?.fase || "—"
+      }
+
   return (
     <div className="space-y-4">
       <div className="mb-5 rounded-xl border bg-white/70 p-4 shadow-sm">
@@ -227,12 +236,18 @@ export function TabelaProcessos({
           </div>
 
           <div className="min-w-0">
+            <label className="mb-1 block text-sm font-medium">
+              Situação
+            </label>
+            
             <Select
               value={situacao}
               onValueChange={(v) => setSituacao(v as typeof TODOS | "Aberta" | "Atendida")}
             >
               <SelectTrigger className="h-11 w-full">
-                <SelectValue placeholder="Situação" />
+                <span>
+                  {situacao === TODOS ? "Todas as situações" : situacao}
+                </span>
               </SelectTrigger>
 
               <SelectContent>
@@ -244,12 +259,18 @@ export function TabelaProcessos({
           </div>
 
           <div className="min-w-0">
+            <label className="mb-1 block text-sm font-medium">
+              Classificação
+            </label>
+
             <Select
               value={classificacao}
               onValueChange={(v: any) => setClassificacao(v)}
             >
               <SelectTrigger className="h-11 w-full">
-                <SelectValue placeholder="Classificação" />
+                <span>
+                  {classificacao === TODOS ? "Todas as classificações" : classificacao}
+                </span>
               </SelectTrigger>
 
               <SelectContent>
@@ -265,12 +286,19 @@ export function TabelaProcessos({
           </div>
 
           <div className="min-w-0">
+
+            <label className="mb-1 block text-sm font-medium">
+              Técnico Responsável
+            </label>
+
             <Select
               value={tecnicoResponsavel}
               onValueChange={(v: any) => setTecnicoResponsavel(v)}
             >
               <SelectTrigger className="h-11 w-full">
-                <SelectValue placeholder="Técnico" />
+                <span>
+                  {tecnicoResponsavel === TODOS ? "Todos os técnicos" : tecnicoResponsavel}
+                </span>
               </SelectTrigger>
 
               <SelectContent>
@@ -286,12 +314,18 @@ export function TabelaProcessos({
           </div>
 
           <div className="min-w-0">
+            <label className="mb-1 block text-sm font-medium">
+              Atribuído a
+            </label>
+
             <Select
               value={atribuidoFiltro}
               onValueChange={(v: any) => setAtribuidoFiltro(v)}
             >
               <SelectTrigger className="h-11 w-full">
-                <SelectValue placeholder="Atribuído a" />
+                <span>
+                  {atribuidoFiltro === TODOS ? "Todos os atribuídos" : atribuidoFiltro}
+                </span>
               </SelectTrigger>
 
               <SelectContent>
@@ -403,21 +437,15 @@ export function TabelaProcessos({
           <Table>
             <TableHeader>
               <TableRow className="bg-muted/50">
-                <TableHead className="whitespace-nowrap">Processo</TableHead>
-                <TableHead className="whitespace-nowrap">
-                  Empreendimento
-                </TableHead>
-                <TableHead className="min-w-48">Denominação</TableHead>
-                <TableHead className="whitespace-nowrap">Interessado</TableHead>
-                <TableHead className="whitespace-nowrap">
-                  Classificação
-                </TableHead>
-                <TableHead className="whitespace-nowrap">Divisão CAP</TableHead>
-                <TableHead className="whitespace-nowrap">Entrada</TableHead>
-                <TableHead className="whitespace-nowrap">Situação</TableHead>
-                <TableHead className="whitespace-nowrap text-right">
-                  Ações
-                </TableHead>
+                <TableHead>Processo</TableHead>
+                <TableHead>Código</TableHead>
+                <TableHead>Identificação do Empreendimento</TableHead>
+                <TableHead>Fase Atual</TableHead>
+                <TableHead>Divisão CAP</TableHead>
+                <TableHead>Técnico Responsável</TableHead>
+                <TableHead>Prazo</TableHead>
+                <TableHead>Situação</TableHead>
+                <TableHead className="text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
 
@@ -427,93 +455,80 @@ export function TabelaProcessos({
               ) : filtrados.length === 0 ? (
                 <EstadoVazio temProcessos={processos.length > 0} />
               ) : (
-                filtrados.map((p) => (
-                  <TableRow key={p.id} className="group">
-                    <TableCell className="whitespace-nowrap font-medium">
-                      <Link
-                        href={`/processos/${p.id}`}
-                        className="text-primary hover:underline"
-                      >
-                        {p.processo || "Sem número"}
-                      </Link>
-                    </TableCell>
+                filtrados.map((p) => {
+                  const pendenciaAberta =
+                    p.pendencias?.find(x => x.situacao === "Aberta") ?? p.pendencias?.[0]
 
-                    <TableCell className="whitespace-nowrap text-muted-foreground">
-                      {p.empreendimento || "—"}
-                    </TableCell>
-
-                    <TableCell className="max-w-64 truncate">
-                      {p.trechos?.length
-                        ? p.trechos.map((t) => t.denominacao).join(", ")
-                        : "—"}
-                    </TableCell>
-
-                    <TableCell className="whitespace-nowrap text-muted-foreground">
-                      {p.interessado || "—"}
-                    </TableCell>
-
-                    <TableCell className="whitespace-nowrap">
-                      <div className="flex flex-wrap gap-1">
-                        {p.pendencias?.length ? (
-                          [...new Set(p.pendencias.map((pendencia) => pendencia.classificacao))]
-                            .filter(Boolean)
-                            .map((classificacao) => (
-                              <span
-                                key={classificacao}
-                                className="rounded bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground"
-                              >
-                                {classificacao}
-                              </span>
-                            ))
-                        ) : (
-                          <span>—</span>
-                        )}
-                      </div>
-                    </TableCell>
-
-                    <TableCell className="whitespace-nowrap text-muted-foreground">
-                      {p.pendencias?.[0]?.divisaoCap || "—"}
-                    </TableCell>
-
-                    <TableCell className="whitespace-nowrap text-muted-foreground">
-                      {formatarData(p.pendencias?.[0]?.dataEntrada)}
-                    </TableCell>
-
-                    <TableCell>
-                      <SituacaoBadge
-                        situacao={
-                          p.pendencias?.some((pendencia) => pendencia.situacao === "Aberta")
-                            ? "Aberta"
-                            : "Atendida"
-                        }
-                      />
-                    </TableCell>
-
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Link
-                          href={`/processos/${p.id}/editar`}
-                          className="inline-flex h-10 items-center justify-center gap-1 rounded-md border px-3 text-sm hover:bg-muted"
-                        >
-                          <Pencil className="size-4" />
-                          Editar
+                  return (
+                    <TableRow key={p.id} className="group">
+                      <TableCell className="whitespace-nowrap font-medium">
+                        <Link href={`/processos/${p.id}`} className="text-primary hover:underline">
+                          {p.processo || "Sem número"}
                         </Link>
+                      </TableCell>
 
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className="h-10 px-3 cursor-pointer text-red-600 hover:text-red-700"
-                          disabled={excluindoId === p.id}
-                          onClick={() => setProcessoParaExcluir(p)}
-                        >
-                          <Trash2 className="size-4" />
-                          Excluir
-                        </Button> 
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
+                      <TableCell>
+                        {p.trechos?.[0]?.rodovia || "—"}
+                      </TableCell>
+
+                      <TableCell className="max-w-72 truncate">
+                        {p.identificacaoEmpreendimento || "—"}
+                      </TableCell>
+
+                      <TableCell>
+                        {faseAtual(p)}
+                      </TableCell>
+
+                      <TableCell>
+                        {p.pendencias?.[0]?.divisaoCap || "—"}
+                      </TableCell>
+
+                      <TableCell>
+                        {p.tecnicoResponsavel || "—"}
+                      </TableCell>
+
+                      <TableCell>
+                        {pendenciaAberta?.situacao === "Atendida"
+                          ? "—"
+                          : formatarData(pendenciaAberta?.prazo)}
+                      </TableCell>
+
+                      <TableCell>
+                        <SituacaoBadge
+                          situacao={
+                            p.pendencias?.some((pendencia) => pendencia.situacao === "Aberta")
+                              ? "Aberta"
+                              : "Atendida"
+                          }
+                        />
+                      </TableCell>
+
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Link
+                            href={`/processos/${p.id}/editar`}
+                            className="inline-flex h-10 items-center justify-center gap-1 rounded-md border px-3 text-sm hover:bg-muted"
+                          >
+                            <Pencil className="size-4" />
+                            Editar
+                          </Link>
+
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="h-10 px-3 cursor-pointer text-red-600 hover:text-red-700"
+                            disabled={excluindoId === p.id}
+                            onClick={() => setProcessoParaExcluir(p)}
+                          >
+                            <Trash2 className="size-4" />
+                            Excluir
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                )
+              })
+            )}
             </TableBody>
           </Table>
         </div>
