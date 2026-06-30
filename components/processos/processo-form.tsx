@@ -510,7 +510,10 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
                                   <SelectContent>
                                     <SelectItem value="Em andamento">Em andamento</SelectItem>
                                     <SelectItem value="Emitido">Emitido</SelectItem>
-                                    <SelectItem value="Dispensado">Dispensado</SelectItem>
+
+                                    {faseItem.fase !== "CP" && (
+                                      <SelectItem value="Dispensado">Dispensado de licenciamento ambiental</SelectItem>
+                                    )}
                                   </SelectContent>
                                 </Select>
                               </Campo>
