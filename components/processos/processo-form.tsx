@@ -503,8 +503,12 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
                                     atualizarFaseTrecho(index, faseIndex, "statusFase", value)
                                   }
                                 >
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Selecione a situação" />
+                                  <SelectTrigger className="w-[320px]">
+                                    <span>
+                                      {faseItem.statusFase === "Dispensado"
+                                        ? "Dispensado de licenciamento ambiental"
+                                        : faseItem.statusFase || "Selecione a situação"}
+                                    </span>
                                   </SelectTrigger>
 
                                   <SelectContent>
@@ -634,12 +638,50 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
               placeholder="DER / Concessionária"
             />
           </Campo>
-          <Campo label="Técnico responsável">
-            <Input
-              value={form.tecnicoResponsavel}
-              onChange={(e) => set("tecnicoResponsavel", e.target.value)}
-              placeholder="Nome do técnico"
-            />
+          <Campo label="Adicionar Técnico Responsável">
+            {(form.tecnicoResponsavel
+              ? form.tecnicoResponsavel.split("; ")
+              : [""]
+            ).map((tecnico, index, lista) => (
+              <div key={index} className="mb-2 flex gap-2">
+                <Input
+                  value={tecnico}
+                  onChange={(e) => {
+                    const novos = [...lista]
+                    novos[index] = e.target.value
+                    set("tecnicoResponsavel", novos.filter(Boolean).join("; "))
+                  }}
+                  placeholder="Nome do técnico"
+                />
+
+                {lista.length > 1 && (
+                  <button
+                    type="button"
+                    className="cursor-pointer rounded-md bg-red-500 px-3 py-2 text-white hover:bg-red-700"
+                    onClick={() => {
+                      const novos = lista.filter((_, i) => i !== index)
+                      set("tecnicoResponsavel", novos.join("; "))
+                    }}
+                  >
+                    Apagar
+                  </button>
+                )}
+              </div>
+            ))}
+
+            <button
+              type="button"
+              className="cursor-pointer mt-2 rounded-md bg-green-600 px-3 py-2 text-white hover:bg-green-800"
+              onClick={() => {
+                const lista = form.tecnicoResponsavel
+                  ? form.tecnicoResponsavel.split("; ")
+                  : []
+
+                set("tecnicoResponsavel", [...lista, ""].join("; "))
+              }}
+            >
+              + Adicionar Técnico
+            </button>
           </Campo>
           
         </CardContent>
