@@ -16,8 +16,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-screen flex-col bg-background lg:flex-row">
-      {/* Sidebar */}
-      <aside className="flex shrink-0 flex-col border-b border-sidebar-border bg-sidebar text-sidebar-foreground lg:h-screen lg:w-64 lg:border-b-0 lg:border-r">
+      <aside className="flex shrink-0 flex-col border-b border-sidebar-border bg-sidebar text-sidebar-foreground lg:min-h-screen lg:w-64 lg:border-b-0 lg:border-r">
         <div className="flex items-center gap-3 px-5 py-5">
           <div className="flex size-9 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground">
             <Leaf className="size-5" />
@@ -53,18 +52,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             )
           })}
         </nav>
-
-        <div className="mt-auto hidden p-3 lg:block">
-          <Link
-            href="/processos"
-            className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium cursor-pointer transition-colors hover:bg-green-200 hover:text-green-900"
-          >
-            Processos
-          </Link>
-        </div>
       </aside>
-
-      {/* Conteúdo */}
       <main className="flex-1 overflow-x-hidden">
         <div className="mx-auto max-w-[1700px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
           {children}
