@@ -37,7 +37,7 @@ public class ProcessosController : ControllerBase
                 .ThenInclude(t => t.Fases)
             .Include(p => p.Pendencias)
                 .ThenInclude(p => p.Historicos)
-            .Include(p => p.HistoricosAlteracoes)
+            .Include(p => p.HistoricosAlteracoes.OrderByDescending(h => h.DataHora))
             .FirstOrDefaultAsync(p => p.Id == id);
 
         if (processo == null)
@@ -119,6 +119,33 @@ public class ProcessosController : ControllerBase
 
         if (processoExistente.CaracterizacaoEmpreendimento != processo.CaracterizacaoEmpreendimento)
             alteracoes.Add("Caracterização do empreendimento alterada");
+
+        if (processoExistente.Empreendimento != processo.Empreendimento)
+            alteracoes.Add($"Empreendimento alterado de '{processoExistente.Empreendimento}' para '{processo.Empreendimento}'");
+
+        if (processoExistente.Classificacao != processo.Classificacao)
+            alteracoes.Add($"Classificação alterada de '{processoExistente.Classificacao}' para '{processo.Classificacao}'");
+
+        if (processoExistente.DivisaoCap != processo.DivisaoCap)
+            alteracoes.Add($"Divisão CAP alterada de '{processoExistente.DivisaoCap}' para '{processo.DivisaoCap}'");
+
+        if (processoExistente.Situacao != processo.Situacao)
+            alteracoes.Add($"Situação alterada de '{processoExistente.Situacao}' para '{processo.Situacao}'");
+
+        if (processoExistente.Fase != processo.Fase)
+            alteracoes.Add($"Fase alterada de '{processoExistente.Fase}' para '{processo.Fase}'");
+
+        if (processoExistente.StatusFase != processo.StatusFase)
+            alteracoes.Add($"Status da fase alterado de '{processoExistente.StatusFase}' para '{processo.StatusFase}'");
+
+        if (processoExistente.DataEntrada != processo.DataEntrada)
+            alteracoes.Add($"Data de entrada alterada de '{processoExistente.DataEntrada}' para '{processo.DataEntrada}'");
+
+        if (processoExistente.Prazo != processo.Prazo)
+            alteracoes.Add($"Prazo alterado de '{processoExistente.Prazo}' para '{processo.Prazo}'");
+
+        if (processoExistente.DataSaida != processo.DataSaida)
+            alteracoes.Add($"Data de saída alterada de '{processoExistente.DataSaida}' para '{processo.DataSaida}'");
 
         processoExistente.NumeroProcesso = processo.NumeroProcesso;
         processoExistente.Empreendimento = processo.Empreendimento;

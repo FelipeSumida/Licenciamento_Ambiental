@@ -378,12 +378,12 @@ export default function DetalheProcessoPage({
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="self-start">
               <CardHeader>
                 <CardTitle>Histórico do Processo</CardTitle>
               </CardHeader>
 
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-3">
                 {processo.historicoProcessoTexto ? (
                   <>
                     <div>
@@ -416,7 +416,7 @@ export default function DetalheProcessoPage({
                 <CardTitle className="text-base">Histórico de alterações</CardTitle>
               </CardHeader>
 
-              <CardContent>
+              <CardContent className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
                 {processo.historicosAlteracoes?.length ? (
                   <div className="space-y-3">
                     {processo.historicosAlteracoes.map((historico) => (
