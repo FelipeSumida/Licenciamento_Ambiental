@@ -99,6 +99,11 @@ public class ProcessosController : ControllerBase
             return NotFound();
 
         var alteracoes = new List<string>();
+        if (processoExistente.HistoricoProcessoData != processo.HistoricoProcessoData)
+            alteracoes.Add($"Data do histórico do processo alterada de '{processoExistente.HistoricoProcessoData}' para '{processo.HistoricoProcessoData}'");
+
+        if (processoExistente.HistoricoProcessoTexto != processo.HistoricoProcessoTexto)
+            alteracoes.Add("Histórico do processo alterado");
 
         if (processoExistente.NumeroProcesso != processo.NumeroProcesso)
             alteracoes.Add($"Nº do processo alterado de '{processoExistente.NumeroProcesso}' para '{processo.NumeroProcesso}'");
@@ -133,6 +138,8 @@ public class ProcessosController : ControllerBase
         processoExistente.AnexoFase = processo.AnexoFase;
         processoExistente.IdentificacaoEmpreendimento = processo.IdentificacaoEmpreendimento;
         processoExistente.CaracterizacaoEmpreendimento = processo.CaracterizacaoEmpreendimento;
+        processoExistente.HistoricoProcessoData = processo.HistoricoProcessoData;
+        processoExistente.HistoricoProcessoTexto = processo.HistoricoProcessoTexto;
 
         foreach (var pendencia in processoExistente.Pendencias)
         {

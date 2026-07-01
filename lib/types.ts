@@ -95,6 +95,8 @@ export interface Processo {
     dataHora: string
     descricao: string
   }[]
+  historicoProcessoData: string | null
+  historicoProcessoTexto: string
   }
 
 export type ProcessoInput = Omit<Processo, "id">

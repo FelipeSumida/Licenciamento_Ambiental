@@ -44,7 +44,7 @@ namespace ComuniqueSe.Api.Migrations
 
                     b.HasIndex("PendenciaId");
 
-                    b.ToTable("Historicos");
+                    b.ToTable("Historicos", (string)null);
                 });
 
             modelBuilder.Entity("ComuniqueSe.Api.Models.Pendencia", b =>
@@ -95,7 +95,7 @@ namespace ComuniqueSe.Api.Migrations
 
                     b.HasIndex("ProcessoId");
 
-                    b.ToTable("Pendencias");
+                    b.ToTable("Pendencias", (string)null);
                 });
 
             modelBuilder.Entity("ComuniqueSe.Api.Models.Processo", b =>
@@ -176,7 +176,7 @@ namespace ComuniqueSe.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Processos");
+                    b.ToTable("Processos", (string)null);
                 });
 
             modelBuilder.Entity("ComuniqueSe.Api.Models.Trecho", b =>
@@ -231,7 +231,7 @@ namespace ComuniqueSe.Api.Migrations
 
                     b.HasIndex("ProcessoId");
 
-                    b.ToTable("Trechos");
+                    b.ToTable("Trechos", (string)null);
                 });
 
             modelBuilder.Entity("ComuniqueSe.Api.Models.Historico", b =>

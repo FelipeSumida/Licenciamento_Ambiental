@@ -378,6 +378,39 @@ export default function DetalheProcessoPage({
               </CardContent>
             </Card>
 
+            <Card>
+              <CardHeader>
+                <CardTitle>Histórico do Processo</CardTitle>
+              </CardHeader>
+
+              <CardContent className="space-y-4">
+                {processo.historicoProcessoTexto ? (
+                  <>
+                    <div>
+                      <label>Data</label>
+                      <p className="text-sm text-muted-foreground">
+                        {processo.historicoProcessoData
+                          ?.split("-")
+                          .reverse()
+                          .join("/")}
+                      </p>
+                    </div>
+
+                    <div>
+                      <label>Descrição</label>
+                      <p className="whitespace-pre-wrap rounded-md border p-3">
+                        {processo.historicoProcessoTexto}
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-muted-foreground">
+                    Nenhum histórico cadastrado.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+
             <Card className="mt-6">
               <CardHeader>
                 <CardTitle className="text-base">Histórico de alterações</CardTitle>

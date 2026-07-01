@@ -33,6 +33,8 @@ public class Processo
     public string IdentificacaoEmpreendimento { get; set; } = string.Empty;
     public string CaracterizacaoEmpreendimento { get; set; } = string.Empty;
     public List<HistoricoAlteracao> HistoricosAlteracoes { get; set; } = new();
+    public string? HistoricoProcessoData { get; set; }
+    public string? HistoricoProcessoTexto { get; set; }
 }
 
 public class Trecho

@@ -93,6 +93,8 @@ function estadoInicial(p?: Processo | null): ProcessoInput {
     anexoFase: p?.anexoFase ?? null,
     identificacaoEmpreendimento: p?.identificacaoEmpreendimento ?? "",
     caracterizacaoEmpreendimento: p?.caracterizacaoEmpreendimento ?? "",
+    historicoProcessoData: p?.historicoProcessoData ?? "",
+    historicoProcessoTexto: p?.historicoProcessoTexto ?? "",
   }
 }
 
@@ -107,6 +109,7 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
   } | null>(null)
   const [fasePassadaAberta, setFasePassadaAberta] = useState(false)
   const hoje = new Date().toISOString().split("T")[0]
+  const [pendenciasAbertas, setPendenciasAbertas] = useState<number[]>([])
 
   function set<K extends keyof ProcessoInput>(campo: K, valor: ProcessoInput[K]) {
     setForm((f) => ({ ...f, [campo]: valor }))
@@ -548,16 +551,23 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
                                   />
                                 </Campo>
 
-                                <Campo label="Data de validade">
-                                  <Input
-                                    type="date"
-                                    value={dataParaInput(faseItem.dataValidadeFase)}
-                                    onChange={(e) =>
-                                      atualizarFaseTrecho(index, faseIndex, "dataValidadeFase", e.target.value || null)
-                                    }
-                                    disabled={bloqueada}
-                                  />
-                                </Campo>
+                                {faseItem.fase !== "CP" && (
+                                  <Campo label="Data de validade">
+                                    <Input
+                                      value={faseItem.dataValidadeFase ?? ""}
+                                      onChange={(e) =>
+                                        atualizarFaseTrecho(
+                                          index,
+                                          faseIndex,
+                                          "dataValidadeFase",
+                                          e.target.value
+                                        )
+                                      }
+                                      type="date"
+                                      max="9999-12-31"
+                                    />
+                                  </Campo>
+                                )}
 
                                 <Campo label="Anexo PDF (Licença)">
                                   <label className="flex h-10 cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed bg-background px-4 text-sm text-muted-foreground hover:bg-muted">
@@ -695,274 +705,299 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
         <CardContent className="space-y-4">
           <Campo label="Pendências">
             <div className="space-y-4">
-              {form.pendencias.map((pendencia, index) => (
-                <div
-                  key={index}
-                  className="space-y-4 rounded-lg border p-4"
-                >
-                  <div className="flex justify-between gap-3">
-                    <h3 className="font-medium">Pendência {index + 1}</h3>
+              {form.pendencias.map((pendencia, index) => {
+                const pendenciaFechada =
+                  pendencia.situacao === "Atendida" && !pendenciasAbertas.includes(index)
 
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const novasPendencias = form.pendencias.filter(
-                          (_, i) => i !== index
-                        )
-                        set("pendencias", novasPendencias)
-                      }}
-                      className="cursor-pointer rounded-md bg-red-500 px-3 py-2 text-white hover:bg-red-600"
-                    >
-                      🗑
-                    </button>
-                  </div>
+                return (
+                  <div key={index} className="space-y-4 rounded-lg border p-4">
+                    <div className="mb-4 flex items-center justify-between">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setPendenciasAbertas((atual) =>
+                            atual.includes(index)
+                              ? atual.filter((i) => i !== index)
+                              : [...atual, index]
+                          )
+                        }
+                        className="flex cursor-pointer items-center gap-2 font-medium"
+                      >
+                        <span>{pendenciaFechada ? "▶" : "▼"}</span>
+                        <span>Pendência {index + 1}</span>
+                        <span className="rounded-full border px-2 py-0.5 text-xs">
+                          {pendencia.situacao}
+                        </span>
+                      </button>
 
-                  <div className="mb-4 space-y-3">
-                    <Label>Atribuído a</Label>
-
-                    <div className="flex flex-wrap gap-3">
-                      {["DE", "DO", "CAP", "Regional"].map((opcao) => (
-                        <label key={opcao} className="flex items-center gap-2">
-                          <input
-                            type="checkbox"
-                            checked={pendencia.atribuidoA.includes(
-                              opcao as "DE" | "DO" | "CAP" | "Regional"
-                            )}
-                            onChange={(e) => {
-                              const valor = opcao as "DE" | "DO" | "CAP" | "Regional"
-
-                              const novoAtribuidoA = e.target.checked
-                                ? [...pendencia.atribuidoA, valor]
-                                : pendencia.atribuidoA.filter((item) => item !== valor)
-
-                              setPendencia(index, "atribuidoA", novoAtribuidoA)
-                            }}
-                          />
-
-                          {opcao}
-                        </label>
-                      ))}
+                      <button
+                        type="button"
+                        className="cursor-pointer rounded-md bg-red-500 px-3 py-2 text-xs text-white hover:bg-red-700"
+                        onClick={() =>
+                          set(
+                            "pendencias",
+                            form.pendencias.filter((_, i) => i !== index)
+                          )
+                        }
+                      >
+                        Excluir
+                      </button>
                     </div>
+                  
+                    {!pendenciaFechada && (
+                      <>
+                      <div className="mb-4 space-y-3">
+                        <Label>Atribuído a</Label>
 
-                    {pendencia.atribuidoA.includes("Regional") && (
-                      <div className="space-y-2 rounded-md border p-3">
-                        <Label>Regionais</Label>
-
-                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                          {Array.from({ length: 14 }, (_, i) => `CGR${i + 1}`).map((regional) => (
-                            <label key={regional} className="flex items-center gap-2">
+                        <div className="flex flex-wrap gap-3">
+                          {["DE", "DO", "CAP", "Regional"].map((opcao) => (
+                            <label key={opcao} className="flex items-center gap-2">
                               <input
                                 type="checkbox"
-                                checked={pendencia.regionais.includes(regional)}
+                                checked={pendencia.atribuidoA.includes(
+                                  opcao as "DE" | "DO" | "CAP" | "Regional"
+                                )}
                                 onChange={(e) => {
-                                  const novasRegionais = e.target.checked
-                                    ? [...pendencia.regionais, regional]
-                                    : pendencia.regionais.filter((r) => r !== regional)
+                                  const valor = opcao as "DE" | "DO" | "CAP" | "Regional"
 
-                                  setPendencia(index, "regionais", novasRegionais)
+                                  const novoAtribuidoA = e.target.checked
+                                    ? [...pendencia.atribuidoA, valor]
+                                    : pendencia.atribuidoA.filter((item) => item !== valor)
+
+                                  setPendencia(index, "atribuidoA", novoAtribuidoA)
                                 }}
                               />
 
-                              {regional}
+                              {opcao}
                             </label>
                           ))}
                         </div>
 
-                        {pendencia.atribuidoA.includes("Regional") &&
-                          pendencia.regionais.length === 0 && (
-                            <p className="mt-2 text-sm text-red-500">
-                              Selecione pelo menos uma Regional.
-                            </p>
+                        {pendencia.atribuidoA.includes("Regional") && (
+                          <div className="space-y-2 rounded-md border p-3">
+                            <Label>Regionais</Label>
+
+                            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                              {Array.from({ length: 14 }, (_, i) => `CGR${i + 1}`).map((regional) => (
+                                <label key={regional} className="flex items-center gap-2">
+                                  <input
+                                    type="checkbox"
+                                    checked={pendencia.regionais.includes(regional)}
+                                    onChange={(e) => {
+                                      const novasRegionais = e.target.checked
+                                        ? [...pendencia.regionais, regional]
+                                        : pendencia.regionais.filter((r) => r !== regional)
+
+                                      setPendencia(index, "regionais", novasRegionais)
+                                    }}
+                                  />
+
+                                  {regional}
+                                </label>
+                              ))}
+                            </div>
+
+                            {pendencia.atribuidoA.includes("Regional") &&
+                              pendencia.regionais.length === 0 && (
+                                <p className="mt-2 text-sm text-red-500">
+                                  Selecione pelo menos uma Regional.
+                                </p>
+                            )}
+                            
+                          </div>
                         )}
-                        
                       </div>
-                    )}
-                  </div>
 
-                  <Campo label="Descrição da pendência">
-                    <Textarea
-                      value={pendencia.descricao}
-                      onChange={(e) =>
-                        setPendencia(index, "descricao", e.target.value)
-                      }
-                      rows={3}
-                      placeholder="Descreva a pendência..."
-                    />
-                  </Campo>
-
-                  <Campo label="Históricos">
-
-                    {pendencia.historicos.map((hist, histIndex) => (
-                      <div
-                        key={histIndex}
-                        className="mb-3 rounded border p-3"
-                      >
-
-                        <div className="mb-3">
-                          <Label>Data do histórico</Label>
-
-                          <Input
-                            type="date"
-                            value={hist.data ? hist.data.substring(0, 10) : ""}
-                            onChange={(e) => {
-                              const novosHistoricos = [...pendencia.historicos]
-                              novosHistoricos[histIndex].data = e.target.value
-
-                              const novasPendencias = [...form.pendencias]
-                              novasPendencias[index].historicos = novosHistoricos
-
-                              set("pendencias", novasPendencias)
-                            }}
-                          />
-                        </div>
-
+                      <Campo label="Descrição da pendência">
                         <Textarea
-                          value={hist.texto}
-                          placeholder="Registro do histórico..."
+                          value={pendencia.descricao}
+                          onChange={(e) =>
+                            setPendencia(index, "descricao", e.target.value)
+                          }
                           rows={3}
-                          onChange={(e) => {
-                            const novosHistoricos = [...pendencia.historicos]
-                            novosHistoricos[histIndex].texto = e.target.value
-
-                            const novasPendencias = [...form.pendencias]
-                            novasPendencias[index].historicos = novosHistoricos
-
-                            set("pendencias", novasPendencias)
-                          }}
+                          placeholder="Descreva a pendência..."
                         />
+                      </Campo>
+
+                      <Campo label="Históricos">
+
+                        {pendencia.historicos.map((hist, histIndex) => (
+                          <div
+                            key={histIndex}
+                            className="mb-3 rounded border p-3"
+                          >
+
+                            <div className="mb-3">
+                              <Label>Data do histórico</Label>
+
+                              <Input
+                                type="date"
+                                value={hist.data ? hist.data.substring(0, 10) : ""}
+                                onChange={(e) => {
+                                  const novosHistoricos = [...pendencia.historicos]
+                                  novosHistoricos[histIndex].data = e.target.value
+
+                                  const novasPendencias = [...form.pendencias]
+                                  novasPendencias[index].historicos = novosHistoricos
+
+                                  set("pendencias", novasPendencias)
+                                }}
+                              />
+                            </div>
+
+                            <Textarea
+                              value={hist.texto}
+                              placeholder="Registro do histórico..."
+                              rows={3}
+                              onChange={(e) => {
+                                const novosHistoricos = [...pendencia.historicos]
+                                novosHistoricos[histIndex].texto = e.target.value
+
+                                const novasPendencias = [...form.pendencias]
+                                novasPendencias[index].historicos = novosHistoricos
+
+                                set("pendencias", novasPendencias)
+                              }}
+                            />
+
+                            <button
+                              type="button"
+                              className="cursor-pointer mt-2 rounded bg-red-500 px-2 py-1 text-white hover:bg-red-700"
+                              onClick={() => {
+                                const novosHistoricos =
+                                  pendencia.historicos.filter(
+                                    (_, i) => i !== histIndex
+                                  )
+
+                                const novasPendencias = [...form.pendencias]
+                                novasPendencias[index].historicos = novosHistoricos
+
+                                set("pendencias", novasPendencias)
+                              }}
+                            >
+                              Excluir histórico
+                            </button>
+                          </div>
+                        ))}
 
                         <button
                           type="button"
-                          className="cursor-pointer mt-2 rounded bg-red-500 px-2 py-1 text-white hover:bg-red-700"
+                          className="cursor-pointer rounded bg-green-600 px-3 py-2 text-white hover:bg-green-800"
                           onClick={() => {
-                            const novosHistoricos =
-                              pendencia.historicos.filter(
-                                (_, i) => i !== histIndex
-                              )
-
                             const novasPendencias = [...form.pendencias]
-                            novasPendencias[index].historicos = novosHistoricos
+
+                            novasPendencias[index].historicos.push({
+                              texto: "",
+                              data: null,
+                            })
 
                             set("pendencias", novasPendencias)
                           }}
                         >
-                          Excluir histórico
+                          + Adicionar Histórico
                         </button>
+
+                      </Campo>
+
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                        <Campo label="Classificação">
+                          <Select
+                            value={pendencia.classificacao}
+                            onValueChange={(v) =>
+                              setPendencia(index, "classificacao", v as Classificacao)
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {CLASSIFICACOES.map((c) => (
+                                <SelectItem key={c} value={c}>
+                                  {c}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </Campo>
+
+                        <Campo label="Divisão CAP">
+                          <Select
+                            value={pendencia.divisaoCap}
+                            onValueChange={(v) =>
+                              setPendencia(index, "divisaoCap", v as DivisaoCap)
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {DIVISOES_CAP.map((d) => (
+                                <SelectItem key={d} value={d}>
+                                  {d}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </Campo>
+
+                        <Campo label="Situação">
+                          <Select
+                            value={pendencia.situacao}
+                            onValueChange={(v) =>
+                              setPendencia(index, "situacao", v as SituacaoProcesso)
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Aberta">Aberta</SelectItem>
+                              <SelectItem value="Atendida">Atendida</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </Campo>
                       </div>
-                    ))}
 
-                    <button
-                      type="button"
-                      className="cursor-pointer rounded bg-green-600 px-3 py-2 text-white hover:bg-green-800"
-                      onClick={() => {
-                        const novasPendencias = [...form.pendencias]
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                        <Campo label="Data de entrada">
+                          <Input
+                            type="date"
+                            value={paraInputDate(pendencia.dataEntrada)}
+                            max={hoje}
+                            onChange={(e) =>
+                              setPendencia(index, "dataEntrada", e.target.value || null)
+                            }
+                          />
+                        </Campo>
 
-                        novasPendencias[index].historicos.push({
-                          texto: "",
-                          data: null,
-                        })
+                        <Campo label="Prazo">
+                          <Input
+                            type="date"
+                            value={paraInputDate(pendencia.prazo)}
+                            onChange={(e) =>
+                              setPendencia(index, "prazo", e.target.value || null)
+                            }
+                          />
+                        </Campo>
 
-                        set("pendencias", novasPendencias)
-                      }}
-                    >
-                      + Adicionar Histórico
-                    </button>
+                        <Campo label="Data de saída">
+                          <Input
+                            type="date"
+                            value={paraInputDate(pendencia.dataSaida)}
+                            onChange={(e) =>
+                              setPendencia(index, "dataSaida", e.target.value || null)
+                            }
+                          />
+                        </Campo>
+                      </div>
+                    </>
+                  )}
 
-                  </Campo>
-
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                    <Campo label="Classificação">
-                      <Select
-                        value={pendencia.classificacao}
-                        onValueChange={(v) =>
-                          setPendencia(index, "classificacao", v as Classificacao)
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {CLASSIFICACOES.map((c) => (
-                            <SelectItem key={c} value={c}>
-                              {c}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </Campo>
-
-                    <Campo label="Divisão CAP">
-                      <Select
-                        value={pendencia.divisaoCap}
-                        onValueChange={(v) =>
-                          setPendencia(index, "divisaoCap", v as DivisaoCap)
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {DIVISOES_CAP.map((d) => (
-                            <SelectItem key={d} value={d}>
-                              {d}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </Campo>
-
-                    <Campo label="Situação">
-                      <Select
-                        value={pendencia.situacao}
-                        onValueChange={(v) =>
-                          setPendencia(index, "situacao", v as SituacaoProcesso)
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Aberta">Aberta</SelectItem>
-                          <SelectItem value="Atendida">Atendida</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </Campo>
                   </div>
+                  )
+                })}      
 
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                    <Campo label="Data de entrada">
-                      <Input
-                        type="date"
-                        value={paraInputDate(pendencia.dataEntrada)}
-                        max={hoje}
-                        onChange={(e) =>
-                          setPendencia(index, "dataEntrada", e.target.value || null)
-                        }
-                      />
-                    </Campo>
-
-                    <Campo label="Prazo">
-                      <Input
-                        type="date"
-                        value={paraInputDate(pendencia.prazo)}
-                        onChange={(e) =>
-                          setPendencia(index, "prazo", e.target.value || null)
-                        }
-                      />
-                    </Campo>
-
-                    <Campo label="Data de saída">
-                      <Input
-                        type="date"
-                        value={paraInputDate(pendencia.dataSaida)}
-                        onChange={(e) =>
-                          setPendencia(index, "dataSaida", e.target.value || null)
-                        }
-                      />
-                    </Campo>
-                  </div>
-                </div>
-              ))}
+             
 
               <button
                 type="button"
@@ -977,6 +1012,30 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
           </Campo>
         </CardContent>
       </Card>
+
+      <Campo label="Histórico do Processo">
+        <div className="space-y-3 rounded-lg border p-4">
+          <Campo label="Data do histórico">
+            <Input
+              type="date"
+              value={form.historicoProcessoData ?? ""}
+              onChange={(e) =>
+                set("historicoProcessoData", e.target.value)
+              }
+            />
+          </Campo>
+
+          <Campo label="Descrição do histórico">
+            <Textarea
+              value={form.historicoProcessoTexto ?? ""}
+              onChange={(e) =>
+                set("historicoProcessoTexto", e.target.value)
+              }
+              placeholder="Digite o histórico do processo"
+            />
+          </Campo>
+        </div>
+      </Campo>
 
       <div className="flex items-center justify-end gap-3">
         <Button
