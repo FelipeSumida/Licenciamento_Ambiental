@@ -91,6 +91,8 @@ public class ProcessosController : ControllerBase
         var processoExistente = await _context.Processos
             .Include(p => p.Trechos)
                 .ThenInclude(t => t.Fases)
+            .Include(p => p.Trechos)
+                .ThenInclude(t => t.FasesComplementares)
             .Include(p => p.Pendencias)
                 .ThenInclude(p => p.Historicos)
             .FirstOrDefaultAsync(p => p.Id == id);
@@ -183,6 +185,18 @@ public class ProcessosController : ControllerBase
             Rodovia = t.Rodovia,
             KmInicial = t.KmInicial,
             KmFinal = t.KmFinal,
+            FaseComplementar = string.Join("; ",
+                (t.FasesComplementares ?? new List<FaseComplementar>())
+                    .Select(fc => fc.Fase)
+            ),
+            FasesComplementares = (t.FasesComplementares ?? new List<FaseComplementar>())
+                .Select(fc => new FaseComplementar
+                {
+                    Fase = fc.Fase,
+                    DataEmissao = fc.DataEmissao,
+                    AnexoPdf = fc.AnexoPdf
+                })
+                .ToList(),
             Fases = (t.Fases ?? new List<FaseTrecho>()).Select(f => new FaseTrecho
             {
                 Fase = f.Fase,

@@ -36,6 +36,11 @@ export type Trecho = {
   kmInicial: string
   kmFinal: string
   fases: FaseTrecho[]
+  fasesComplementares?: {
+    fase: string;
+    dataEmissao: string | null;
+    anexoPdf: string | null;
+  }[];
 }
 
 export type FaseTrecho = {
