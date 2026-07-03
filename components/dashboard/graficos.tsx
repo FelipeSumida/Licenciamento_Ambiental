@@ -48,7 +48,7 @@ const PIE_COLORS = [
 export function GraficoPorArea({
   dados,
 }: {
-  dados: { area: string; total: number }[]
+  dados: { divisao: string; total: number }[]
 }) {
   const temDados = dados.length > 0
   return (

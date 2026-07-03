@@ -44,11 +44,12 @@ function StatCard({ label, value, icon: Icon, accent = "primary" }: StatCardProp
 export function StatsCards({
   abertos,
   concluidos,
+  total,
 }: {
   abertos: number
   concluidos: number
+  total: number
 }) {
-  const total = abertos + concluidos
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <StatCard

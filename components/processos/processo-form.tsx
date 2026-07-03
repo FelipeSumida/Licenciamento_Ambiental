@@ -97,6 +97,7 @@ function estadoInicial(p?: Processo | null): ProcessoInput {
     caracterizacaoEmpreendimento: p?.caracterizacaoEmpreendimento ?? "",
     historicoProcessoData: p?.historicoProcessoData ?? "",
     historicoProcessoTexto: p?.historicoProcessoTexto ?? "",
+    fasesComplementares: p?.fasesComplementares ?? [],
   }
 }
 
@@ -153,7 +154,7 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
 
   function setTrecho(
     index: number,
-    campo: "denominacao" | "rodovia" | "kmInicial" | "kmFinal" | "faseComplementar",
+    campo: "denominacao" | "rodovia" | "kmInicial" | "kmFinal",
     valor: string
   ) {
     const novos = [...form.trechos]
@@ -166,14 +167,9 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
     set("trechos", novos)
   }
 
-  function adicionarFaseComplementar(trechoIndex: number) {
-    const copia = [...form.trechos] as Trecho[];
-    const trechoAtual = copia[trechoIndex];
-
-    if (!trechoAtual) return;
-
+  function adicionarFaseComplementar() {
     const novasFases = [
-      ...(trechoAtual.fasesComplementares ?? []),
+      ...(form.fasesComplementares ?? []),
       {
         fase: "",
         dataEmissao: null,
@@ -181,32 +177,15 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
       },
     ];
 
-    copia[trechoIndex] = {
-      ...trechoAtual,
-      fasesComplementares: novasFases,
-      faseComplementar: novasFases.map((f) => f.fase).join("; "),
-    } as Trecho;
-
-    set("trechos", copia);
+    set("fasesComplementares", novasFases);
   }
 
-  function removerFaseComplementar(trechoIndex: number, faseIndex: number) {
-    const copia = [...form.trechos] as Trecho[]
-    const trechoAtual = copia[trechoIndex]
-
-    if (!trechoAtual) return
-
-    const novasFases = (trechoAtual.fasesComplementares ?? []).filter(
+  function removerFaseComplementar(faseIndex: number) {
+    const novasFases = (form.fasesComplementares ?? []).filter(
       (_, i) => i !== faseIndex
-    )
+    );
 
-    copia[trechoIndex] = {
-      ...trechoAtual,
-      fasesComplementares: novasFases,
-      faseComplementar: novasFases.join("; "),
-    } as Trecho
-
-    set("trechos", copia)
+    set("fasesComplementares", novasFases);
   }
 
 
@@ -615,7 +594,7 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
                                   </Campo>
                                 )}
 
-                                <Campo label="Anexo PDF (Licença)">
+                                <Campo label="Anexo PDF">
                                   <label className="flex h-10 cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed bg-background px-4 text-sm text-muted-foreground hover:bg-muted">
                                     <Paperclip className="size-4" />
                                     {faseItem.anexoFase ? faseItem.anexoFase : "Selecionar PDF"}
@@ -660,7 +639,7 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
                         Fases Complementares
                       </h4>
 
-                      {(trecho.fasesComplementares ?? []).map((fase, faseIndex) => (
+                      {(form.fasesComplementares ?? []).map((fase, faseIndex) => (
                         <div
                           key={faseIndex}
                           className="mb-3 flex items-center gap-3"
@@ -668,22 +647,18 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
                           <Select
                             value={fase.fase}
                             onValueChange={(value) => {
-                              const copia = [...form.trechos] as Trecho[]
-                              const trechoAtual = copia[index]
+                              const novasFases = [...(form.fasesComplementares ?? [])];
 
-                              if (!trechoAtual) return
+                              const faseAtual = novasFases[faseIndex];
 
-                              const novasFases = (trechoAtual.fasesComplementares ?? []).map((item, i) =>
-                                i === faseIndex ? { ...item, fase: value } : item
-                              );
+                              if (!faseAtual) return;
 
-                              copia[index] = {
-                                ...trechoAtual,
-                                fasesComplementares: novasFases,
-                                faseComplementar: novasFases.join("; "),
-                              } as Trecho
+                              novasFases[faseIndex] = {
+                                ...faseAtual,
+                                fase: value as string,
+                              };
 
-                              set("trechos", copia)
+                              set("fasesComplementares", novasFases);
                             }}
                           >
                             <SelectTrigger className="w-64">
@@ -702,23 +677,19 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
 
                           <Input
                             type="date"
-                            value={fase.dataEmissao ?? ""}
+                            value={fase.dataEmissao ? fase.dataEmissao.substring(0, 10) : ""}
                             onChange={(e) => {
-                              const copia = [...form.trechos] as Trecho[];
-                              const trechoAtual = copia[index];
-                              if (!trechoAtual) return;
+                              const novasFases = [...(form.fasesComplementares ?? [])];
 
-                              const novasFases = (trechoAtual.fasesComplementares ?? []).map((item, i) =>
-                                i === faseIndex ? { ...item, dataEmissao: e.target.value } : item
-                              );
+                              const faseAtual = novasFases[faseIndex];
+                              if (!faseAtual) return;
 
-                              copia[index] = {
-                                ...trechoAtual,
-                                fasesComplementares: novasFases,
-                                faseComplementar: novasFases.map((f) => f.fase).join("; "),
-                              } as Trecho;
+                              novasFases[faseIndex] = {
+                                ...faseAtual,
+                                dataEmissao: e.target.value || null,
+                              };
 
-                              set("trechos", copia);
+                              set("fasesComplementares", novasFases);
                             }}
                           />
 
@@ -734,35 +705,26 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
                               accept="application/pdf"
                               className="hidden"
                               onChange={(e) => {
-                                const arquivo = e.target.files?.[0]
+                                const arquivo = e.target.files?.[0];
 
-                                const copia = [...form.trechos] as Trecho[]
-                                const trechoAtual = copia[index]
-                                if (!trechoAtual) return
+                                const novasFases = [...(form.fasesComplementares ?? [])];
 
-                                const novasFases = (trechoAtual.fasesComplementares ?? []).map((item, i) =>
-                                  i === faseIndex
-                                    ? {
-                                        ...item,
-                                        anexoPdf: arquivo ? arquivo.name : null,
-                                      }
-                                    : item
-                                )
+                                const faseAtual = novasFases[faseIndex];
+                                if (!faseAtual) return;
 
-                                copia[index] = {
-                                  ...trechoAtual,
-                                  fasesComplementares: novasFases,
-                                  faseComplementar: novasFases.map((f) => f.fase).join("; "),
-                                } as Trecho
+                                novasFases[faseIndex] = {
+                                  ...faseAtual,
+                                  anexoPdf: arquivo ? arquivo.name : null,
+                                };
 
-                                set("trechos", copia)
+                                set("fasesComplementares", novasFases);
                               }}
                             />
                           </label>
 
                           <button
                             type="button"
-                            onClick={() => removerFaseComplementar(index, faseIndex)}
+                            onClick={() => removerFaseComplementar(faseIndex)}
                             className="cursor-pointer rounded bg-red-500 px-4 py-2 text-white hover:bg-red-700"
                           >
                             Excluir
@@ -772,7 +734,7 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
 
                       <button
                         type="button"
-                        onClick={() => adicionarFaseComplementar(index)}
+                        onClick={adicionarFaseComplementar}
                         className="cursor-pointer mt-3 w-fit rounded-md bg-green-600 px-4 py-2 text-sm text-white hover:bg-green-700"
                       >
                         + Adicionar Fase Complementar

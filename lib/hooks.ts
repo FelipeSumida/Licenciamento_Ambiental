@@ -35,7 +35,13 @@ export function useResumoDashboard() {
     obterResumoDashboard,
   )
   return {
-    resumo: data ?? { abertos: 0, concluidos: 0, porArea: [], porTematica: [] },
+    resumo: data ?? {
+      abertos: 0,
+      concluidos: 0,
+      total: 0,
+      porArea: [],
+      porTematica: [],
+    },
     isLoading,
     error,
     mutate,

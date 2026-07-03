@@ -36,6 +36,9 @@ public class Processo
     public List<HistoricoAlteracao> HistoricosAlteracoes { get; set; } = new();
     public string? HistoricoProcessoData { get; set; }
     public string? HistoricoProcessoTexto { get; set; }
+     [NotMapped]
+    public string? FaseComplementar { get; set; }
+    public List<FaseComplementar> FasesComplementares { get; set; } = new();
 }
 
 public class Trecho
@@ -49,9 +52,6 @@ public class Trecho
     public string KmFinal { get; set; } = "";
     public int ProcessoId { get; set; }
     public List<FaseTrecho> Fases { get; set; } = new();
-    [NotMapped]
-    public string? FaseComplementar { get; set; }
-    public List<FaseComplementar> FasesComplementares { get; set; } = new();
 }
 
 public class Pendencia

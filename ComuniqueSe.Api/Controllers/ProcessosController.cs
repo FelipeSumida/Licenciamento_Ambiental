@@ -24,6 +24,7 @@ public class ProcessosController : ControllerBase
         return await _context.Processos
             .Include(p => p.Trechos)
                 .ThenInclude(t => t.Fases)
+            .Include(p => p.FasesComplementares)
             .Include(p => p.Pendencias)
                 .ThenInclude(p => p.Historicos)
             .ToListAsync();
@@ -35,6 +36,7 @@ public class ProcessosController : ControllerBase
         var processo = await _context.Processos
             .Include(p => p.Trechos)
                 .ThenInclude(t => t.Fases)
+            .Include(p => p.FasesComplementares)
             .Include(p => p.Pendencias)
                 .ThenInclude(p => p.Historicos)
             .Include(p => p.HistoricosAlteracoes.OrderByDescending(h => h.DataHora))
@@ -91,8 +93,7 @@ public class ProcessosController : ControllerBase
         var processoExistente = await _context.Processos
             .Include(p => p.Trechos)
                 .ThenInclude(t => t.Fases)
-            .Include(p => p.Trechos)
-                .ThenInclude(t => t.FasesComplementares)
+            .Include(p => p.FasesComplementares)
             .Include(p => p.Pendencias)
                 .ThenInclude(p => p.Historicos)
             .FirstOrDefaultAsync(p => p.Id == id);
@@ -179,24 +180,14 @@ public class ProcessosController : ControllerBase
 
         _context.Trechos.RemoveRange(processoExistente.Trechos);
 
+        _context.FasesComplementares.RemoveRange(processoExistente.FasesComplementares);
+
         processoExistente.Trechos = processo.Trechos.Select(t => new Trecho
         {
             Denominacao = t.Denominacao,
             Rodovia = t.Rodovia,
             KmInicial = t.KmInicial,
             KmFinal = t.KmFinal,
-            FaseComplementar = string.Join("; ",
-                (t.FasesComplementares ?? new List<FaseComplementar>())
-                    .Select(fc => fc.Fase)
-            ),
-            FasesComplementares = (t.FasesComplementares ?? new List<FaseComplementar>())
-                .Select(fc => new FaseComplementar
-                {
-                    Fase = fc.Fase,
-                    DataEmissao = fc.DataEmissao,
-                    AnexoPdf = fc.AnexoPdf
-                })
-                .ToList(),
             Fases = (t.Fases ?? new List<FaseTrecho>()).Select(f => new FaseTrecho
             {
                 Fase = f.Fase,
@@ -207,6 +198,17 @@ public class ProcessosController : ControllerBase
                 AnexoFase = f.AnexoFase
             }).ToList()
         }).ToList();
+
+
+        processoExistente.FasesComplementares = (processo.FasesComplementares ?? new List<FaseComplementar>())
+            .Select(fc => new FaseComplementar
+            {
+                Fase = fc.Fase,
+                DataEmissao = fc.DataEmissao,
+                AnexoPdf = fc.AnexoPdf,
+                ProcessoId = processoExistente.Id
+            })
+            .ToList();
 
         processoExistente.Pendencias = processo.Pendencias;
 
@@ -256,9 +258,11 @@ public class ProcessosController : ControllerBase
         );
 
         var concluidos = processos.Count(p =>
-            p.Pendencias.Any() &&
+            !p.Pendencias.Any() ||
             p.Pendencias.All(x => x.Situacao == "Atendida")
         );
+
+        var total = processos.Count;
 
         var porArea = processos
             .SelectMany(p => p.Pendencias)
@@ -284,6 +288,7 @@ public class ProcessosController : ControllerBase
         {
             abertos,
             concluidos,
+            total,
             porArea,
             porTematica
         });

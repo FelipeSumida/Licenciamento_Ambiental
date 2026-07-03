@@ -17,14 +17,15 @@ public class AppDbContext : DbContext
     public DbSet<FaseTrecho> FasesTrecho => Set<FaseTrecho>();
     public DbSet<HistoricoAlteracao> HistoricosAlteracoes => Set<HistoricoAlteracao>();
     public DbSet<FaseComplementar> FasesComplementares => Set<FaseComplementar>();
+    
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.Entity<FaseComplementar>()
-            .HasOne(fc => fc.Trecho)
-            .WithMany(t => t.FasesComplementares)
-            .HasForeignKey(fc => fc.TrechoId);
+            .HasOne(fc => fc.Processo)
+            .WithMany(p => p.FasesComplementares)
+            .HasForeignKey(fc => fc.ProcessoId);
     }
 }

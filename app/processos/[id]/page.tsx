@@ -233,7 +233,7 @@ export default function DetalheProcessoPage({
 
                               <div>
                                 <p className="text-xs font-medium uppercase text-muted-foreground">
-                                  Anexo PDF (Licença)
+                                  Anexo PDF
                                 </p>
                               
                                 {fase.anexoFase ? (
@@ -255,6 +255,44 @@ export default function DetalheProcessoPage({
                         </div>
                       </div>
                     ))}
+
+                    {processo.fasesComplementares && processo.fasesComplementares.length > 0 && (
+                      <div className="rounded-md border bg-muted/40 p-3">
+                        <h3 className="mb-2 font-medium">
+                          Fases Complementares
+                        </h3>
+
+                        {processo.fasesComplementares.map((fase, index) => (
+                          <div
+                            key={index}
+                            className="mb-3 rounded-lg border p-4"
+                          >
+                            <div className="grid grid-cols-3 gap-6">
+
+                              <div>
+                                <p className="text-xs text-muted-foreground">FASE</p>
+                                <p>{fase.fase}</p>
+                              </div>
+
+                              <div>
+                                <p className="text-xs text-muted-foreground">DATA DE EMISSÃO</p>
+                                <p>
+                                  {fase.dataEmissao
+                                    ? new Date(fase.dataEmissao).toLocaleDateString("pt-BR")
+                                    : "-"}
+                                </p>
+                              </div>
+
+                              <div>
+                                <p className="text-xs text-muted-foreground">ANEXO PDF</p>
+                                <p>{fase.anexoPdf || "-"}</p>
+                              </div>
+
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardContent>

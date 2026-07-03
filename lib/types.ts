@@ -36,11 +36,6 @@ export type Trecho = {
   kmInicial: string
   kmFinal: string
   fases: FaseTrecho[]
-  fasesComplementares?: {
-    fase: string;
-    dataEmissao: string | null;
-    anexoPdf: string | null;
-  }[];
 }
 
 export type FaseTrecho = {
@@ -102,13 +97,25 @@ export interface Processo {
   }[]
   historicoProcessoData: string | null
   historicoProcessoTexto: string
-  }
+  fasesComplementares?: {
+    fase: string;
+    dataEmissao: string | null;
+    anexoPdf: string | null;
+  }[];
+}
 
 export type ProcessoInput = Omit<Processo, "id">
 
 export interface ResumoDashboard {
   abertos: number
   concluidos: number
-  porArea: { area: string; total: number }[]
-  porTematica: { classificacao: string; total: number }[]
+  total: number
+  porArea: {
+    divisao: string
+    total: number
+  }[]
+  porTematica: {
+    classificacao: string
+    total: number
+  }[]
 }

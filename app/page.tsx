@@ -26,7 +26,11 @@ export default function PainelPage() {
       <ApiStatusBanner />
 
       <div className="space-y-6">
-        <StatsCards abertos={resumo.abertos} concluidos={resumo.concluidos} />
+        <StatsCards
+          abertos={resumo.abertos}
+          concluidos={resumo.concluidos}
+          total={resumo.total}
+        />
 
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
           <GraficoPorArea dados={resumo.porArea} />
