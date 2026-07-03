@@ -7,6 +7,7 @@ import { ApiStatusBanner } from "@/components/api-status-banner"
 import { TabelaProcessos } from "@/components/processos/tabela-processos"
 import { Button } from "@/components/ui/button"
 import { useProcessos } from "@/lib/hooks"
+import Image from "next/image";
 
 export default function ProcessosPage() {
   const { processos, isLoading } = useProcessos()
@@ -22,13 +23,14 @@ export default function ProcessosPage() {
             Lista completa de processos de licenciamento
           </p>
         </div>
-        <Link
-          href="/processos/novo"
-          className="inline-flex items-center gap-2 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 cursor-pointer"
-        >
-          <Plus className="size-4" />
-          Novo processo
-        </Link>
+
+        <Image
+          src="/logoder.png"
+          alt="Logo DER"
+          width={180}
+          height={80}
+          priority
+        />
       </header>
 
       <ApiStatusBanner />

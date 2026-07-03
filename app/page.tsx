@@ -3,6 +3,7 @@
 import { AppShell } from "@/components/app-shell"
 import { ApiStatusBanner } from "@/components/api-status-banner"
 import { StatsCards } from "@/components/dashboard/stats-cards"
+import Image from "next/image";
 import {
   GraficoPorArea,
   GraficoPorTematica,
@@ -14,13 +15,24 @@ export default function PainelPage() {
 
   return (
     <AppShell>
-      <header className="mb-6">
-        <h1 className="text-2xl font-semibold text-balance text-foreground">
-          Painel de Acompanhamento
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Visão geral dos processos de licenciamento ambiental
-        </p>
+      <header className="mb-6 flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold">
+            Painel de Acompanhamento
+          </h1>
+
+          <p className="mt-1 text-sm text-muted-foreground">
+            Visão geral dos processos de licenciamento ambiental
+          </p>
+        </div>
+
+        <Image
+          src="/logoder.png"
+          alt="Logo DER"
+          width={180}
+          height={80}
+          priority
+        />
       </header>
 
       <ApiStatusBanner />
