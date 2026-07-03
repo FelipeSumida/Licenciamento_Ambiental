@@ -98,51 +98,6 @@ export function GraficoPorArea({
   )
 }
 
-export function GraficoPorTematica({
-  dados,
-}: {
-  dados: { classificacao: string; total: number }[]
-}) {
-  const temDados = dados.length > 0
-  const config = Object.fromEntries(
-    dados.map((d, i) => [
-      d.classificacao,
-      { label: d.classificacao, color: PIE_COLORS[i % PIE_COLORS.length] },
-    ]),
-  )
-  return (
-    <Card className="lg:col-span-2">
-      <CardHeader>
-        <CardTitle className="text-base">Distribuição por temática</CardTitle>
-        <CardDescription>Processos por classificação</CardDescription>
-      </CardHeader>
-      <CardContent>
-        {temDados ? (
-          <ChartContainer config={config} className="mx-auto h-[300px] w-full">
-            <PieChart>
-              <ChartTooltip content={<ChartTooltipContent nameKey="classificacao" />} />
-              <Pie
-                data={dados}
-                dataKey="total"
-                nameKey="classificacao"
-                innerRadius={60}
-                outerRadius={100}
-                paddingAngle={2}
-              >
-                {dados.map((_, i) => (
-                  <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
-                ))}
-              </Pie>
-            </PieChart>
-          </ChartContainer>
-        ) : (
-          <EmptyChart />
-        )}
-      </CardContent>
-    </Card>
-  )
-}
-
 function EmptyChart() {
   return (
     <div className="flex h-[300px] items-center justify-center rounded-md border border-dashed border-border text-sm text-muted-foreground">

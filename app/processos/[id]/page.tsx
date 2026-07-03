@@ -376,7 +376,6 @@ export default function DetalheProcessoPage({
                         />
 
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                          <Info label="Classificação" valor={pendencia.classificacao} />
                           <Info label="Divisão CAP" valor={pendencia.divisaoCap} />
                           <Info label="Situação" valor={pendencia.situacao} />
                         </div>

@@ -40,7 +40,6 @@ export function useResumoDashboard() {
       concluidos: 0,
       total: 0,
       porArea: [],
-      porTematica: [],
     },
     isLoading,
     error,

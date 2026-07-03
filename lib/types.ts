@@ -57,13 +57,13 @@ export type Pendencia = {
   atribuidoA: string[]
   regionais: string[]
   descricao: string
-  classificacao: Classificacao
   divisaoCap: DivisaoCap
   situacao: SituacaoProcesso
   dataEntrada: string | null
   prazo: string | null
   dataSaida: string | null
   historicos: Historico[]
+  cadastrada?: boolean
 }
 
 export interface Processo {
@@ -112,10 +112,6 @@ export interface ResumoDashboard {
   total: number
   porArea: {
     divisao: string
-    total: number
-  }[]
-  porTematica: {
-    classificacao: string
     total: number
   }[]
 }

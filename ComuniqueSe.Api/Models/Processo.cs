@@ -62,7 +62,6 @@ public class Pendencia
     public List<string> AtribuidoA { get; set; } = new();
     public List<string> Regionais { get; set; } = new();
     public string Descricao { get; set; } = "";
-    public string Classificacao { get; set; } = "LI";
     public string DivisaoCap { get; set; } = "Licenciamento";
     public string Situacao { get; set; } = "Aberta";
     public DateTime? DataEntrada { get; set; }

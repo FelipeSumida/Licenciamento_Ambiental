@@ -178,7 +178,7 @@ export function TabelaProcessos({
           ),
           ...pendencias.map(
             (pendencia) =>
-              `${pendencia.descricao} ${pendencia.classificacao} ${pendencia.divisaoCap} ${pendencia.situacao}`,
+              `${pendencia.descricao} ${pendencia.divisaoCap} ${pendencia.situacao}`,
           ),
         ]
           .filter(Boolean)
@@ -187,15 +187,9 @@ export function TabelaProcessos({
       const casaSituacao =
         situacao === TODOS || situacaoCalculada === situacao
 
-      const casaClassificacao =
-        classificacao === TODOS ||
-        pendencias.some((pendencia) => pendencia.classificacao === classificacao)
-
-
       return (
         casaBusca &&
         casaSituacao &&
-        casaClassificacao &&
         casaRodovia &&
         casaTecnico &&
         casaAtribuido &&

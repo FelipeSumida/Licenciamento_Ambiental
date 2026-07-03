@@ -123,7 +123,6 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
       atribuidoA: [],
       regionais: [],
       descricao: "",
-      classificacao: "LI",
       divisaoCap: "Licenciamento",
       situacao: "Aberta",
       dataEntrada: null,
@@ -838,7 +837,7 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
             <div className="space-y-4">
               {form.pendencias.map((pendencia, index) => {
                 const pendenciaFechada =
-                  pendencia.situacao === "Atendida" && !pendenciasAbertas.includes(index)
+                  pendencia.cadastrada === true && !pendenciasAbertas.includes(index)
 
                 return (
                   <div key={index} className="space-y-4 rounded-lg border p-4">
@@ -1031,25 +1030,6 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
                       </Campo>
 
                       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                        <Campo label="Classificação">
-                          <Select
-                            value={pendencia.classificacao}
-                            onValueChange={(v) =>
-                              setPendencia(index, "classificacao", v as Classificacao)
-                            }
-                          >
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {CLASSIFICACOES.map((c) => (
-                                <SelectItem key={c} value={c}>
-                                  {c}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </Campo>
 
                         <Campo label="Divisão CAP">
                           <Select
@@ -1121,6 +1101,16 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
                           />
                         </Campo>
                       </div>
+
+                      {!pendencia.cadastrada && (
+                        <Button
+                          type="button"
+                          onClick={() => setPendencia(index, "cadastrada", true)}
+                          className="cursor-pointer bg-green-600 hover:bg-green-700"
+                        >
+                          Cadastrar pendência
+                        </Button>
+                      )}
                     </>
                   )}
 

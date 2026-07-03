@@ -6,7 +6,6 @@ import { StatsCards } from "@/components/dashboard/stats-cards"
 import Image from "next/image";
 import {
   GraficoPorArea,
-  GraficoPorTematica,
 } from "@/components/dashboard/graficos"
 import { useResumoDashboard } from "@/lib/hooks"
 
@@ -44,9 +43,8 @@ export default function PainelPage() {
           total={resumo.total}
         />
 
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
+        <div>
           <GraficoPorArea dados={resumo.porArea} />
-          <GraficoPorTematica dados={resumo.porTematica} />
         </div>
       </div>
     </AppShell>

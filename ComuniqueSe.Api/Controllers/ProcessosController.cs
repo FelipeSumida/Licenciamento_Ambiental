@@ -274,23 +274,12 @@ public class ProcessosController : ControllerBase
             })
             .ToList();
 
-        var porTematica = processos
-            .SelectMany(p => p.Pendencias)
-            .GroupBy(p => p.Classificacao)
-            .Select(g => new
-            {
-                classificacao = g.Key,
-                total = g.Count()
-            })
-            .ToList();
-
         return Ok(new
         {
             abertos,
             concluidos,
             total,
             porArea,
-            porTematica
         });
     }
 
