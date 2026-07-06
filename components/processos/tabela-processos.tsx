@@ -174,9 +174,11 @@ export function TabelaProcessos({
           divisoesDoProcesso.includes(divisao)
         )
       const situacaoCalculada =
-        pendencias.length > 0 && pendencias.every((pendencia) => pendencia.situacao === "Atendida")
-          ? "Atendida"
-          : "Aberta"
+        pendencias.length === 0
+          ? "Sem pendência"
+          : pendencias.every((pendencia) => pendencia.situacao === "Atendida")
+            ? "Atendida"
+            : "Aberta"
 
       const casaBusca =
         !termo ||
@@ -209,6 +211,23 @@ export function TabelaProcessos({
         casaAtribuido &&
         casaDivisaoCap
       )
+    })
+    .sort((a, b) => {
+      if (situacao !== "Aberta") return 0
+
+      const prazoA =
+        a.pendencias
+          ?.filter((p) => p.situacao === "Aberta" && p.prazo)
+          .map((p) => new Date(p.prazo!).getTime())
+          .sort((x, y) => x - y)[0] ?? Infinity
+
+      const prazoB =
+        b.pendencias
+          ?.filter((p) => p.situacao === "Aberta" && p.prazo)
+          .map((p) => new Date(p.prazo!).getTime())
+          .sort((x, y) => x - y)[0] ?? Infinity
+
+      return prazoA - prazoB
     })
   }, [
     processos,
@@ -262,6 +281,7 @@ export function TabelaProcessos({
                 <SelectItem value={TODOS}>Todas as situações</SelectItem>
                 <SelectItem value="Aberta">Aberta</SelectItem>
                 <SelectItem value="Atendida">Atendida</SelectItem>
+                <SelectItem value="Sem pendência">Sem pendência</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -458,8 +478,17 @@ export function TabelaProcessos({
                 <EstadoVazio temProcessos={processos.length > 0} />
               ) : (
                 filtrados.map((p) => {
+                  const pendencias = p.pendencias ?? []
+
                   const pendenciaAberta =
-                    p.pendencias?.find(x => x.situacao === "Aberta") ?? p.pendencias?.[0]
+                    pendencias.find((x) => x.situacao === "Aberta") ?? pendencias[0]
+
+                  const situacaoProcesso =
+                    pendencias.length === 0
+                      ? "Sem pendência"
+                      : pendencias.some((pendencia) => pendencia.situacao === "Aberta")
+                        ? "Aberta"
+                        : "Atendida"
 
                   return (
                     <TableRow key={p.id} className="group">
@@ -496,13 +525,7 @@ export function TabelaProcessos({
                       </TableCell>
 
                       <TableCell>
-                        <SituacaoBadge
-                          situacao={
-                            p.pendencias?.some((pendencia) => pendencia.situacao === "Aberta")
-                              ? "Aberta"
-                              : "Atendida"
-                          }
-                        />
+                        <SituacaoBadge situacao={situacaoProcesso} />
                       </TableCell>
 
                       <TableCell className="text-right">

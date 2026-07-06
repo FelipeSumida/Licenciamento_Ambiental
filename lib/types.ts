@@ -1,5 +1,8 @@
 
-export type SituacaoProcesso = "Aberta" | "Atendida"
+export type SituacaoProcesso =
+  | "Aberta"
+  | "Atendida"
+  | "Sem pendência"
 
 export const CLASSIFICACOES = [
   "ASV",
