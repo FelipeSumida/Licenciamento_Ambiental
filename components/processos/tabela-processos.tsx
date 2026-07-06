@@ -508,10 +508,8 @@ export function TabelaProcessos({
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
                           <DropdownMenu>
-                            <DropdownMenuTrigger>
-                              <Button variant="ghost" size="icon" type="button">
-                                <MoreVertical className="size-4" />
-                              </Button>
+                            <DropdownMenuTrigger className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-muted">
+                              <MoreVertical className="size-4" />
                             </DropdownMenuTrigger>
 
                             <DropdownMenuContent align="end">
