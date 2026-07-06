@@ -27,6 +27,7 @@ public class ProcessosController : ControllerBase
             .Include(p => p.FasesComplementares)
             .Include(p => p.Pendencias)
                 .ThenInclude(p => p.Historicos)
+            .OrderByDescending(p => p.Id)
             .ToListAsync();
     }
 
