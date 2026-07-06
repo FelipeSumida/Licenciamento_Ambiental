@@ -30,6 +30,7 @@ export default function PainelPage() {
           alt="Logo DER"
           width={180}
           height={80}
+          className="w-40 h-auto"
           priority
         />
       </header>
