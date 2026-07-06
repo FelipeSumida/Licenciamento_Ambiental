@@ -31,6 +31,16 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+
+import { MoreVertical, Eye} from "lucide-react"
+
 import { SituacaoBadge } from "@/components/situacao-badge"
 import { formatarData } from "@/lib/format"
 import { excluirProcesso } from "@/lib/api"
@@ -497,24 +507,41 @@ export function TabelaProcessos({
 
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
-                          <Link
-                            href={`/processos/${p.id}/editar`}
-                            className="inline-flex h-10 items-center justify-center gap-1 rounded-md border px-3 text-sm hover:bg-muted"
-                          >
-                            <Pencil className="size-4" />
-                            Editar
-                          </Link>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger>
+                              <Button variant="ghost" size="icon" type="button">
+                                <MoreVertical className="size-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
 
-                          <Button
-                            type="button"
-                            variant="outline"
-                            className="h-10 px-3 cursor-pointer text-red-600 hover:text-red-700"
-                            disabled={excluindoId === p.id}
-                            onClick={() => setProcessoParaExcluir(p)}
-                          >
-                            <Trash2 className="size-4" />
-                            Excluir
-                          </Button>
+                            <DropdownMenuContent align="end">
+
+                              <DropdownMenuItem>
+                                <Link href={`/processos/${p.id}`} className="flex w-full items-center">
+                                  <Eye className="mr-2 size-4" />
+                                  Ver detalhes
+                                </Link>
+                              </DropdownMenuItem>
+
+                              <DropdownMenuItem>
+                                <Link href={`/processos/${p.id}/editar`} className="flex w-full items-center">
+                                  <Pencil className="mr-2 size-4" />
+                                  Editar
+                                </Link>
+                              </DropdownMenuItem>
+
+                              <DropdownMenuSeparator />
+
+                              <DropdownMenuItem
+                                className="cursor-pointer text-red-600"
+                                onClick={() => setProcessoParaExcluir(p)}
+                              >
+                                <Trash2 className="mr-2 size-4" />
+                                Excluir
+                              </DropdownMenuItem>
+
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </TableCell>
                     </TableRow>
