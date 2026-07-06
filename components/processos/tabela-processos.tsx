@@ -35,7 +35,6 @@ import { SituacaoBadge } from "@/components/situacao-badge"
 import { formatarData } from "@/lib/format"
 import { excluirProcesso } from "@/lib/api"
 import {
-  CLASSIFICACOES,
   DIVISOES_CAP,
   type Processo,
   type DivisaoCap,
@@ -54,12 +53,12 @@ export function TabelaProcessos({
 
   const [busca, setBusca] = useState("")
   const [situacao, setSituacao] = useState<string>(TODOS)
-  const [classificacao, setClassificacao] = useState<string>(TODOS)
   const [excluindoId, setExcluindoId] = useState<string | null>(null)
   const [tecnicoResponsavel, setTecnicoResponsavel] = useState<string>(TODOS)
   const [atribuidoFiltro, setAtribuidoFiltro] = useState(TODOS)
   const [divisoesCapSelecionadas, setDivisoesCapSelecionadas] = useState<DivisaoCap[]>([])
   const [rodoviasSelecionadas, setRodoviasSelecionadas] = useState<string[]>([])
+  const [faseAtual, setFaseAtual] = useState(TODOS)
 
   const [processoParaExcluir, setProcessoParaExcluir] = useState<Processo | null>(null)
 
@@ -145,6 +144,10 @@ export function TabelaProcessos({
         tecnicoResponsavel === TODOS ||
         p.tecnicoResponsavel === tecnicoResponsavel
 
+      const casaFase =
+        faseAtual === TODOS ||
+        obterFaseAtual(p) === faseAtual
+
       const casaAtribuido =
         atribuidoFiltro === TODOS ||
         pendencias.some(
@@ -192,6 +195,7 @@ export function TabelaProcessos({
         casaSituacao &&
         casaRodovia &&
         casaTecnico &&
+        casaFase &&
         casaAtribuido &&
         casaDivisaoCap
       )
@@ -200,14 +204,14 @@ export function TabelaProcessos({
     processos,
     busca,
     situacao,
-    classificacao,
+    faseAtual,
     rodoviasSelecionadas,
     tecnicoResponsavel,
     atribuidoFiltro,
     divisoesCapSelecionadas,
   ])
 
-  function faseAtual(p: Processo) {
+  function obterFaseAtual(p: Processo) {
         const fases = p.trechos?.flatMap((t) => t.fases ?? []) ?? []
 
         const faseAberta = fases.find((f) => f.statusFase !== "Emitido")
@@ -238,7 +242,7 @@ export function TabelaProcessos({
               value={situacao}
               onValueChange={(v) => setSituacao(v as typeof TODOS | "Aberta" | "Atendida")}
             >
-              <SelectTrigger className="h-11 w-full">
+              <SelectTrigger className="cursor-pointer h-11 w-full">
                 <span>
                   {situacao === TODOS ? "Todas as situações" : situacao}
                 </span>
@@ -253,33 +257,6 @@ export function TabelaProcessos({
           </div>
 
           <div className="min-w-0">
-            <label className="mb-1 block text-sm font-medium">
-              Classificação
-            </label>
-
-            <Select
-              value={classificacao}
-              onValueChange={(v: any) => setClassificacao(v)}
-            >
-              <SelectTrigger className="h-11 w-full">
-                <span>
-                  {classificacao === TODOS ? "Todas as classificações" : classificacao}
-                </span>
-              </SelectTrigger>
-
-              <SelectContent>
-                <SelectItem value={TODOS}>Todas as classificações</SelectItem>
-
-                {CLASSIFICACOES.map((c) => (
-                  <SelectItem key={c} value={c}>
-                    {c}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="min-w-0">
 
             <label className="mb-1 block text-sm font-medium">
               Técnico Responsável
@@ -289,7 +266,7 @@ export function TabelaProcessos({
               value={tecnicoResponsavel}
               onValueChange={(v: any) => setTecnicoResponsavel(v)}
             >
-              <SelectTrigger className="h-11 w-full">
+              <SelectTrigger className="cursor-pointer h-11 w-full">
                 <span>
                   {tecnicoResponsavel === TODOS ? "Todos os técnicos" : tecnicoResponsavel}
                 </span>
@@ -309,6 +286,27 @@ export function TabelaProcessos({
 
           <div className="min-w-0">
             <label className="mb-1 block text-sm font-medium">
+              Fase Atual
+            </label>
+
+            <Select value={faseAtual} onValueChange={(v: any) => setFaseAtual(v)}>
+              <SelectTrigger className="cursor-pointer h-11 w-full">
+                <span>{faseAtual === TODOS ? "Todas as fases" : faseAtual}</span>
+              </SelectTrigger>
+
+              <SelectContent>
+                <SelectItem value={TODOS}>Todas as fases</SelectItem>
+                {["CP", "LP", "LI", "LO", "ASV"].map((fase) => (
+                  <SelectItem key={fase} value={fase}>
+                    {fase}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="min-w-0">
+            <label className="mb-1 block text-sm font-medium">
               Atribuído a
             </label>
 
@@ -316,14 +314,14 @@ export function TabelaProcessos({
               value={atribuidoFiltro}
               onValueChange={(v: any) => setAtribuidoFiltro(v)}
             >
-              <SelectTrigger className="h-11 w-full">
+              <SelectTrigger className="cursor-pointer h-11 w-full">
                 <span>
                   {atribuidoFiltro === TODOS ? "Todos os atribuídos" : atribuidoFiltro}
                 </span>
               </SelectTrigger>
 
               <SelectContent>
-                <SelectItem value={TODOS}>Todos</SelectItem>
+                <SelectItem value={TODOS}>Todos os atribuídos</SelectItem>
                 <SelectItem value="DE">DE</SelectItem>
                 <SelectItem value="DO">DO</SelectItem>
                 <SelectItem value="CAP">CAP</SelectItem>
@@ -470,7 +468,7 @@ export function TabelaProcessos({
                       </TableCell>
 
                       <TableCell>
-                        {faseAtual(p)}
+                        {obterFaseAtual(p)}
                       </TableCell>
 
                       <TableCell>
