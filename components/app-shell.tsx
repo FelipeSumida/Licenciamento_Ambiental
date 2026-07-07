@@ -10,6 +10,11 @@ import { LogOut, UserCircle2 } from "lucide-react"
 const navItems = [
   { href: "/", label: "Painel", icon: LayoutDashboard },
   { href: "/processos", label: "Processos", icon: FolderKanban },
+  {
+    href: "/outros-acompanhamentos",
+    label: "Outros acompanhamentos",
+    icon: FolderKanban,
+  },
 ]
 
 export function AppShell({ children }: { children: React.ReactNode }) {

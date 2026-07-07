@@ -13,7 +13,7 @@ public class Processo
     public string NumeroProcesso { get; set; } = string.Empty;
     public string Empreendimento { get; set; } = string.Empty;
     public string Interessado { get; set; } = string.Empty;
-    public string Classificacao { get; set; } = "LI";
+    public string? Classificacao { get; set; }
     public string DivisaoCap { get; set; } = "Licenciamento";
     public DateTime? DataEntrada { get; set; }
     public DateTime? Prazo { get; set; }

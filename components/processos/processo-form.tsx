@@ -101,7 +101,13 @@ function estadoInicial(p?: Processo | null): ProcessoInput {
   }
 }
 
-export function ProcessoForm({ processo }: { processo?: Processo | null }) {
+export function ProcessoForm({
+  processo,
+  modo = "processos",
+}: {
+  processo?: Processo | null
+  modo?: "processos" | "outros"
+}) {
   const router = useRouter()
   const editando = Boolean(processo)
   const [form, setForm] = useState<ProcessoInput>(estadoInicial(processo))
@@ -334,12 +340,12 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
 
             <div className="lg:col-span-4">
               <Campo label="Identificação do Empreendimento">
-              <Textarea
-                value={form.identificacaoEmpreendimento ?? ""}
-                onChange={(e) => set("identificacaoEmpreendimento", e.target.value)}
-                placeholder="Digite a identificação do empreendimento"
-                className="min-h-24 resize-y"
-              />
+                <Textarea
+                  value={form.identificacaoEmpreendimento ?? ""}
+                  onChange={(e) => set("identificacaoEmpreendimento", e.target.value)}
+                  placeholder="Digite a identificação do empreendimento"
+                  className="min-h-24 resize-y"
+                />
               </Campo>
             </div>
 
@@ -431,7 +437,7 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
                           </div>
                         </div>
                       </div>
-
+                      
                       {trecho.fases.map((faseItem, faseIndex) => {
                         const bloqueada =
                           faseItem.statusFase === "Emitido" &&
@@ -668,9 +674,6 @@ export function ProcessoForm({ processo }: { processo?: Processo | null }) {
                               <SelectItem value="ASV">ASV</SelectItem>
                               <SelectItem value="TCRA">TCRA</SelectItem>
                               <SelectItem value="AMIS">AMIS</SelectItem>
-                              <SelectItem value="SUP.OBRA">SUP.OBRA</SelectItem>
-                              <SelectItem value="OP-FAUNA">OP-FAUNA</SelectItem>
-                              <SelectItem value="OUTROS">OUTROS</SelectItem>
                             </SelectContent>
                           </Select>
 

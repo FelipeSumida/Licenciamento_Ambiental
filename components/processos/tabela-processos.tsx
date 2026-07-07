@@ -55,9 +55,11 @@ const TODOS = "__todos__"
 export function TabelaProcessos({
   processos,
   isLoading,
+  modo = "processos",
 }: {
   processos: Processo[]
   isLoading: boolean
+  modo?: "processos" | "outros"
 }) {
   const router = useRouter()
 
@@ -153,8 +155,9 @@ export function TabelaProcessos({
       const casaTecnico =
         tecnicoResponsavel === TODOS ||
         p.tecnicoResponsavel === tecnicoResponsavel
-
+      
       const casaFase =
+        modo === "outros" ||
         faseAtual === TODOS ||
         obterFaseAtual(p) === faseAtual
 
@@ -313,27 +316,29 @@ export function TabelaProcessos({
               </SelectContent>
             </Select>
           </div>
+          
+          {modo === "processos" && (
+            <div className="min-w-0">
+              <label className="mb-1 block text-sm font-medium">
+                Fase Atual
+              </label>
 
-          <div className="min-w-0">
-            <label className="mb-1 block text-sm font-medium">
-              Fase Atual
-            </label>
+              <Select value={faseAtual} onValueChange={(v: any) => setFaseAtual(v)}>
+                <SelectTrigger className="cursor-pointer h-11 w-full">
+                  <span>{faseAtual === TODOS ? "Todas as fases" : faseAtual}</span>
+                </SelectTrigger>
 
-            <Select value={faseAtual} onValueChange={(v: any) => setFaseAtual(v)}>
-              <SelectTrigger className="cursor-pointer h-11 w-full">
-                <span>{faseAtual === TODOS ? "Todas as fases" : faseAtual}</span>
-              </SelectTrigger>
-
-              <SelectContent>
-                <SelectItem value={TODOS}>Todas as fases</SelectItem>
-                {["CP", "LP", "LI", "LO", "ASV"].map((fase) => (
-                  <SelectItem key={fase} value={fase}>
-                    {fase}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+                <SelectContent>
+                  <SelectItem value={TODOS}>Todas as fases</SelectItem>
+                  {["CP", "LP", "LI", "LO", "ASV"].map((fase) => (
+                    <SelectItem key={fase} value={fase}>
+                      {fase}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           <div className="min-w-0">
             <label className="mb-1 block text-sm font-medium">
@@ -462,7 +467,9 @@ export function TabelaProcessos({
                 <TableHead>Processo</TableHead>
                 <TableHead>Código</TableHead>
                 <TableHead>Identificação do Empreendimento</TableHead>
-                <TableHead>Fase Atual</TableHead>
+                {modo === "processos" && (
+                  <TableHead>Fase Atual</TableHead>
+                )}
                 <TableHead>Divisão CAP</TableHead>
                 <TableHead>Técnico Responsável</TableHead>
                 <TableHead>Prazo</TableHead>
@@ -475,7 +482,10 @@ export function TabelaProcessos({
               {isLoading ? (
                 <EstadoLinha texto="Carregando processos..." />
               ) : filtrados.length === 0 ? (
-                <EstadoVazio temProcessos={processos.length > 0} />
+                <EstadoVazio
+                  temProcessos={processos.length > 0}
+                  modo={modo}
+                />
               ) : (
                 filtrados.map((p) => {
                   const pendencias = p.pendencias ?? []
@@ -506,9 +516,13 @@ export function TabelaProcessos({
                         {p.identificacaoEmpreendimento || "—"}
                       </TableCell>
 
-                      <TableCell>
-                        {obterFaseAtual(p)}
-                      </TableCell>
+                      {modo === "processos" && (
+                        <TableCell>{obterFaseAtual(p)}</TableCell>
+                      )}
+
+                      {modo === "outros" && (
+                        <TableCell>{p.classificacao || "-"}</TableCell>
+                      )}
 
                       <TableCell>
                         {p.pendencias?.[0]?.divisaoCap || "—"}
@@ -581,11 +595,11 @@ export function TabelaProcessos({
         </p>
 
         <Link
-          href="/processos/novo"
+          href={modo === "outros" ? "/outros-acompanhamentos/novo" : "/processos/novo"}
           className="inline-flex items-center gap-2 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 cursor-pointer"
         >
           <Plus className="size-4" />
-          Novo processo
+          {modo === "outros" ? "Novo acompanhamento" : "Novo processo"}
         </Link>
       </div>
 
@@ -647,7 +661,13 @@ function EstadoLinha({ texto }: { texto: string }) {
   )
 }
 
-function EstadoVazio({ temProcessos }: { temProcessos: boolean }) {
+function EstadoVazio({
+  temProcessos,
+  modo,
+}: {
+  temProcessos: boolean
+  modo: "processos" | "outros"
+}) {
   return (
     <TableRow>
       <TableCell colSpan={9} className="py-12">
@@ -671,11 +691,11 @@ function EstadoVazio({ temProcessos }: { temProcessos: boolean }) {
 
           {!temProcessos && (
             <Link
-              href="/processos/novo"
+              href={modo === "outros" ? "/outros-acompanhamentos/novo" : "/processos/novo"}
               className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
             >
               <Plus className="size-4" />
-              Novo processo
+              {modo === "outros" ? "Novo acompanhamento" : "Novo processo"}
             </Link>
           )}
         </div>
