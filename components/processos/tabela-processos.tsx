@@ -39,7 +39,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-import { MoreVertical, Eye} from "lucide-react"
+import { MoreVertical, Eye, Download} from "lucide-react"
 
 import { SituacaoBadge } from "@/components/situacao-badge"
 import { formatarData } from "@/lib/format"
@@ -257,6 +257,56 @@ export function TabelaProcessos({
     classificacaoFiltro,
     divisoesCapSelecionadas,
   ])
+
+  function exportarExcel() {
+    const dados = filtrados.map((p: any) => {
+      const pendenciaAberta =
+        p.pendencias?.find((x: any) => x.situacao === "Aberta") ?? p.pendencias?.[0]
+
+      return {
+        Processo: p.processo ?? "",
+        Codigo: p.trechos?.[0]?.rodovia ?? "",
+        Denominacao: p.trechos?.[0]?.denominacao ?? "",
+        KmInicial: p.trechos?.[0]?.kmInicial ?? "",
+        KmFinal: p.trechos?.[0]?.kmFinal ?? "",
+        Empreendimento: p.empreendimento ?? "",
+        IdentificacaoEmpreendimento: p.identificacaoEmpreendimento ?? "",
+        CaracterizacaoEmpreendimento: p.caracterizacaoEmpreendimento ?? "",
+        Interessado: p.interessado ?? "",
+        TecnicoResponsavel: p.tecnicoResponsavel ?? "",
+        Classificacao: p.classificacao ?? "",
+        DivisaoCAP: pendenciaAberta?.divisaoCap ?? "",
+        Situacao: pendenciaAberta?.situacao ?? "",
+        DataEntrada: pendenciaAberta?.dataEntrada ?? "",
+        Prazo: pendenciaAberta?.prazo ?? "",
+        DataSaida: pendenciaAberta?.dataSaida ?? "",
+        DescricaoPendencia: pendenciaAberta?.descricao ?? "",
+        AtribuidoA: pendenciaAberta?.atribuidoA?.join(", ") ?? "",
+        Regionais: pendenciaAberta?.regionais?.join(", ") ?? "",
+        Historicos: pendenciaAberta?.historicos
+          ?.map((h: any) => `${h.data ?? ""} - ${h.texto ?? ""}`)
+          .join(" | ") ?? "",
+      }
+    })
+
+    const cabecalho = Object.keys(dados[0]).join(";")
+    const linhas = dados.map((linha) =>
+      Object.values(linha).map((valor) => `"${valor}"`).join(";")
+    )
+
+    const csv = [cabecalho, ...linhas].join("\n")
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" })
+
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement("a")
+    link.href = url
+    link.download =
+      modo === "outros"
+        ? "outros_acompanhamentos.csv"
+        : "processos.csv"
+    link.click()
+    URL.revokeObjectURL(url)
+  }
 
   function obterFaseAtual(p: Processo) {
         const fases = p.trechos?.flatMap((t) => t.fases ?? []) ?? []
@@ -633,13 +683,26 @@ export function TabelaProcessos({
             ` de ${processos.length} no total`}
         </p>
 
-        <Link
-          href={modo === "outros" ? "/outros-acompanhamentos/novo" : "/processos/novo"}
-          className="inline-flex items-center gap-2 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 cursor-pointer"
-        >
-          <Plus className="size-4" />
-          {modo === "outros" ? "Novo acompanhamento" : "Novo processo"}
-        </Link>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={exportarExcel}
+            className="gap-2 cursor-pointer"
+          >
+            <Download className="h-4 w-4" />
+            {modo === "outros"
+              ? "Exportar Acompanhamentos"
+              : "Exportar Processos"}
+          </Button>
+
+          <Link
+            href={modo === "outros" ? "/outros-acompanhamentos/novo" : "/processos/novo"}
+            className="inline-flex items-center gap-2 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 cursor-pointer"
+          >
+            <Plus className="size-4" />
+            {modo === "outros" ? "Novo acompanhamento" : "Novo processo"}
+          </Link>
+        </div>
       </div>
 
       <Dialog
