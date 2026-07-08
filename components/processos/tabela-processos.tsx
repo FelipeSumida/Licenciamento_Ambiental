@@ -691,8 +691,8 @@ export function TabelaProcessos({
           >
             <Download className="h-4 w-4" />
             {modo === "outros"
-              ? "Exportar Acompanhamentos"
-              : "Exportar Processos"}
+              ? "Exportar Acompanhamentos (.csv)"
+              : "Exportar Processos (.csv)"}
           </Button>
 
           <Link

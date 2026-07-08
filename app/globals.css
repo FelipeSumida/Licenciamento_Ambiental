@@ -128,3 +128,107 @@
     @apply font-sans;
   }
 }
+
+@media screen {
+  .pdf-only {
+    display: none;
+  }
+}
+
+@media print {
+  .no-print,
+  aside,
+  nav,
+  button {
+    display: none !important;
+  }
+
+  .screen-only {
+    display: none !important;
+  }
+
+  .pdf-only {
+    display: block !important;
+  }
+
+  body {
+    background: white !important;
+    color: #111 !important;
+  }
+
+  main {
+    padding: 0 !important;
+  }
+
+  .pdf-page {
+    font-family: Arial, sans-serif;
+    padding: 36px;
+    color: #111;
+  }
+
+  .pdf-header {
+    border-bottom: 5px solid #006b3f;
+    padding-bottom: 16px;
+    margin-bottom: 26px;
+  }
+
+  .pdf-logo {
+    font-size: 34px;
+    font-weight: 800;
+    color: #006b3f;
+  }
+
+  .pdf-title {
+    font-size: 22px;
+    font-weight: 700;
+    margin-top: 12px;
+  }
+
+  .pdf-subtitle {
+    font-size: 13px;
+    color: #555;
+  }
+
+  .pdf-section {
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 18px;
+    margin-bottom: 20px;
+    break-inside: avoid;
+  }
+
+  .pdf-section h2 {
+    font-size: 15px;
+    color: #006b3f;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 8px;
+    margin-bottom: 14px;
+  }
+
+  .pdf-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px 28px;
+  }
+
+  .pdf-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #555;
+  }
+
+  .pdf-value {
+    font-size: 13px;
+    margin-top: 4px;
+    white-space: pre-wrap;
+  }
+
+  .pdf-footer {
+    border-top: 1px solid #ccc;
+    margin-top: 30px;
+    padding-top: 12px;
+    font-size: 11px;
+    color: #555;
+  }
+}
