@@ -32,43 +32,54 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
-export function AcompanhamentoForm() {
-    const [form, setForm] = useState({
-        processo: "",
-        identificacaoEmpreendimento: "",
-        caracterizacaoEmpreendimento: "",
-        empreendimento: "",
-        classificacao: "",
-        trechos: [
-            {
-            rodovia: "",
-            denominacao: "",
-            kmInicial: "",
-            kmFinal: "",
-            },
-        ],
-        pendencias: [
-            {
+export function AcompanhamentoForm({
+  processo,
+}: {
+  processo?: any
+}) {
+    const [form, setForm] = useState(() => ({
+        processo: processo?.processo ?? "",
+        identificacaoEmpreendimento: processo?.identificacaoEmpreendimento ?? "",
+        caracterizacaoEmpreendimento: processo?.caracterizacaoEmpreendimento ?? "",
+        empreendimento: processo?.empreendimento ?? "",
+        classificacao: processo?.classificacao ?? "",
+
+        trechos: processo?.trechos?.length
+            ? processo.trechos
+            : [
+                {
+                rodovia: "",
+                denominacao: "",
+                kmInicial: "",
+                kmFinal: "",
+                },
+            ],
+
+        pendencias: processo?.pendencias?.length
+            ? processo.pendencias
+            : [
+                {
                 descricao: "",
                 situacao: "Aberta",
                 prazo: "",
                 divisaoCap: "",
                 dataEntrada: "",
                 dataSaida: "",
-                atribuidoA: [] as string[],
-                regionais: [] as string[],
-                historicos: [] as { data: string; texto: string }[],
+                atribuidoA: [],
+                regionais: [],
+                historicos: [],
                 cadastrada: false,
-            },
-        ],
-        interessado: "",
-        tecnicoResponsavel: "",
-        historicoProcessoData: "",
-        historicoProcessoTexto: "",
-    })
+                },
+            ],
+
+        interessado: processo?.interessado ?? "",
+        tecnicoResponsavel: processo?.tecnicoResponsavel ?? "",
+        historicoProcessoData: processo?.historicoProcessoData ?? "",
+        historicoProcessoTexto: processo?.historicoProcessoTexto ?? "",
+    }))
     const router = useRouter()
     const [salvando, setSalvando] = useState(false)
-    const editando = false
+    const editando = !!processo
     const [pendenciasAbertas, setPendenciasAbertas] = useState<number[]>([0])
     const hoje = new Date().toISOString().split("T")[0]
 
@@ -129,19 +140,62 @@ export function AcompanhamentoForm() {
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault()
+
+        if (!form.classificacao) {
+            alert("Selecione uma classificação antes de salvar.")
+            return
+        }
         setSalvando(true)
 
         try {
-            const resposta = await fetch("http://localhost:5161/api/processos", {
-            method: "POST",
+            const payload = {
+                ...form,
+
+                trechos: form.trechos.map((t: any) => ({
+                    rodovia: t.rodovia,
+                    denominacao: t.denominacao,
+                    kmInicial: t.kmInicial,
+                    kmFinal: t.kmFinal,
+                })),
+
+                pendencias: form.pendencias.map((pendencia: any) => ({
+                    atribuidoA: pendencia.atribuidoA ?? [],
+                    regionais: pendencia.regionais ?? [],
+                    descricao: pendencia.descricao ?? "",
+                    divisaoCap: pendencia.divisaoCap ?? "",
+                    situacao: pendencia.situacao ?? "Aberta",
+                    dataEntrada: pendencia.dataEntrada || null,
+                    prazo: pendencia.prazo || null,
+                    dataSaida: pendencia.dataSaida || null,
+                    cadastrada: pendencia.cadastrada ?? true,
+
+                    historicos: (pendencia.historicos ?? [])
+                    .filter((h: any) => h.texto || h.data)
+                    .map((h: any) => ({
+                        texto: h.texto ?? "",
+                        data: h.data || null,
+                    })),
+                })),
+            }
+            const url = editando
+                ? `http://localhost:5161/api/processos/${processo.id}`
+                : "http://localhost:5161/api/processos"
+
+            const resposta = await fetch(url, {
+                method: editando ? "PUT" : "POST",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify(form),
+            body: JSON.stringify(payload),
             })
 
             if (!resposta.ok) {
-            throw new Error("Erro ao salvar acompanhamento")
+                const erroTexto = await resposta.text()
+
+                console.error("ERRO DA API:", erroTexto)
+                alert(erroTexto)
+
+                return
             }
 
             alert("Acompanhamento cadastrado com sucesso!")
@@ -238,7 +292,7 @@ export function AcompanhamentoForm() {
                 <div className="sm:col-span-2 space-y-4">
                     <Campo label="Rodovias e KM">
                     <div className="space-y-6 rounded-lg border p-6">
-                        {form.trechos.map((trecho, index) => (
+                        {form.trechos.map((trecho: any, index: number) => (
                         <div
                             key={index}
                             className="grid grid-cols-12 gap-3 items-end"
@@ -313,7 +367,7 @@ export function AcompanhamentoForm() {
                             onClick={() =>
                             set(
                                 "trechos",
-                                form.trechos.filter((_, i) => i !== form.trechos.length - 1)
+                                form.trechos.filter((_: any, i: number) => i !== form.trechos.length - 1)
                             )
                             }
                         >
@@ -335,7 +389,7 @@ export function AcompanhamentoForm() {
                     {(form.tecnicoResponsavel
                     ? form.tecnicoResponsavel.split("; ")
                     : [""]
-                    ).map((tecnico, index, lista) => (
+                    ).map((tecnico: string, index: number, lista: string[]) => (
                     <div key={index} className="mb-2 flex gap-2">
                         <Input
                         value={tecnico}
@@ -352,7 +406,7 @@ export function AcompanhamentoForm() {
                             type="button"
                             className="cursor-pointer rounded-md bg-red-500 px-3 py-2 text-white hover:bg-red-700"
                             onClick={() => {
-                            const novos = lista.filter((_, i) => i !== index)
+                            const novos = lista.filter((_: string, i: number) => i !== index)
                             set("tecnicoResponsavel", novos.join("; "))
                             }}
                         >
@@ -388,7 +442,7 @@ export function AcompanhamentoForm() {
                 <CardContent className="space-y-4">
                     <Campo label="Pendências">
                         <div className="space-y-4">
-                            {form.pendencias.map((pendencia, index) => {
+                            {form.pendencias.map((pendencia: any, index: number) => {
                                 const pendenciaFechada =
                                     pendencia.cadastrada === true && !pendenciasAbertas.includes(index)
 
@@ -400,7 +454,7 @@ export function AcompanhamentoForm() {
                                         onClick={() =>
                                         setPendenciasAbertas((atual) =>
                                             atual.includes(index)
-                                            ? atual.filter((i) => i !== index)
+                                            ? atual.filter((i: number) => i !== index)
                                             : [...atual, index]
                                         )
                                         }
@@ -419,7 +473,7 @@ export function AcompanhamentoForm() {
                                         onClick={() =>
                                         set(
                                             "pendencias",
-                                            form.pendencias.filter((_, i) => i !== index)
+                                            form.pendencias.filter((_: any, i: number) => i !== index)
                                         )
                                         }
                                     >
@@ -445,7 +499,7 @@ export function AcompanhamentoForm() {
 
                                                 const novoAtribuidoA = e.target.checked
                                                     ? [...pendencia.atribuidoA, valor]
-                                                    : pendencia.atribuidoA.filter((item) => item !== valor)
+                                                    : pendencia.atribuidoA.filter((item: string) => item !== valor)
 
                                                 setPendencia(index, "atribuidoA", novoAtribuidoA)
                                                 }}
@@ -469,7 +523,7 @@ export function AcompanhamentoForm() {
                                                     onChange={(e) => {
                                                     const novasRegionais = e.target.checked
                                                         ? [...pendencia.regionais, regional]
-                                                        : pendencia.regionais.filter((r) => r !== regional)
+                                                        : pendencia.regionais.filter((r: string) => r !== regional)
 
                                                     setPendencia(index, "regionais", novasRegionais)
                                                     }}
@@ -504,7 +558,7 @@ export function AcompanhamentoForm() {
 
                                     <Campo label="Históricos">
 
-                                        {pendencia.historicos.map((hist, histIndex) => (
+                                        {pendencia.historicos.map((hist: any, histIndex: number) => (
                                         <div
                                             key={histIndex}
                                             className="mb-3 rounded border p-3"
@@ -548,10 +602,7 @@ export function AcompanhamentoForm() {
                                             className="cursor-pointer mt-2 rounded bg-red-500 px-2 py-1 text-white hover:bg-red-700"
                                             onClick={() => {
                                                 const novosHistoricos =
-                                                pendencia.historicos.filter(
-                                                    (_, i) => i !== histIndex
-                                                )
-
+                                                pendencia.historicos.filter((_: any, i: number) => i !== histIndex)
                                                 const novasPendencias = [...form.pendencias]
                                                 novasPendencias[index].historicos = novosHistoricos
 

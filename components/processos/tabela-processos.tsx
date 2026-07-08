@@ -68,6 +68,7 @@ export function TabelaProcessos({
   const [excluindoId, setExcluindoId] = useState<string | null>(null)
   const [tecnicoResponsavel, setTecnicoResponsavel] = useState<string>(TODOS)
   const [atribuidoFiltro, setAtribuidoFiltro] = useState(TODOS)
+  const [classificacaoFiltro, setClassificacaoFiltro] = useState("TODAS")
   const [divisoesCapSelecionadas, setDivisoesCapSelecionadas] = useState<DivisaoCap[]>([])
   const [rodoviasSelecionadas, setRodoviasSelecionadas] = useState<string[]>([])
   const [faseAtual, setFaseAtual] = useState(TODOS)
@@ -141,7 +142,14 @@ export function TabelaProcessos({
     const termo = busca.trim().toLowerCase()
 
     return processos.filter((p) => {
+      if (
+        modo !== "outros" &&
+        ["SUP.OBRA", "OP-FAUNA", "OUTROS"].includes(p.classificacao ?? "")
+      ) {
+        return false
+      }
       const pendencias = p.pendencias ?? []
+      const classificacaoProcesso = p.classificacao ?? ""
       const trechos = p.trechos ?? []
 
       const rodoviasDoProcesso = trechos.map((t) => t.rodovia)
@@ -168,6 +176,11 @@ export function TabelaProcessos({
             pendencia.situacao === "Aberta" &&
             (pendencia.atribuidoA ?? []).includes(atribuidoFiltro)
         )
+      
+      const casaClassificacao =
+        modo !== "outros" ||
+        classificacaoFiltro === "TODAS" ||
+        p.classificacao === classificacaoFiltro
       
       const divisoesDoProcesso = pendencias.map((pendencia) => pendencia.divisaoCap)
 
@@ -212,7 +225,8 @@ export function TabelaProcessos({
         casaTecnico &&
         casaFase &&
         casaAtribuido &&
-        casaDivisaoCap
+        casaDivisaoCap &&
+        casaClassificacao
       )
     })
     .sort((a, b) => {
@@ -240,6 +254,7 @@ export function TabelaProcessos({
     rodoviasSelecionadas,
     tecnicoResponsavel,
     atribuidoFiltro,
+    classificacaoFiltro,
     divisoesCapSelecionadas,
   ])
 
@@ -365,6 +380,27 @@ export function TabelaProcessos({
             </Select>
           </div>
 
+          {modo === "outros" && (
+            <div className="min-w-[220px]">
+              <label className="mb-1 block text-sm font-medium">Classificação</label>
+              <Select
+                value={classificacaoFiltro}
+                onValueChange={(v: any) => setClassificacaoFiltro(v)}
+              >
+                <SelectTrigger className="cursor-pointer h-11 w-full min-w-[220px]">
+                  <SelectValue placeholder="Todas as classificações" />
+                </SelectTrigger>
+
+                <SelectContent>
+                  <SelectItem value="TODAS">Todas as classificações</SelectItem>
+                  <SelectItem value="SUP.OBRA">SUP.OBRA</SelectItem>
+                  <SelectItem value="OP-FAUNA">OP-FAUNA</SelectItem>
+                  <SelectItem value="OUTROS">OUTROS</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           <div className="min-w-0">
             <details className="w-full">
               <summary className="flex h-11 cursor-pointer items-center justify-between rounded-md border bg-background px-3 text-sm">
@@ -470,6 +506,9 @@ export function TabelaProcessos({
                 {modo === "processos" && (
                   <TableHead>Fase Atual</TableHead>
                 )}
+                {modo === "outros" && (
+                  <TableHead>Classificação</TableHead>
+                )}
                 <TableHead>Divisão CAP</TableHead>
                 <TableHead>Técnico Responsável</TableHead>
                 <TableHead>Prazo</TableHead>
@@ -552,14 +591,14 @@ export function TabelaProcessos({
                             <DropdownMenuContent align="end">
 
                               <DropdownMenuItem>
-                                <Link href={`/processos/${p.id}`} className="flex w-full items-center">
+                                <Link href={modo === "outros" ? `/outros-acompanhamentos/${p.id}` : `/processos/${p.id}`} className="flex w-full items-center">
                                   <Eye className="mr-2 size-4" />
                                   Ver detalhes
                                 </Link>
                               </DropdownMenuItem>
 
                               <DropdownMenuItem>
-                                <Link href={`/processos/${p.id}/editar`} className="flex w-full items-center">
+                                <Link href={`/outros-acompanhamentos/${p.id}/editar`} className="flex w-full items-center">
                                   <Pencil className="mr-2 size-4" />
                                   Editar
                                 </Link>
