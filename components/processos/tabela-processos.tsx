@@ -648,7 +648,13 @@ export function TabelaProcessos({
                               </DropdownMenuItem>
 
                               <DropdownMenuItem>
-                                <Link href={`/outros-acompanhamentos/${p.id}/editar`} className="flex w-full items-center">
+                                <Link href={
+                                        modo === "outros"
+                                          ? `/outros-acompanhamentos/${p.id}/editar`
+                                          : `/processos/${p.id}/editar`
+                                      }
+                                      className="flex w-full items-center"
+                                    >
                                   <Pencil className="mr-2 size-4" />
                                   Editar
                                 </Link>

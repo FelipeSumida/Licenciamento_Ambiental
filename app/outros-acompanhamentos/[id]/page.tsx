@@ -82,18 +82,18 @@ export default function DetalheProcessoPage({
           <div className="screen-only">
             <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="space-y-2">
-                <div className="flex flex-wrap items-center gap-3">
-                    <h1 className="print-title font-mono text-xl font-semibold text-foreground">
-                        {processo.processo}
-                    </h1>
-                    <SituacaoBadge
-                    situacao={
-                        processo.pendencias?.some((p) => p.situacao === "Aberta")
-                        ? "Aberta"
-                        : "Atendida"
-                    }
-                    />
-                </div>
+                    <div className="flex flex-wrap items-center gap-3">
+                        <h1 className="print-title font-mono text-xl font-semibold text-foreground">
+                            {processo.processo}
+                        </h1>
+                        <SituacaoBadge
+                        situacao={
+                            processo.pendencias?.some((p) => p.situacao === "Aberta")
+                            ? "Aberta"
+                            : "Atendida"
+                        }
+                        />
+                    </div>
                 </div>
                 <div className="flex gap-2">
 
@@ -105,35 +105,35 @@ export default function DetalheProcessoPage({
                     >
                         Exportar PDF
                     </Button>
-                <Link
-                    href={`/outros-acompanhamentos/${processo.id}/editar`}
-                    className="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm hover:bg-muted cursor-pointer"
-                >
-                    <Pencil className="size-4" />
-                    Editar
-                </Link>
-                <Button
-                    type="button"
-                    variant="outline"
-                    className="h-10 px-4 cursor-pointer text-red-600 hover:text-red-700"
-                    onClick={async () => {
-                    const confirmou = confirm("Tem certeza que deseja excluir este processo?")
+                    <Link
+                        href={`/outros-acompanhamentos/${processo.id}/editar`}
+                        className="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm hover:bg-muted cursor-pointer"
+                    >
+                        <Pencil className="size-4" />
+                        Editar
+                    </Link>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        className="h-10 px-4 cursor-pointer text-red-600 hover:text-red-700"
+                        onClick={async () => {
+                        const confirmou = confirm("Tem certeza que deseja excluir este processo?")
 
-                    if (!confirmou) return
+                        if (!confirmou) return
 
-                    try {
-                        await excluirProcesso(processo.id)
-                        router.push("/processos")
-                        router.refresh()
-                    } catch (error) {
-                        console.error("Erro ao excluir processo:", error)
-                        alert("Não foi possível excluir o processo.")
-                    }
-                    }}
-                >
-                    <Trash2 className="mr-1 h-4 w-4" />
-                    Excluir
-                </Button>
+                        try {
+                            await excluirProcesso(processo.id)
+                            router.push("/processos")
+                            router.refresh()
+                        } catch (error) {
+                            console.error("Erro ao excluir processo:", error)
+                            alert("Não foi possível excluir o processo.")
+                        }
+                        }}
+                    >
+                        <Trash2 className="mr-1 h-4 w-4" />
+                        Excluir
+                    </Button>
                 </div>
             </header>
 
@@ -407,7 +407,11 @@ export default function DetalheProcessoPage({
 
           <div className="pdf-only pdf-page">
             <div className="pdf-header">
-                <div className="pdf-logo">DER</div>
+                <img
+                    src="/logoder.png"
+                    alt="DER"
+                    className="pdf-logo-img"
+                />
                 <div className="pdf-title">Comunique-se</div>
                 <div className="pdf-subtitle">
                 Relatório de Processo de Licenciamento Ambiental
@@ -541,6 +545,28 @@ export default function DetalheProcessoPage({
                                     )
                                     .join("\n")
                                 : "Sem históricos registrados."}
+                            </div>
+                        </div>
+
+                        <div className="pdf-section">
+                          <h2>Histórico do processo</h2>
+
+                            <div className="pdf-grid">
+                                <div>
+                                    <div className="pdf-label">Data</div>
+                                    <div className="pdf-value">
+                                        {processo.historicoProcessoData
+                                        ? processo.historicoProcessoData.split("-").reverse().join("/")
+                                        : "—"}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div className="pdf-label">Descrição</div>
+                                    <div className="pdf-value">
+                                        {processo.historicoProcessoTexto || "Nenhum histórico cadastrado."}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                       </div>

@@ -9,6 +9,7 @@ import { AppShell } from "@/components/app-shell"
 import { ApiStatusBanner } from "@/components/api-status-banner"
 import { SituacaoBadge } from "@/components/situacao-badge"
 import { Button } from "@/components/ui/button"
+import { PdfProcesso } from "@/components/processos/pdf-processo"
 import {
   Card,
   CardContent,
@@ -79,407 +80,419 @@ export default function DetalheProcessoPage({
         </Card>
       ) : (
         <>
-          <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div className="space-y-2">
-              <div className="flex flex-wrap items-center gap-3">
-                <h1 className="font-mono text-xl font-semibold text-foreground">
-                  {processo.processo}
-                </h1>
-                <SituacaoBadge
-                  situacao={
-                    processo.pendencias?.some((p) => p.situacao === "Aberta")
-                      ? "Aberta"
-                      : "Atendida"
-                  }
-                />
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <Link
-                href={`/processos/${id}/editar`}
-                className="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm hover:bg-muted cursor-pointer"
-              >
-                <Pencil className="size-4" />
-                Editar
-              </Link>
-              <Button
-                type="button"
-                variant="outline"
-                className="h-10 px-4 cursor-pointer text-red-600 hover:text-red-700"
-                onClick={async () => {
-                  const confirmou = confirm("Tem certeza que deseja excluir este processo?")
-
-                  if (!confirmou) return
-
-                  try {
-                    await excluirProcesso(processo.id)
-                    router.push("/processos")
-                    router.refresh()
-                  } catch (error) {
-                    console.error("Erro ao excluir processo:", error)
-                    alert("Não foi possível excluir o processo.")
-                  }
-                }}
-              >
-                <Trash2 className="mr-1 h-4 w-4" />
-                Excluir
-              </Button>
-            </div>
-          </header>
-
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            <Card className="lg:col-span-2">
-              <CardHeader>
-                <CardTitle className="text-base">Dados do processo</CardTitle>
-              </CardHeader>
-              <CardContent className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
-                <Info label="Empreendimento" valor={processo.empreendimento} />
-
-                <div>
-                  <p className="text-xs font-medium uppercase text-muted-foreground">
-                    Identificação do Empreendimento
-                  </p>
-
-                  <textarea
-                    readOnly
-                    value={processo.identificacaoEmpreendimento ?? ""}
-                    className="
-                      mt-1
-                      w-full
-                      min-h-[90px]
-                      max-h-[220px]
-                      resize-y
-                      overflow-y-auto
-                      overflow-x-hidden
-                      rounded-md
-                      border
-                      bg-muted/30
-                      p-3
-                      text-sm
-                      whitespace-pre-wrap
-                      break-words
-                    "
-                  />
+            <div className="screen-only">
+              <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div className="space-y-2">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <h1 className="font-mono text-xl font-semibold text-foreground">
+                      {processo.processo}
+                    </h1>
+                    <SituacaoBadge
+                      situacao={
+                        processo.pendencias?.some((p) => p.situacao === "Aberta")
+                          ? "Aberta"
+                          : "Atendida"
+                      }
+                    />
+                  </div>
                 </div>
+                    
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => window.print()}
+                    className="no-print cursor-pointer"
+                  >
+                    Exportar PDF
+                  </Button>
+                  <Link
+                    href={`/processos/${id}/editar`}
+                    className="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm hover:bg-muted cursor-pointer"
+                  >
+                    <Pencil className="size-4" />
+                    Editar
+                  </Link>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-10 px-4 cursor-pointer text-red-600 hover:text-red-700"
+                    onClick={async () => {
+                      const confirmou = confirm("Tem certeza que deseja excluir este processo?")
 
-                <div>
-                  <p className="text-xs font-medium uppercase text-muted-foreground">
-                    Caracterização do Empreendimento
-                  </p>
+                      if (!confirmou) return
 
-                  <textarea
-                    readOnly
-                    value={processo.caracterizacaoEmpreendimento ?? ""}
-                    className="
-                      mt-1
-                      w-full
-                      min-h-[90px]
-                      max-h-[220px]
-                      resize-y
-                      overflow-y-auto
-                      overflow-x-hidden
-                      rounded-md
-                      border
-                      bg-muted/30
-                      p-3
-                      text-sm
-                      whitespace-pre-wrap
-                      break-words
-                    "
-                  />
-                </div>
+                      try {
+                        await excluirProcesso(processo.id)
+                        router.push("/processos")
+                        router.refresh()
+                      } catch (error) {
+                        console.error("Erro ao excluir processo:", error)
+                        alert("Não foi possível excluir o processo.")
+                      }
+                    }}
+                  >
+                    <Trash2 className="mr-1 h-4 w-4" />
+                    Excluir
+                  </Button>
+                </div> 
+              </header>
 
-                <Info
-                  label="Trecho"
-                  valor={
-                    processo.trechos?.length > 0
-                      ? processo.trechos
-                          .map(
-                            (t) =>
-                              `${t.denominacao || "Sem denominação"} - ${t.rodovia || "Sem rodovia"} - KM ${t.kmInicial || "-"} ao KM ${t.kmFinal || "-"}`
-                          )
-                          .join("\n")
-                      : "Sem trechos registrados."
-                  }
-                />
-                <Info label="Interessado" valor={processo.interessado} />
+              <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                <Card className="lg:col-span-2">
+                  <CardHeader>
+                    <CardTitle className="text-base">Dados do processo</CardTitle>
+                  </CardHeader>
+                  <CardContent className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
+                    <Info label="Empreendimento" valor={processo.empreendimento} />
 
-                <Info
-                  label="Técnico responsável"
-                  valor={processo.tecnicoResponsavel}
-                />
+                    <div>
+                      <p className="text-xs font-medium uppercase text-muted-foreground">
+                        Identificação do Empreendimento
+                      </p>
 
-                <div className="col-span-2">
-                  <p className="text-xs font-medium uppercase text-muted-foreground">
-                    Fases do trecho
-                  </p>
+                      <textarea
+                        readOnly
+                        value={processo.identificacaoEmpreendimento ?? ""}
+                        className="
+                          mt-1
+                          w-full
+                          min-h-[90px]
+                          max-h-[220px]
+                          resize-y
+                          overflow-y-auto
+                          overflow-x-hidden
+                          rounded-md
+                          border
+                          bg-muted/30
+                          p-3
+                          text-sm
+                          whitespace-pre-wrap
+                          break-words
+                        "
+                      />
+                    </div>
 
-                  <div className="mt-2 space-y-3">
-                    {processo.trechos?.flatMap((trecho) => trecho.fases ?? []).map((fase, index) => (
-                      <div key={index} className="rounded-md border bg-muted/40 p-3">
-                        <p className="mb-2 font-medium">
-                          Fase {index + 1}
-                        </p>
+                    <div>
+                      <p className="text-xs font-medium uppercase text-muted-foreground">
+                        Caracterização do Empreendimento
+                      </p>
 
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                          <Info label="Fase" valor={fase.fase || "-"} />
-                          <Info label="Situação da fase" valor={fase.statusFase || "-"} />
+                      <textarea
+                        readOnly
+                        value={processo.caracterizacaoEmpreendimento ?? ""}
+                        className="
+                          mt-1
+                          w-full
+                          min-h-[90px]
+                          max-h-[220px]
+                          resize-y
+                          overflow-y-auto
+                          overflow-x-hidden
+                          rounded-md
+                          border
+                          bg-muted/30
+                          p-3
+                          text-sm
+                          whitespace-pre-wrap
+                          break-words
+                        "
+                      />
+                    </div>
 
-                          {fase.statusFase === "Emitido" && (
-                            <>
-                              <Info label="N°" valor={fase.numeroFase || "-"} />
-                              <Info label="Data de emissão" valor={formatarData(fase.dataEmissaoFase)} />
-                              <Info label="Data de validade" valor={formatarData(fase.dataValidadeFase)} />
+                    <Info
+                      label="Trecho"
+                      valor={
+                        processo.trechos?.length > 0
+                          ? processo.trechos
+                              .map(
+                                (t) =>
+                                  `${t.denominacao || "Sem denominação"} - ${t.rodovia || "Sem rodovia"} - KM ${t.kmInicial || "-"} ao KM ${t.kmFinal || "-"}`
+                              )
+                              .join("\n")
+                          : "Sem trechos registrados."
+                      }
+                    />
+                    <Info label="Interessado" valor={processo.interessado} />
 
-                              <div>
-                                <p className="text-xs font-medium uppercase text-muted-foreground">
-                                  Anexo PDF
-                                </p>
-                              
-                                {fase.anexoFase ? (
-                                  <a
-                                    href={`http://localhost:5161/api/processos/${processo.id}/fases/${fase.id}/anexo`}
-                                    download
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-sm text-green-700 underline hover:text-green-800"
-                                  >
-                                    {fase.anexoFase}
-                                  </a>
-                                ) : (
-                                  <p>-</p>
-                                )}
+                    <Info
+                      label="Técnico responsável"
+                      valor={processo.tecnicoResponsavel}
+                    />
+
+                    <div className="col-span-2">
+                      <p className="text-xs font-medium uppercase text-muted-foreground">
+                        Fases do trecho
+                      </p>
+
+                      <div className="mt-2 space-y-3">
+                        {processo.trechos?.flatMap((trecho) => trecho.fases ?? []).map((fase, index) => (
+                          <div key={index} className="rounded-md border bg-muted/40 p-3">
+                            <p className="mb-2 font-medium">
+                              Fase {index + 1}
+                            </p>
+
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                              <Info label="Fase" valor={fase.fase || "-"} />
+                              <Info label="Situação da fase" valor={fase.statusFase || "-"} />
+
+                              {fase.statusFase === "Emitido" && (
+                                <>
+                                  <Info label="N°" valor={fase.numeroFase || "-"} />
+                                  <Info label="Data de emissão" valor={formatarData(fase.dataEmissaoFase)} />
+                                  <Info label="Data de validade" valor={formatarData(fase.dataValidadeFase)} />
+
+                                  <div>
+                                    <p className="text-xs font-medium uppercase text-muted-foreground">
+                                      Anexo PDF
+                                    </p>
+                                  
+                                    {fase.anexoFase ? (
+                                      <a
+                                        href={`http://localhost:5161/api/processos/${processo.id}/fases/${fase.id}/anexo`}
+                                        download
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-sm text-green-700 underline hover:text-green-800"
+                                      >
+                                        {fase.anexoFase}
+                                      </a>
+                                    ) : (
+                                      <p>-</p>
+                                    )}
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+
+                        {processo.fasesComplementares && processo.fasesComplementares.length > 0 && (
+                          <div className="rounded-md border bg-muted/40 p-3">
+                            <h3 className="mb-2 font-medium">
+                              Fases Complementares
+                            </h3>
+
+                            {processo.fasesComplementares.map((fase, index) => (
+                              <div
+                                key={index}
+                                className="mb-3 rounded-lg border p-4"
+                              >
+                                <div className="grid grid-cols-3 gap-6">
+
+                                  <div>
+                                    <p className="text-xs text-muted-foreground">FASE</p>
+                                    <p>{fase.fase}</p>
+                                  </div>
+
+                                  <div>
+                                    <p className="text-xs text-muted-foreground">DATA DE EMISSÃO</p>
+                                    <p>
+                                      {fase.dataEmissao
+                                        ? new Date(fase.dataEmissao).toLocaleDateString("pt-BR")
+                                        : "-"}
+                                    </p>
+                                  </div>
+
+                                  <div>
+                                    <p className="text-xs text-muted-foreground">ANEXO PDF</p>
+                                    <p>{fase.anexoPdf || "-"}</p>
+                                  </div>
+
+                                </div>
                               </div>
-                            </>
-                          )}
-                        </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                    ))}
+                    </div>
+                  </CardContent>
+                </Card>
 
-                    {processo.fasesComplementares && processo.fasesComplementares.length > 0 && (
-                      <div className="rounded-md border bg-muted/40 p-3">
-                        <h3 className="mb-2 font-medium">
-                          Fases Complementares
-                        </h3>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Prazos</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {processo.pendencias?.length > 0 ? (
+                      processo.pendencias.map((pendencia, index) => (
+                        <div key={index} className="space-y-3">
+                          <p className="text-sm font-medium">
+                            Pendência {index + 1}
+                          </p>
 
-                        {processo.fasesComplementares.map((fase, index) => (
-                          <div
-                            key={index}
-                            className="mb-3 rounded-lg border p-4"
-                          >
-                            <div className="grid grid-cols-3 gap-6">
+                          <Info
+                            label="Data de entrada"
+                            valor={formatarData(pendencia.dataEntrada)}
+                          />
 
-                              <div>
-                                <p className="text-xs text-muted-foreground">FASE</p>
-                                <p>{fase.fase}</p>
-                              </div>
+                          <Separator />
 
-                              <div>
-                                <p className="text-xs text-muted-foreground">DATA DE EMISSÃO</p>
-                                <p>
-                                  {fase.dataEmissao
-                                    ? new Date(fase.dataEmissao).toLocaleDateString("pt-BR")
-                                    : "-"}
+                          <Info
+                            label="Prazo"
+                            valor={formatarData(pendencia.prazo)}
+                          />
+
+                          <Separator />
+
+                          <Info
+                            label="Data de saída"
+                            valor={formatarData(pendencia.dataSaida)}
+                          />
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-muted-foreground">
+                        Sem prazos registrados.
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+
+                <Card className="lg:col-span-3">
+                  <CardHeader>
+                    <CardTitle className="text-base">Pendências</CardTitle>
+                  </CardHeader>
+
+                  <CardContent>
+                    {processo.pendencias?.length > 0 ? (
+                      <div className="space-y-4">
+                        {processo.pendencias.map((pendencia, index) => (
+                          <div key={index} className="rounded-md border p-4 space-y-3">
+                            <h3 className="font-medium">Pendência {index + 1}</h3>
+
+                            <Info
+                              label="Atribuído a"
+                              valor={
+                                pendencia.atribuidoA?.length > 0
+                                  ? pendencia.atribuidoA.join(", ")
+                                  : "Não informado"
+                              }
+                            />
+
+                            {pendencia.atribuidoA?.includes("Regional") && (
+                              <Info
+                                label="Regionais"
+                                valor={
+                                  pendencia.regionais?.length > 0
+                                    ? pendencia.regionais.join(", ")
+                                    : "Nenhuma regional selecionada"
+                                }
+                              />
+                            )}
+
+                            <Info
+                              label="Descrição"
+                              valor={pendencia.descricao || "Sem descrição."}
+                            />
+
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                              <Info label="Divisão CAP" valor={pendencia.divisaoCap} />
+                              <Info label="Situação" valor={pendencia.situacao} />
+                            </div>
+
+                            <div>
+                              <p className="mb-2 text-xs font-medium uppercase text-muted-foreground">
+                                Históricos
+                              </p>
+
+                              {pendencia.historicos?.length > 0 ? (
+                                <div className="space-y-2">
+                                  {pendencia.historicos.map((historico, histIndex) => (
+                                    <div key={histIndex} className="rounded-md bg-muted p-3">
+                                      <p className="text-xs text-muted-foreground">
+                                        {formatarData(historico.data)}
+                                      </p>
+                                      <p className="text-sm">
+                                        {historico.texto || "Sem descrição do histórico."}
+                                      </p>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <p className="text-sm text-muted-foreground">
+                                  Sem históricos registrados.
                                 </p>
-                              </div>
-
-                              <div>
-                                <p className="text-xs text-muted-foreground">ANEXO PDF</p>
-                                <p>{fase.anexoPdf || "-"}</p>
-                              </div>
-
+                              )}
                             </div>
                           </div>
                         ))}
                       </div>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Prazos</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {processo.pendencias?.length > 0 ? (
-                  processo.pendencias.map((pendencia, index) => (
-                    <div key={index} className="space-y-3">
-                      <p className="text-sm font-medium">
-                        Pendência {index + 1}
+                    ) : (
+                      <p className="text-sm text-muted-foreground">
+                        Sem pendências registradas.
                       </p>
+                    )}
+                  </CardContent>
+                </Card>
 
-                      <Info
-                        label="Data de entrada"
-                        valor={formatarData(pendencia.dataEntrada)}
-                      />
+                <Card className="self-start">
+                  <CardHeader>
+                    <CardTitle>Histórico do Processo</CardTitle>
+                  </CardHeader>
 
-                      <Separator />
-
-                      <Info
-                        label="Prazo"
-                        valor={formatarData(pendencia.prazo)}
-                      />
-
-                      <Separator />
-
-                      <Info
-                        label="Data de saída"
-                        valor={formatarData(pendencia.dataSaida)}
-                      />
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-sm text-muted-foreground">
-                    Sem prazos registrados.
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card className="lg:col-span-3">
-              <CardHeader>
-                <CardTitle className="text-base">Pendências</CardTitle>
-              </CardHeader>
-
-              <CardContent>
-                {processo.pendencias?.length > 0 ? (
-                  <div className="space-y-4">
-                    {processo.pendencias.map((pendencia, index) => (
-                      <div key={index} className="rounded-md border p-4 space-y-3">
-                        <h3 className="font-medium">Pendência {index + 1}</h3>
-
-                        <Info
-                          label="Atribuído a"
-                          valor={
-                            pendencia.atribuidoA?.length > 0
-                              ? pendencia.atribuidoA.join(", ")
-                              : "Não informado"
-                          }
-                        />
-
-                        {pendencia.atribuidoA?.includes("Regional") && (
-                          <Info
-                            label="Regionais"
-                            valor={
-                              pendencia.regionais?.length > 0
-                                ? pendencia.regionais.join(", ")
-                                : "Nenhuma regional selecionada"
-                            }
-                          />
-                        )}
-
-                        <Info
-                          label="Descrição"
-                          valor={pendencia.descricao || "Sem descrição."}
-                        />
-
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                          <Info label="Divisão CAP" valor={pendencia.divisaoCap} />
-                          <Info label="Situação" valor={pendencia.situacao} />
+                  <CardContent className="space-y-3">
+                    {processo.historicoProcessoTexto ? (
+                      <>
+                        <div>
+                          <label>Data</label>
+                          <p className="text-sm text-muted-foreground">
+                            {processo.historicoProcessoData
+                              ?.split("-")
+                              .reverse()
+                              .join("/")}
+                          </p>
                         </div>
 
                         <div>
-                          <p className="mb-2 text-xs font-medium uppercase text-muted-foreground">
-                            Históricos
+                          <label>Descrição</label>
+                          <p className="whitespace-pre-wrap rounded-md border p-3">
+                            {processo.historicoProcessoTexto}
                           </p>
-
-                          {pendencia.historicos?.length > 0 ? (
-                            <div className="space-y-2">
-                              {pendencia.historicos.map((historico, histIndex) => (
-                                <div key={histIndex} className="rounded-md bg-muted p-3">
-                                  <p className="text-xs text-muted-foreground">
-                                    {formatarData(historico.data)}
-                                  </p>
-                                  <p className="text-sm">
-                                    {historico.texto || "Sem descrição do histórico."}
-                                  </p>
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <p className="text-sm text-muted-foreground">
-                              Sem históricos registrados.
-                            </p>
-                          )}
                         </div>
+                      </>
+                    ) : (
+                      <p className="text-muted-foreground">
+                        Nenhum histórico cadastrado.
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+
+                <Card className="mt-6">
+                  <CardHeader>
+                    <CardTitle className="text-base">Histórico de alterações</CardTitle>
+                  </CardHeader>
+
+                  <CardContent className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
+                    {processo.historicosAlteracoes?.length ? (
+                      <div className="space-y-3">
+                        {processo.historicosAlteracoes.map((historico) => (
+                          <div
+                            key={historico.id}
+                            className="rounded-md border bg-muted/40 p-4"
+                          >
+                            <p className="text-sm font-medium">
+                              {new Date(historico.dataHora).toLocaleString("pt-BR")}
+                            </p>
+
+                            <p className="mt-1 text-sm">
+                              {historico.descricao}
+                            </p>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">
-                    Sem pendências registradas.
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card className="self-start">
-              <CardHeader>
-                <CardTitle>Histórico do Processo</CardTitle>
-              </CardHeader>
-
-              <CardContent className="space-y-3">
-                {processo.historicoProcessoTexto ? (
-                  <>
-                    <div>
-                      <label>Data</label>
+                    ) : (
                       <p className="text-sm text-muted-foreground">
-                        {processo.historicoProcessoData
-                          ?.split("-")
-                          .reverse()
-                          .join("/")}
+                        Nenhuma alteração registrada.
                       </p>
-                    </div>
+                    )}
+                  </CardContent>
+                </Card>
 
-                    <div>
-                      <label>Descrição</label>
-                      <p className="whitespace-pre-wrap rounded-md border p-3">
-                        {processo.historicoProcessoTexto}
-                      </p>
-                    </div>
-                  </>
-                ) : (
-                  <p className="text-muted-foreground">
-                    Nenhum histórico cadastrado.
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card className="mt-6">
-              <CardHeader>
-                <CardTitle className="text-base">Histórico de alterações</CardTitle>
-              </CardHeader>
-
-              <CardContent className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
-                {processo.historicosAlteracoes?.length ? (
-                  <div className="space-y-3">
-                    {processo.historicosAlteracoes.map((historico) => (
-                      <div
-                        key={historico.id}
-                        className="rounded-md border bg-muted/40 p-4"
-                      >
-                        <p className="text-sm font-medium">
-                          {new Date(historico.dataHora).toLocaleString("pt-BR")}
-                        </p>
-
-                        <p className="mt-1 text-sm">
-                          {historico.descricao}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">
-                    Nenhuma alteração registrada.
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-
-          </div>
+              </div>
+            </div>
+          <PdfProcesso processo={processo} />
         </>
       )}
 
