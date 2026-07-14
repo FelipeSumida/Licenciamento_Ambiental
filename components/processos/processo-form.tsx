@@ -143,17 +143,24 @@ export function ProcessoForm({
     }
   }
 
-  function setPendencia<K extends keyof Pendencia>(
+  function setPendencia(
     index: number,
-    campo: K,
-    valor: Pendencia[K]
+    campo: string,
+    valor: unknown
   ) {
-    const novasPendencias = [...form.pendencias]
-    novasPendencias[index] = {
-      ...novasPendencias[index],
-      [campo]: valor,
-    }
-    set("pendencias", novasPendencias)
+    setForm((atual) => {
+      const novasPendencias = [...atual.pendencias]
+
+      novasPendencias[index] = {
+        ...novasPendencias[index],
+        [campo]: valor,
+      }
+
+      return {
+        ...atual,
+        pendencias: novasPendencias,
+      }
+    })
   }
 
 
@@ -299,6 +306,16 @@ export function ProcessoForm({
     }
 
     setSalvando(true)
+
+    console.log("FORM ENVIADO:", form)
+    console.log(
+      "REGIONAIS ENVIADAS:",
+      form.pendencias.map((p) => ({
+        descricao: p.descricao,
+        atribuidoA: p.atribuidoA,
+        regionais: p.regionais,
+      }))
+    )
 
     try {
       if (editando && processo) {
@@ -918,8 +935,8 @@ export function ProcessoForm({
                                     checked={pendencia.regionais.includes(regional)}
                                     onChange={(e) => {
                                       const novasRegionais = e.target.checked
-                                        ? [...pendencia.regionais, regional]
-                                        : pendencia.regionais.filter((r) => r !== regional)
+                                        ? [...(pendencia.regionais ?? []), regional]
+                                        : (pendencia.regionais ?? []).filter((r) => r !== regional)
 
                                       setPendencia(index, "regionais", novasRegionais)
                                     }}

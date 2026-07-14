@@ -60,7 +60,9 @@ public class Pendencia
     public int Id { get; set; }
 
     public List<string> AtribuidoA { get; set; } = new();
+    [NotMapped]
     public List<string> Regionais { get; set; } = new();
+    public ICollection<PendenciaRegional> PendenciasRegionais { get; set; } = new List<PendenciaRegional>();
     public string Descricao { get; set; } = "";
     public string DivisaoCap { get; set; } = "Licenciamento";
     public string Situacao { get; set; } = "Aberta";

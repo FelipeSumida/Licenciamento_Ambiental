@@ -40,13 +40,27 @@ public class ProcessosController : ControllerBase
             .Include(p => p.FasesComplementares)
             .Include(p => p.Pendencias)
                 .ThenInclude(p => p.Historicos)
+            .Include(p => p.Pendencias)
+                .ThenInclude(pendencia => pendencia.PendenciasRegionais)
+                    .ThenInclude(vinculo => vinculo.Regional)
             .Include(p => p.HistoricosAlteracoes.OrderByDescending(h => h.DataHora))
             .FirstOrDefaultAsync(p => p.Id == id);
 
         if (processo == null)
             return NotFound();
 
-        return processo;
+        foreach (var pendencia in processo.Pendencias)
+        {
+            pendencia.Regionais = pendencia.PendenciasRegionais
+                .Select(vinculo => vinculo.Regional.Codigo)
+                .ToList();
+
+            Console.WriteLine(
+                $"GET - Pendência {pendencia.Id}: {string.Join(", ", pendencia.Regionais)}"
+            );
+        }
+
+        return Ok(processo);
     }
 
     [HttpPost]
@@ -97,6 +111,9 @@ public class ProcessosController : ControllerBase
             .Include(p => p.FasesComplementares)
             .Include(p => p.Pendencias)
                 .ThenInclude(p => p.Historicos)
+            .Include(p => p.Pendencias)
+                .ThenInclude(p => p.PendenciasRegionais)
+                    .ThenInclude(pr => pr.Regional)
             .FirstOrDefaultAsync(p => p.Id == id);
 
         if (processoExistente == null)
@@ -175,6 +192,10 @@ public class ProcessosController : ControllerBase
         foreach (var pendencia in processoExistente.Pendencias)
         {
             _context.Historicos.RemoveRange(pendencia.Historicos);
+
+            _context.PendenciasRegionais.RemoveRange(
+                pendencia.PendenciasRegionais
+            );
         }
 
         _context.Pendencias.RemoveRange(processoExistente.Pendencias);
@@ -211,7 +232,60 @@ public class ProcessosController : ControllerBase
             })
             .ToList();
 
-        processoExistente.Pendencias = processo.Pendencias;
+        processoExistente.Pendencias = new List<Pendencia>();
+
+        var vinculosRegionaisPendentes = new List<(Pendencia Pendencia, List<int> RegionalIds)>();
+
+        foreach (var pendenciaDto in processo.Pendencias)
+        {
+            var novaPendencia = new Pendencia
+            {
+                Descricao = pendenciaDto.Descricao,
+                Situacao = pendenciaDto.Situacao,
+                DivisaoCap = pendenciaDto.DivisaoCap,
+                DataEntrada = pendenciaDto.DataEntrada,
+                Prazo = pendenciaDto.Prazo,
+                DataSaida = pendenciaDto.DataSaida,
+                AtribuidoA = pendenciaDto.AtribuidoA,
+
+                Historicos = (pendenciaDto.Historicos ?? new List<Historico>())
+                    .Select(h => new Historico
+                    {
+                        Data = h.Data,
+                        Texto = h.Texto
+                    })
+                    .ToList()
+            };
+
+            Console.WriteLine(
+                $"Pendência: {pendenciaDto.Descricao} | Regionais recebidas: " +
+                string.Join(", ", pendenciaDto.Regionais ?? new List<string>())
+            );
+
+            var idsRegionais = new List<int>();
+
+            if (pendenciaDto.Regionais != null && pendenciaDto.Regionais.Count > 0)
+            {
+                var regionaisEncontradas = await _context.Regionais
+                    .Where(r => pendenciaDto.Regionais.Contains(r.Codigo))
+                    .ToListAsync();
+
+                idsRegionais = regionaisEncontradas
+                    .Select(r => r.IdRegional)
+                    .ToList();
+            }
+
+            Console.WriteLine(
+                $"IDs encontrados: {string.Join(", ", idsRegionais)}"
+            );
+
+            processoExistente.Pendencias.Add(novaPendencia);
+
+            vinculosRegionaisPendentes.Add((
+                novaPendencia,
+                idsRegionais
+            ));
+        }
 
         if (alteracoes.Any())
         {
@@ -225,7 +299,21 @@ public class ProcessosController : ControllerBase
 
         await _context.SaveChangesAsync();
 
-        return Ok(processoExistente);
+        foreach (var item in vinculosRegionaisPendentes)
+        {
+            foreach (var regionalId in item.RegionalIds)
+            {
+                _context.PendenciasRegionais.Add(new PendenciaRegional
+                {
+                    PendenciaId = item.Pendencia.Id,
+                    RegionalId = regionalId
+                });
+            }
+        }
+
+        await _context.SaveChangesAsync();
+
+        return NoContent();
     }
 
     [HttpDelete("{id}")]

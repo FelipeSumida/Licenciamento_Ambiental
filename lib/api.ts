@@ -71,9 +71,25 @@ export async function atualizarProcesso(
   id: string,
   input: ProcessoInput,
 ): Promise<Processo> {
+  const payload = {
+    ...input,
+
+    pendencias: (input.pendencias ?? []).map((pendencia) => ({
+      descricao: pendencia.descricao,
+      situacao: pendencia.situacao,
+      divisaoCap: pendencia.divisaoCap,
+      atribuidoA: pendencia.atribuidoA ?? [],
+      regionais: pendencia.regionais ?? [],
+      dataEntrada: pendencia.dataEntrada,
+      prazo: pendencia.prazo,
+      dataSaida: pendencia.dataSaida,
+      historicos: pendencia.historicos ?? [],
+    })),
+  }
+
   return request<Processo>(`/processos/${id}`, {
     method: "PUT",
-    body: JSON.stringify(input),
+    body: JSON.stringify(payload),
   })
 }
 
@@ -83,7 +99,12 @@ export async function excluirProcesso(id: string): Promise<void> {
 
 export async function obterResumoDashboard(): Promise<ResumoDashboard> {
   if (!API_CONFIGURADA) {
-    return { abertos: 0, concluidos: 0, porArea: [], porTematica: [] }
+    return {
+      abertos: 0,
+      concluidos: 0,
+      total: 0,
+      porArea: [],
+    }
   }
   return request<ResumoDashboard>("/dashboard/resumo")
 }
