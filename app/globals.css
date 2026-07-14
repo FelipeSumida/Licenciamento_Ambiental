@@ -129,12 +129,6 @@
   }
 }
 
-@media screen {
-  .pdf-only {
-    display: none;
-  }
-}
-
 @media print {
   @page {
     size: A4 portrait;
@@ -147,10 +141,6 @@
   nav,
   button {
     display: none !important;
-  }
-
-  .pdf-only {
-    display: block !important;
   }
 
   html,

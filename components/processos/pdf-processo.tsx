@@ -39,7 +39,7 @@ export function PdfProcesso({ processo }: PdfProcessoProps) {
     ) ?? []
 
   return (
-    <div className="pdf-only pdf-page">
+    <div className="hidden print:block pdf-page">
         <header className="pdf-header">
             <img
             src="/logoder.png"

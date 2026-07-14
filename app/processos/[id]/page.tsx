@@ -80,7 +80,7 @@ export default function DetalheProcessoPage({
         </Card>
       ) : (
         <>
-            <div className="screen-only">
+            <div className="print:hidden">
               <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="space-y-2">
                   <div className="flex flex-wrap items-center gap-3">
@@ -458,38 +458,6 @@ export default function DetalheProcessoPage({
                     )}
                   </CardContent>
                 </Card>
-
-                <Card className="mt-6">
-                  <CardHeader>
-                    <CardTitle className="text-base">Histórico de alterações</CardTitle>
-                  </CardHeader>
-
-                  <CardContent className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
-                    {processo.historicosAlteracoes?.length ? (
-                      <div className="space-y-3">
-                        {processo.historicosAlteracoes.map((historico) => (
-                          <div
-                            key={historico.id}
-                            className="rounded-md border bg-muted/40 p-4"
-                          >
-                            <p className="text-sm font-medium">
-                              {new Date(historico.dataHora).toLocaleString("pt-BR")}
-                            </p>
-
-                            <p className="mt-1 text-sm">
-                              {historico.descricao}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-sm text-muted-foreground">
-                        Nenhuma alteração registrada.
-                      </p>
-                    )}
-                  </CardContent>
-                </Card>
-
               </div>
             </div>
           <PdfProcesso processo={processo} />
