@@ -168,10 +168,8 @@ public class ProcessosController : ControllerBase
 
         _context.Processos.Add(processoNovo);
 
-        // Primeiro salva o processo e as pendências para gerar os IDs
         await _context.SaveChangesAsync();
 
-        // Depois cria os registros da tabela de ligação
         foreach (var item in vinculosRegionaisPendentes)
         {
             foreach (var regionalId in item.RegionalIds)

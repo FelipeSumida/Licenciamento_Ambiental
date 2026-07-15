@@ -129,3 +129,5 @@ export async function obterResumoDashboard(): Promise<ResumoDashboard> {
 
 // Fetcher genérico para uso com SWR
 export const swrFetcher = <T>(path: string): Promise<T> => request<T>(path)
+
+// 
