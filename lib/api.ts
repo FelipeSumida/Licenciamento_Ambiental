@@ -60,10 +60,28 @@ export async function obterProcesso(id: string): Promise<Processo | null> {
   return request<Processo>(`/processos/${id}`)
 }
 
-export async function criarProcesso(input: ProcessoInput): Promise<Processo> {
+export async function criarProcesso(
+  input: ProcessoInput,
+): Promise<Processo> {
+  const payload = {
+    ...input,
+
+    pendencias: (input.pendencias ?? []).map((pendencia) => ({
+      descricao: pendencia.descricao,
+      situacao: pendencia.situacao,
+      divisaoCap: pendencia.divisaoCap,
+      atribuidoA: pendencia.atribuidoA ?? [],
+      regionais: pendencia.regionais ?? [],
+      dataEntrada: pendencia.dataEntrada,
+      prazo: pendencia.prazo,
+      dataSaida: pendencia.dataSaida,
+      historicos: pendencia.historicos ?? [],
+    })),
+  }
+
   return request<Processo>("/processos", {
     method: "POST",
-    body: JSON.stringify(input),
+    body: JSON.stringify(payload),
   })
 }
 

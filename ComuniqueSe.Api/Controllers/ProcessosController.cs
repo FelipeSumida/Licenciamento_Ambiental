@@ -66,10 +66,131 @@ public class ProcessosController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<Processo>> PostProcesso(Processo processo)
     {
-        _context.Processos.Add(processo);
+        var processoNovo = new Processo
+        {
+            NumeroProcesso = processo.NumeroProcesso,
+            Empreendimento = processo.Empreendimento,
+            Interessado = processo.Interessado,
+            Classificacao = processo.Classificacao,
+            DivisaoCap = processo.DivisaoCap,
+            DataEntrada = processo.DataEntrada,
+            Prazo = processo.Prazo,
+            DataSaida = processo.DataSaida,
+            TecnicoResponsavel = processo.TecnicoResponsavel,
+            Situacao = processo.Situacao,
+            Fase = processo.Fase,
+            StatusFase = processo.StatusFase,
+            DataEmissaoFase = processo.DataEmissaoFase,
+            DataValidadeFase = processo.DataValidadeFase,
+            NumeroFase = processo.NumeroFase,
+            AnexoFase = processo.AnexoFase,
+            IdentificacaoEmpreendimento = processo.IdentificacaoEmpreendimento,
+            CaracterizacaoEmpreendimento = processo.CaracterizacaoEmpreendimento,
+            HistoricoProcessoData = processo.HistoricoProcessoData,
+            HistoricoProcessoTexto = processo.HistoricoProcessoTexto,
+
+            Trechos = (processo.Trechos ?? new List<Trecho>())
+                .Select(t => new Trecho
+                {
+                    Denominacao = t.Denominacao,
+                    Rodovia = t.Rodovia,
+                    KmInicial = t.KmInicial,
+                    KmFinal = t.KmFinal,
+
+                    Fases = (t.Fases ?? new List<FaseTrecho>())
+                        .Select(f => new FaseTrecho
+                        {
+                            Fase = f.Fase,
+                            StatusFase = f.StatusFase,
+                            NumeroFase = f.NumeroFase,
+                            DataEmissaoFase = f.DataEmissaoFase,
+                            DataValidadeFase = f.DataValidadeFase,
+                            AnexoFase = f.AnexoFase
+                        })
+                        .ToList()
+                })
+                .ToList(),
+
+            FasesComplementares = (processo.FasesComplementares ?? new List<FaseComplementar>())
+                .Select(fc => new FaseComplementar
+                {
+                    Fase = fc.Fase,
+                    DataEmissao = fc.DataEmissao,
+                    AnexoPdf = fc.AnexoPdf
+                })
+                .ToList(),
+
+            Pendencias = new List<Pendencia>()
+        };
+
+        var vinculosRegionaisPendentes =
+            new List<(Pendencia Pendencia, List<int> RegionalIds)>();
+
+        foreach (var pendenciaRecebida in processo.Pendencias ?? new List<Pendencia>())
+        {
+            var novaPendencia = new Pendencia
+            {
+                Descricao = pendenciaRecebida.Descricao,
+                Situacao = pendenciaRecebida.Situacao,
+                DivisaoCap = pendenciaRecebida.DivisaoCap,
+                DataEntrada = pendenciaRecebida.DataEntrada,
+                Prazo = pendenciaRecebida.Prazo,
+                DataSaida = pendenciaRecebida.DataSaida,
+                AtribuidoA = pendenciaRecebida.AtribuidoA,
+
+                Historicos = (pendenciaRecebida.Historicos ?? new List<Historico>())
+                    .Select(h => new Historico
+                    {
+                        Data = h.Data,
+                        Texto = h.Texto
+                    })
+                    .ToList()
+            };
+
+            var idsRegionais = new List<int>();
+
+            if (pendenciaRecebida.Regionais != null &&
+                pendenciaRecebida.Regionais.Count > 0)
+            {
+                idsRegionais = await _context.Regionais
+                    .Where(r => pendenciaRecebida.Regionais.Contains(r.Codigo))
+                    .Select(r => r.IdRegional)
+                    .ToListAsync();
+            }
+
+            processoNovo.Pendencias.Add(novaPendencia);
+
+            vinculosRegionaisPendentes.Add((
+                novaPendencia,
+                idsRegionais
+            ));
+        }
+
+        _context.Processos.Add(processoNovo);
+
+        // Primeiro salva o processo e as pendências para gerar os IDs
         await _context.SaveChangesAsync();
 
-        return CreatedAtAction(nameof(GetProcesso), new { id = processo.Id }, processo);
+        // Depois cria os registros da tabela de ligação
+        foreach (var item in vinculosRegionaisPendentes)
+        {
+            foreach (var regionalId in item.RegionalIds)
+            {
+                _context.PendenciasRegionais.Add(new PendenciaRegional
+                {
+                    PendenciaId = item.Pendencia.Id,
+                    RegionalId = regionalId
+                });
+            }
+        }
+
+        await _context.SaveChangesAsync();
+
+        return CreatedAtAction(
+            nameof(GetProcesso),
+            new { id = processoNovo.Id },
+            processoNovo
+        );
     }
 
     [HttpPost("{id}/anexo-fase")]
