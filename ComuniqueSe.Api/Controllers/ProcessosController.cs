@@ -18,6 +18,35 @@ public class ProcessosController : ControllerBase
         _context = context;
     }
 
+    private void RegistrarAlteracao(
+        int processoId,
+        string campo,
+        object? valorAnterior,
+        object? valorNovo,
+        string operacao = "Alteração")
+    {
+        var anterior = valorAnterior?.ToString() ?? string.Empty;
+        var novo = valorNovo?.ToString() ?? string.Empty;
+
+        Console.WriteLine(
+            $"HISTÓRICO: Campo={campo} | De={anterior} | Para={novo}"
+        );
+
+        if (operacao == "Alteração" && anterior == novo)
+            return;
+
+        _context.HistoricosAlteracoes.Add(new HistoricoAlteracao
+        {
+            ProcessoId = processoId,
+            DataHora = DateTime.Now,
+            Usuario = "CAP",
+            Operacao = operacao,
+            Campo = campo,
+            ValorAnterior = string.IsNullOrWhiteSpace(anterior) ? null : anterior,
+            ValorNovo = string.IsNullOrWhiteSpace(novo) ? null : novo,
+        });
+    }
+
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Processo>>> GetProcessos()
     {
@@ -238,54 +267,48 @@ public class ProcessosController : ControllerBase
         if (processoExistente == null)
             return NotFound();
 
-        var alteracoes = new List<string>();
-        if (processoExistente.HistoricoProcessoData != processo.HistoricoProcessoData)
-            alteracoes.Add($"Data do histórico do processo alterada de '{processoExistente.HistoricoProcessoData}' para '{processo.HistoricoProcessoData}'");
+        
+        RegistrarAlteracao(
+            processoExistente.Id,
+            "Número do processo",
+            processoExistente.NumeroProcesso,
+            processo.NumeroProcesso
+        );
 
-        if (processoExistente.HistoricoProcessoTexto != processo.HistoricoProcessoTexto)
-            alteracoes.Add("Histórico do processo alterado");
+        RegistrarAlteracao(
+            processoExistente.Id,
+            "Empreendimento",
+            processoExistente.Empreendimento,
+            processo.Empreendimento
+        );
 
-        if (processoExistente.NumeroProcesso != processo.NumeroProcesso)
-            alteracoes.Add($"Nº do processo alterado de '{processoExistente.NumeroProcesso}' para '{processo.NumeroProcesso}'");
+        RegistrarAlteracao(
+            processoExistente.Id,
+            "Interessado",
+            processoExistente.Interessado,
+            processo.Interessado
+        );
 
-        if (processoExistente.Interessado != processo.Interessado)
-            alteracoes.Add($"Interessado alterado de '{processoExistente.Interessado}' para '{processo.Interessado}'");
+        RegistrarAlteracao(
+            processoExistente.Id,
+            "Técnico responsável",
+            processoExistente.TecnicoResponsavel,
+            processo.TecnicoResponsavel
+        );
 
-        if (processoExistente.TecnicoResponsavel != processo.TecnicoResponsavel)
-            alteracoes.Add($"Técnico responsável alterado de '{processoExistente.TecnicoResponsavel}' para '{processo.TecnicoResponsavel}'");
+        RegistrarAlteracao(
+            processoExistente.Id,
+            "Identificação do empreendimento",
+            processoExistente.IdentificacaoEmpreendimento,
+            processo.IdentificacaoEmpreendimento
+        );
 
-        if (processoExistente.IdentificacaoEmpreendimento != processo.IdentificacaoEmpreendimento)
-            alteracoes.Add("Identificação do empreendimento alterada");
-
-        if (processoExistente.CaracterizacaoEmpreendimento != processo.CaracterizacaoEmpreendimento)
-            alteracoes.Add("Caracterização do empreendimento alterada");
-
-        if (processoExistente.Empreendimento != processo.Empreendimento)
-            alteracoes.Add($"Empreendimento alterado de '{processoExistente.Empreendimento}' para '{processo.Empreendimento}'");
-
-        if (processoExistente.Classificacao != processo.Classificacao)
-            alteracoes.Add($"Classificação alterada de '{processoExistente.Classificacao}' para '{processo.Classificacao}'");
-
-        if (processoExistente.DivisaoCap != processo.DivisaoCap)
-            alteracoes.Add($"Divisão CAP alterada de '{processoExistente.DivisaoCap}' para '{processo.DivisaoCap}'");
-
-        if (processoExistente.Situacao != processo.Situacao)
-            alteracoes.Add($"Situação alterada de '{processoExistente.Situacao}' para '{processo.Situacao}'");
-
-        if (processoExistente.Fase != processo.Fase)
-            alteracoes.Add($"Fase alterada de '{processoExistente.Fase}' para '{processo.Fase}'");
-
-        if (processoExistente.StatusFase != processo.StatusFase)
-            alteracoes.Add($"Status da fase alterado de '{processoExistente.StatusFase}' para '{processo.StatusFase}'");
-
-        if (processoExistente.DataEntrada != processo.DataEntrada)
-            alteracoes.Add($"Data de entrada alterada de '{processoExistente.DataEntrada}' para '{processo.DataEntrada}'");
-
-        if (processoExistente.Prazo != processo.Prazo)
-            alteracoes.Add($"Prazo alterado de '{processoExistente.Prazo}' para '{processo.Prazo}'");
-
-        if (processoExistente.DataSaida != processo.DataSaida)
-            alteracoes.Add($"Data de saída alterada de '{processoExistente.DataSaida}' para '{processo.DataSaida}'");
+        RegistrarAlteracao(
+            processoExistente.Id,
+            "Caracterização do empreendimento",
+            processoExistente.CaracterizacaoEmpreendimento,
+            processo.CaracterizacaoEmpreendimento
+        );
 
         processoExistente.NumeroProcesso = processo.NumeroProcesso;
         processoExistente.Empreendimento = processo.Empreendimento;
@@ -404,16 +427,6 @@ public class ProcessosController : ControllerBase
                 novaPendencia,
                 idsRegionais
             ));
-        }
-
-        if (alteracoes.Any())
-        {
-            _context.HistoricosAlteracoes.Add(new HistoricoAlteracao
-            {
-                ProcessoId = processoExistente.Id,
-                DataHora = DateTime.Now,
-                Descricao = string.Join("\n", alteracoes)
-            });
         }
 
         await _context.SaveChangesAsync();

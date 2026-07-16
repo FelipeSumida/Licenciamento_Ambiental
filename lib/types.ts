@@ -96,7 +96,11 @@ export interface Processo {
     id: number
     processoId: number
     dataHora: string
-    descricao: string
+    usuario: string
+    operacao: string
+    campo: string
+    valorAnterior: string | null
+    valorNovo: string | null
   }[]
   historicoProcessoData: string | null
   historicoProcessoTexto: string

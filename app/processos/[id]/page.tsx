@@ -425,39 +425,123 @@ export default function DetalheProcessoPage({
                     )}
                   </CardContent>
                 </Card>
+                
+                <div className="col-span-full mt-6 flex w-full flex-col gap-6">
+                  <Card className="w-full self-start">
+                    <CardHeader>
+                      <CardTitle>Histórico do Processo</CardTitle>
+                    </CardHeader>
 
-                <Card className="self-start">
-                  <CardHeader>
-                    <CardTitle>Histórico do Processo</CardTitle>
-                  </CardHeader>
+                    <CardContent className="space-y-3">
+                      {processo.historicoProcessoTexto ? (
+                        <>
+                          <div>
+                            <label>Data</label>
+                            <p className="text-sm text-muted-foreground">
+                              {processo.historicoProcessoData
+                                ?.split("-")
+                                .reverse()
+                                .join("/")}
+                            </p>
+                          </div>
 
-                  <CardContent className="space-y-3">
-                    {processo.historicoProcessoTexto ? (
-                      <>
-                        <div>
-                          <label>Data</label>
-                          <p className="text-sm text-muted-foreground">
-                            {processo.historicoProcessoData
-                              ?.split("-")
-                              .reverse()
-                              .join("/")}
-                          </p>
+                          <div>
+                            <label>Descrição</label>
+                            <p className="whitespace-pre-wrap rounded-md border p-3">
+                              {processo.historicoProcessoTexto}
+                            </p>
+                          </div>
+                        </>
+                      ) : (
+                        <p className="text-muted-foreground">
+                          Nenhum histórico cadastrado.
+                        </p>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  <Card className="w-full self-start min-w-0">
+                    <CardHeader>
+                      <CardTitle>
+                        Histórico de alterações (
+                        {processo.historicosAlteracoes?.length ?? 0})
+                      </CardTitle>
+                    </CardHeader>
+
+                    <CardContent className="space-y-3">
+                      {processo.historicosAlteracoes?.length ? (
+                        <div className="w-full overflow-x-auto rounded-md border">
+                          <table className="w-full border-collapse text-sm">
+                            <thead>
+                              <tr className="border-b bg-muted/40 text-left">
+                                <th className="whitespace-nowrap px-3 py-2 font-medium">
+                                  Data/Hora
+                                </th>
+
+                                <th className="whitespace-nowrap px-3 py-2 font-medium">
+                                  Usuário
+                                </th>
+
+                                <th className="whitespace-nowrap px-3 py-2 font-medium">
+                                  Operação
+                                </th>
+
+                                <th className="whitespace-nowrap px-3 py-2 font-medium">
+                                  Campo
+                                </th>
+
+                                <th className="whitespace-nowrap px-3 py-2 font-medium">
+                                  De
+                                </th>
+
+                                <th className="whitespace-nowrap px-3 py-2 font-medium">
+                                  Para
+                                </th>
+                              </tr>
+                            </thead>
+
+                            <tbody>
+                              {processo.historicosAlteracoes.map((historico) => (
+                                <tr
+                                  key={historico.id}
+                                  className="border-b last:border-b-0"
+                                >
+                                  <td className="whitespace-nowrap px-3 py-3">
+                                    {new Date(historico.dataHora).toLocaleString("pt-BR")}
+                                  </td>
+
+                                  <td className="whitespace-nowrap px-3 py-3">
+                                    {historico.usuario || "CAP"}
+                                  </td>
+
+                                  <td className="px-3 py-3">
+                                    {historico.operacao || "Alteração"}
+                                  </td>
+
+                                  <td className="px-3 py-3">
+                                    {historico.campo || "—"}
+                                  </td>
+
+                                  <td className="px-3 py-3 text-muted-foreground">
+                                    {historico.valorAnterior || "—"}
+                                  </td>
+
+                                  <td className="px-3 py-3">
+                                    {historico.valorNovo || "—"}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
                         </div>
-
-                        <div>
-                          <label>Descrição</label>
-                          <p className="whitespace-pre-wrap rounded-md border p-3">
-                            {processo.historicoProcessoTexto}
-                          </p>
-                        </div>
-                      </>
-                    ) : (
-                      <p className="text-muted-foreground">
-                        Nenhum histórico cadastrado.
-                      </p>
-                    )}
-                  </CardContent>
-                </Card>
+                      ) : (
+                        <p className="text-muted-foreground">
+                          Nenhuma alteração registrada.
+                        </p>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
             </div>
           <PdfProcesso processo={processo} />

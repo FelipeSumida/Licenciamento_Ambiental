@@ -14,9 +14,12 @@ import { Textarea } from "@/components/ui/textarea"
 import type React from "react"
 import type { ProcessoInput } from "@/lib/types"
 import { paraInputDate } from "@/lib/format"
+import { criarProcesso, atualizarProcesso } from "@/lib/api"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
 import { Loader2, Save } from "lucide-react"
+
 
 import {
   DIVISOES_CAP,
@@ -176,33 +179,26 @@ export function AcompanhamentoForm({
                         data: h.data || null,
                     })),
                 })),
-            }
-            const url = editando
-                ? `http://localhost:5161/api/processos/${processo.id}`
-                : "http://localhost:5161/api/processos"
+            } as ProcessoInput
 
-            const resposta = await fetch(url, {
-                method: editando ? "PUT" : "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(payload),
-            })
+            if (processo?.id) {
+                await atualizarProcesso(String(processo.id), payload)
 
-            if (!resposta.ok) {
-                const erroTexto = await resposta.text()
+                toast.success("Acompanhamento atualizado com sucesso.")
 
-                console.error("ERRO DA API:", erroTexto)
-                alert(erroTexto)
+                router.push(`/outros-acompanhamentos/${processo.id}`)
+            } else {
+                const criado = await criarProcesso(payload)
 
-                return
+                toast.success("Acompanhamento cadastrado com sucesso.")
+
+                router.push(`/outros-acompanhamentos/${criado.id}`)
             }
 
-            alert("Acompanhamento cadastrado com sucesso!")
-            router.push("/outros-acompanhamentos")
+            router.refresh()
         } catch (error) {
-            console.error(error)
-            alert("Erro ao salvar acompanhamento")
+            console.error("Erro ao salvar acompanhamento:", error)
+            toast.error("Não foi possível salvar. Veja o console.")
         } finally {
             setSalvando(false)
         }

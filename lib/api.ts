@@ -89,8 +89,13 @@ export async function atualizarProcesso(
   id: string,
   input: ProcessoInput,
 ): Promise<Processo> {
+  const {
+    historicosAlteracoes,
+    ...dadosDoProcesso
+  } = input as Processo
+
   const payload = {
-    ...input,
+    ...dadosDoProcesso,
 
     pendencias: (input.pendencias ?? []).map((pendencia) => ({
       descricao: pendencia.descricao,
