@@ -269,6 +269,14 @@ public class ProcessosController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> PutProcesso(int id, Processo processo)
     {
+        Console.WriteLine();
+        Console.WriteLine("==================================");
+        Console.WriteLine("PUTPROCESSO FOI CHAMADO");
+        Console.WriteLine($"ID: {id}");
+        Console.WriteLine($"Situação recebida: '{processo.Situacao}'");
+        Console.WriteLine("==================================");
+        Console.WriteLine();
+
         var processoExistente = await _context.Processos
             .Include(p => p.Trechos)
                 .ThenInclude(t => t.Fases)
@@ -655,7 +663,18 @@ public class ProcessosController : ControllerBase
         processoExistente.Prazo = processo.Prazo;
         processoExistente.DataSaida = processo.DataSaida;
         processoExistente.TecnicoResponsavel = processo.TecnicoResponsavel;
-        processoExistente.Situacao = processo.Situacao;
+        var pendenciasRecebidas = processo.Pendencias ?? new List<Pendencia>();
+
+        processoExistente.Situacao =
+            pendenciasRecebidas.Any(p =>
+                string.Equals(
+                    p.Situacao,
+                    "Aberta",
+                    StringComparison.OrdinalIgnoreCase
+                )
+            )
+                ? "Aberta"
+                : "Atendida";
         processoExistente.Fase = processo.Fase;
         processoExistente.StatusFase = processo.StatusFase;
         processoExistente.DataEmissaoFase = processo.DataEmissaoFase;
