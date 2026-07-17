@@ -317,13 +317,24 @@ export function ProcessoForm({
       }))
     )
 
+    const payload = {
+      ...form,
+
+      fasesComplementares: (form.fasesComplementares ?? []).map((fc: any) => ({
+        id: fc.id,
+        fase: fc.fase,
+        dataEmissao: fc.dataEmissao || null,
+        anexoPdf: fc.anexoPdf ?? null,
+      })),
+    }
+
     try {
       if (editando && processo) {
-        await atualizarProcesso(processo.id, form)
+        await atualizarProcesso(processo.id, payload)
         toast.success("Processo atualizado com sucesso.")
         router.push(`/processos/${processo.id}`)
       } else {
-        const criado = await criarProcesso(form)
+        const criado = await criarProcesso(payload)
         toast.success("Processo cadastrado com sucesso.")
         router.push(`/processos/${criado.id}`)
       }

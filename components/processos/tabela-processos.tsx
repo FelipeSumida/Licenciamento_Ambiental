@@ -592,7 +592,14 @@ export function TabelaProcessos({
                   return (
                     <TableRow key={p.id} className="group">
                       <TableCell className="whitespace-nowrap font-medium">
-                        <Link href={`/processos/${p.id}`} className="text-primary hover:underline">
+                        <Link
+                          href={
+                            modo === "processos"
+                              ? `/processos/${p.id}`
+                              : `/outros-acompanhamentos/${p.id}`
+                          }
+                          className="text-primary hover:underline"
+                        >
                           {p.processo || "Sem número"}
                         </Link>
                       </TableCell>
