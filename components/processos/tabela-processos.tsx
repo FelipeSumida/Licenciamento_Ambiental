@@ -71,6 +71,7 @@ export function TabelaProcessos({
   const [classificacaoFiltro, setClassificacaoFiltro] = useState("TODAS")
   const [divisoesCapSelecionadas, setDivisoesCapSelecionadas] = useState<DivisaoCap[]>([])
   const [rodoviasSelecionadas, setRodoviasSelecionadas] = useState<string[]>([])
+  const [buscaRodovia, setBuscaRodovia] = useState("")
   const [faseAtual, setFaseAtual] = useState(TODOS)
 
   const [processoParaExcluir, setProcessoParaExcluir] = useState<Processo | null>(null)
@@ -103,6 +104,10 @@ export function TabelaProcessos({
       ),
     ).sort()
   }, [processos])
+
+  const rodoviasFiltradas = rodoviasDisponiveis.filter((rodovia) =>
+    rodovia.toLowerCase().includes(buscaRodovia.toLowerCase())
+  )
 
   const atribuicoesDisponiveis = useMemo(() => {
     return Array.from(
@@ -514,7 +519,15 @@ export function TabelaProcessos({
                   Limpar seleção
                 </button>
 
-                {rodoviasDisponiveis.map((rodovia) => (
+                <Input
+                  type="text"
+                  placeholder="Pesquisar rodovia..."
+                  value={buscaRodovia}
+                  onChange={(e) => setBuscaRodovia(e.target.value)}
+                  className="h-9"
+                />
+
+                {rodoviasFiltradas.map((rodovia) => (
                   <label
                     key={rodovia}
                     className="flex items-center gap-2 text-sm"
@@ -539,6 +552,12 @@ export function TabelaProcessos({
                     {rodovia}
                   </label>
                 ))}
+
+                {rodoviasFiltradas.length === 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    Nenhuma rodovia encontrada.
+                  </p>
+                )}
               </div>
             </details>
           </div>
