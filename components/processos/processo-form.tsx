@@ -79,12 +79,12 @@ function estadoInicial(p?: Processo | null): ProcessoInput {
           ],
     })),
     interessado: p?.interessado ?? "",
-    classificacao: p?.classificacao ?? "LI",
+    classificacao: p?.classificacao ?? null,
     pendencias: p?.pendencias ?? [],
     dataEntrada: p?.dataEntrada ?? null,
     prazo: p?.prazo ?? null,
     dataSaida: p?.dataSaida ?? null,
-    divisaoCap: p?.divisaoCap ?? "Licenciamento",
+    divisaoCap: p?.divisaoCap ?? "",
     tecnicoResponsavel: p?.tecnicoResponsavel ?? "",
     situacao: p?.situacao ?? "Aberta",
     fase: p?.fase ?? "",
@@ -319,6 +319,9 @@ export function ProcessoForm({
 
     const payload = {
       ...form,
+
+      classificacao: form.classificacao?.trim() || null,
+      divisaoCap: form.divisaoCap?.trim() || null,
 
       fasesComplementares: (form.fasesComplementares ?? []).map((fc: any) => ({
         id: fc.id,

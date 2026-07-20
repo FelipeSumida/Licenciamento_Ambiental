@@ -76,12 +76,12 @@ export interface Processo {
   denominacao: string
   trechos: Trecho[]
   interessado: string
-  classificacao: Classificacao
+  classificacao?: string | null
   pendencias: Pendencia[]
   dataEntrada: string | null
   prazo: string | null
   dataSaida: string | null
-  divisaoCap: DivisaoCap | string
+  divisaoCap: DivisaoCap | string | null
   tecnicoResponsavel: string
   situacao: SituacaoProcesso
   fase: string

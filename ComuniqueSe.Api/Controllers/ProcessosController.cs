@@ -111,18 +111,35 @@ public class ProcessosController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<Processo>> PostProcesso(Processo processo)
     {
+        var pendenciasRecebidas = processo.Pendencias ?? new List<Pendencia>();
+
+        var situacaoCalculada =
+            pendenciasRecebidas.Count == 0
+                ? "Atendida"
+                : pendenciasRecebidas.Any(p =>
+                    string.Equals(
+                        p.Situacao,
+                        "Aberta",
+                        StringComparison.OrdinalIgnoreCase
+                    )
+                )
+                    ? "Aberta"
+                    : "Atendida";
+
         var processoNovo = new Processo
         {
             NumeroProcesso = processo.NumeroProcesso,
             Empreendimento = processo.Empreendimento,
             Interessado = processo.Interessado,
             Classificacao = processo.Classificacao,
-            DivisaoCap = processo.DivisaoCap,
+            DivisaoCap = string.IsNullOrWhiteSpace(processo.DivisaoCap)
+                ? null
+                : processo.DivisaoCap.Trim(),
             DataEntrada = processo.DataEntrada,
             Prazo = processo.Prazo,
             DataSaida = processo.DataSaida,
             TecnicoResponsavel = processo.TecnicoResponsavel,
-            Situacao = processo.Situacao,
+            Situacao = situacaoCalculada,
             Fase = processo.Fase,
             StatusFase = processo.StatusFase,
             DataEmissaoFase = processo.DataEmissaoFase,
@@ -658,7 +675,10 @@ public class ProcessosController : ControllerBase
         processoExistente.Empreendimento = processo.Empreendimento;
         processoExistente.Interessado = processo.Interessado;
         processoExistente.Classificacao = processo.Classificacao;
-        processoExistente.DivisaoCap = processo.DivisaoCap;
+        processoExistente.DivisaoCap =
+            string.IsNullOrWhiteSpace(processo.DivisaoCap)
+                ? null
+                : processo.DivisaoCap.Trim();
         processoExistente.DataEntrada = processo.DataEntrada;
         processoExistente.Prazo = processo.Prazo;
         processoExistente.DataSaida = processo.DataSaida;

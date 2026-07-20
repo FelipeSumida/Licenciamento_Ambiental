@@ -14,7 +14,7 @@ public class Processo
     public string Empreendimento { get; set; } = string.Empty;
     public string Interessado { get; set; } = string.Empty;
     public string? Classificacao { get; set; }
-    public string DivisaoCap { get; set; } = "Licenciamento";
+    public string? DivisaoCap { get; set; }
     public DateTime? DataEntrada { get; set; }
     public DateTime? Prazo { get; set; }
     public DateTime? DataSaida { get; set; }
