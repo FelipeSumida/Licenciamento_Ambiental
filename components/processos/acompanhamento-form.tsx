@@ -25,6 +25,8 @@ import {
   DIVISOES_CAP,
   type DivisaoCap,
   type SituacaoProcesso,
+  type Trecho,
+  type SirgeoRodovia,
 } from "@/lib/types"
 
 import {
@@ -51,10 +53,11 @@ export function AcompanhamentoForm({
             ? processo.trechos
             : [
                 {
-                rodovia: "",
-                denominacao: "",
-                kmInicial: "",
-                kmFinal: "",
+                    rodId: null,
+                    rodovia: null,
+                    kmInicial: "",
+                    kmFinal: "",
+                    fases: [],
                 },
             ],
 
@@ -84,25 +87,33 @@ export function AcompanhamentoForm({
     const [salvando, setSalvando] = useState(false)
     const editando = !!processo
     const [pendenciasAbertas, setPendenciasAbertas] = useState<number[]>([0])
+    const [buscasRodovia, setBuscasRodovia] = useState<Record<number, string>>({})
+    const [resultadosRodovia, setResultadosRodovia] = useState<Record<number, SirgeoRodovia[]>>({})
+    const [carregandoRodovia, setCarregandoRodovia] = useState<Record<number, boolean>>({})
     const hoje = new Date().toISOString().split("T")[0]
 
-    function setTrecho(index: number, campo: string, valor: string) {
-        const novosTrechos = [...form.trechos]
-        novosTrechos[index] = {
-            ...novosTrechos[index],
-            [campo]: valor,
-        }
+    function setTrecho<K extends keyof Trecho>(
+    index: number,
+    campo: K,
+    valor: Trecho[K]
+  ) {
+    const novosTrechos = [...form.trechos]
 
-        setForm({
-            ...form,
-            trechos: novosTrechos,
-        })
+    novosTrechos[index] = {
+      ...novosTrechos[index],
+      [campo]: valor,
     }
+
+    setForm((anterior) => ({
+      ...anterior,
+      trechos: novosTrechos,
+    }))
+  }
 
     function novoTrecho() {
         return {
-            rodovia: "",
-            denominacao: "",
+            rodId: null,
+            rodovia: null,
             kmInicial: "",
             kmFinal: "",
         }
@@ -155,10 +166,10 @@ export function AcompanhamentoForm({
                 ...form,
 
                 trechos: form.trechos.map((t: any) => ({
-                    rodovia: t.rodovia,
-                    denominacao: t.denominacao,
-                    kmInicial: t.kmInicial,
-                    kmFinal: t.kmFinal,
+                    id: t.id,
+                    rodId: t.rodId,
+                    kmInicial: Number(t.kmInicial),
+                    kmFinal: Number(t.kmFinal),
                 })),
 
                 pendencias: form.pendencias.map((pendencia: any) => ({
@@ -300,23 +311,13 @@ export function AcompanhamentoForm({
                                 </div>
 
                                 <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-                                <div className="lg:col-span-3">
-                                    <Campo label="Código">
-                                    <Input
-                                        value={trecho.rodovia}
-                                        onChange={(e) => setTrecho(index, "rodovia", e.target.value)}
-                                        placeholder="Ex: SLM-030"
-                                    />
-                                    </Campo>
-                                </div>
-
                                 <div className="lg:col-span-5">
-                                    <Campo label="Denominação">
-                                    <Input
-                                        value={trecho.denominacao}
-                                        onChange={(e) => setTrecho(index, "denominacao", e.target.value)}
-                                        placeholder="Nome da rodovia/trecho"
-                                    />
+                                    <Campo label="Rodovia">
+                                        <Input
+                                            value={trecho.rodovia?.rodCodigo ?? ""}
+                                            readOnly
+                                            placeholder="Selecione uma rodovia"
+                                        />
                                     </Campo>
                                 </div>
 

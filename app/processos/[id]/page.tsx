@@ -207,7 +207,7 @@ export default function DetalheProcessoPage({
                           ? processo.trechos
                               .map(
                                 (t) =>
-                                  `${t.denominacao || "Sem denominação"} - ${t.rodovia || "Sem rodovia"} - KM ${t.kmInicial || "-"} ao KM ${t.kmFinal || "-"}`
+                                  `${t.rodovia?.rodCodigo ?? "Sem rodovia"} - KM ${t.kmInicial || "-"} ao KM ${t.kmFinal || "-"}`
                               )
                               .join("\n")
                           : "Sem trechos registrados."

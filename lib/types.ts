@@ -33,11 +33,20 @@ export const DIVISOES_CAP = [
 
 export type DivisaoCap = (typeof DIVISOES_CAP)[number]
 
-export type Trecho = {
-  denominacao: string
-  rodovia: string
-  kmInicial: string
-  kmFinal: string
+export interface SirgeoRodovia {
+  rodId: number
+  rodCodigo: string
+  kmInicial?: number | null
+  kmFinal?: number | null
+  extensao?: number | null
+}
+
+export interface Trecho {
+  id?: number
+  rodId: number | null
+  rodovia?: SirgeoRodovia | null
+  kmInicial: string | number
+  kmFinal: string | number
   fases: FaseTrecho[]
 }
 

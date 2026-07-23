@@ -12,6 +12,7 @@ public class AppDbContext : DbContext
 
     public DbSet<Processo> Processos => Set<Processo>();
     public DbSet<Trecho> Trechos => Set<Trecho>();
+    public DbSet<SirgeoRodovia> SirgeoRodovias => Set<SirgeoRodovia>();
     public DbSet<Regional> Regionais => Set<Regional>();
     public DbSet<PendenciaRegional> PendenciasRegionais =>
         Set<PendenciaRegional>();
@@ -25,6 +26,60 @@ public class AppDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<SirgeoRodovia>(entity =>
+        {
+            entity.ToTable("sirgeo_rodovias");
+
+            entity.HasKey(r => r.RodId);
+
+            entity.Property(r => r.RodId)
+                .HasColumnName("rod_id");
+
+            entity.Property(r => r.RodCodigo)
+                .HasColumnName("rod_codigo");
+
+            entity.Property(r => r.RodKmInicial)
+                .HasColumnName("rod_km_inicial");
+
+            entity.Property(r => r.RodKmFinal)
+                .HasColumnName("rod_km_final");
+
+            entity.Property(r => r.RodKmExtensao)
+                .HasColumnName("rod_km_extensao");
+        });
+
+        modelBuilder.Entity<Trecho>(entity =>
+        {
+            entity.ToTable("Trechos");
+
+            entity.HasKey(t => t.Id);
+
+            entity.Property(t => t.Id)
+                .HasColumnName("Id");
+
+            entity.Property(t => t.KmInicial)
+                .HasColumnName("KmInicial");
+
+            entity.Property(t => t.KmFinal)
+                .HasColumnName("KmFinal");
+
+            entity.Property(t => t.ProcessoId)
+                .HasColumnName("ProcessoId");
+
+            entity.Property(t => t.RodId)
+                .HasColumnName("rod_id");
+
+            entity.HasOne<Processo>()
+                .WithMany(p => p.Trechos)
+                .HasForeignKey(t => t.ProcessoId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(t => t.Rodovia)
+                .WithMany()
+                .HasForeignKey(t => t.RodId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
 
         modelBuilder.Entity<FaseComplementar>()
             .HasOne(fc => fc.Processo)

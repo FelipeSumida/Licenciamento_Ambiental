@@ -124,13 +124,8 @@ export function PdfAcompanhamento({
 
                             <div className="pdf-grid">
                                 <PdfCampo
-                                    label="Código da rodovia"
-                                    valor={trecho.rodovia}
-                                />
-
-                                <PdfCampo
-                                    label="Denominação"
-                                    valor={trecho.denominacao}
+                                    label="Rodovia"
+                                    valor={trecho.rodovia?.rodCodigo ?? "—"}
                                 />
 
                                 <PdfCampo

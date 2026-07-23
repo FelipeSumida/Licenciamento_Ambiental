@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\ffsumida\\Desktop\\licenciamento_ambiental\\ComuniqueSe.Api\\ComuniqueSe.Api.csproj": {}
+    "C:\\Users\\ffsumida\\desktop\\Licenciamento_Ambiental\\ComuniqueSe.Api\\ComuniqueSe.Api.csproj": {}
   },
   "projects": {
-    "C:\\Users\\ffsumida\\Desktop\\licenciamento_ambiental\\ComuniqueSe.Api\\ComuniqueSe.Api.csproj": {
+    "C:\\Users\\ffsumida\\desktop\\Licenciamento_Ambiental\\ComuniqueSe.Api\\ComuniqueSe.Api.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\ffsumida\\Desktop\\licenciamento_ambiental\\ComuniqueSe.Api\\ComuniqueSe.Api.csproj",
+        "projectUniqueName": "C:\\Users\\ffsumida\\desktop\\Licenciamento_Ambiental\\ComuniqueSe.Api\\ComuniqueSe.Api.csproj",
         "projectName": "ComuniqueSe.Api",
-        "projectPath": "C:\\Users\\ffsumida\\Desktop\\licenciamento_ambiental\\ComuniqueSe.Api\\ComuniqueSe.Api.csproj",
+        "projectPath": "C:\\Users\\ffsumida\\desktop\\Licenciamento_Ambiental\\ComuniqueSe.Api\\ComuniqueSe.Api.csproj",
         "packagesPath": "C:\\Users\\ffsumida\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\ffsumida\\Desktop\\licenciamento_ambiental\\ComuniqueSe.Api\\obj\\",
+        "outputPath": "C:\\Users\\ffsumida\\desktop\\Licenciamento_Ambiental\\ComuniqueSe.Api\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\ffsumida\\AppData\\Roaming\\NuGet\\NuGet.Config"

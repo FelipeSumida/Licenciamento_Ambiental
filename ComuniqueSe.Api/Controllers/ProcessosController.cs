@@ -69,11 +69,41 @@ public class ProcessosController : ControllerBase
         return await _context.Processos
             .Include(p => p.Trechos)
                 .ThenInclude(t => t.Fases)
+            .Include(p => p.Trechos)
+                .ThenInclude(t => t.Rodovia)
             .Include(p => p.FasesComplementares)
             .Include(p => p.Pendencias)
                 .ThenInclude(p => p.Historicos)
             .OrderByDescending(p => p.Id)
             .ToListAsync();
+    }
+
+    [HttpGet("rodovias")]
+    public async Task<ActionResult> GetRodovias([FromQuery] string? busca)
+    {
+        var consulta = _context.SirgeoRodovias.AsNoTracking();
+
+        if (!string.IsNullOrWhiteSpace(busca))
+        {
+            consulta = consulta.Where(r =>
+                r.RodCodigo.Contains(busca)
+            );
+        }
+
+        var rodovias = await consulta
+            .OrderBy(r => r.RodCodigo)
+            .Take(100)
+            .Select(r => new
+            {
+                rodId = r.RodId,
+                rodCodigo = r.RodCodigo,
+                kmInicial = r.RodKmInicial,
+                kmFinal = r.RodKmFinal,
+                extensao = r.RodKmExtensao
+            })
+            .ToListAsync();
+
+        return Ok(rodovias);
     }
 
     [HttpGet("{id}")]
@@ -82,6 +112,8 @@ public class ProcessosController : ControllerBase
         var processo = await _context.Processos
             .Include(p => p.Trechos)
                 .ThenInclude(t => t.Fases)
+            .Include(p => p.Trechos)
+                .ThenInclude(t => t.Rodovia)
             .Include(p => p.FasesComplementares)
             .Include(p => p.Pendencias)
                 .ThenInclude(p => p.Historicos)
@@ -154,8 +186,7 @@ public class ProcessosController : ControllerBase
             Trechos = (processo.Trechos ?? new List<Trecho>())
                 .Select(t => new Trecho
                 {
-                    Denominacao = t.Denominacao,
-                    Rodovia = t.Rodovia,
+                    RodId = t.RodId,
                     KmInicial = t.KmInicial,
                     KmFinal = t.KmFinal,
 
@@ -166,8 +197,7 @@ public class ProcessosController : ControllerBase
                             StatusFase = f.StatusFase,
                             NumeroFase = f.NumeroFase,
                             DataEmissaoFase = f.DataEmissaoFase,
-                            DataValidadeFase = f.DataValidadeFase,
-                            AnexoFase = f.AnexoFase
+                            DataValidadeFase = f.DataValidadeFase
                         })
                         .ToList()
                 })
@@ -297,6 +327,8 @@ public class ProcessosController : ControllerBase
         var processoExistente = await _context.Processos
             .Include(p => p.Trechos)
                 .ThenInclude(t => t.Fases)
+            .Include(p => p.Trechos)
+                .ThenInclude(t => t.Rodovia)
             .Include(p => p.FasesComplementares)
             .Include(p => p.Pendencias)
                 .ThenInclude(p => p.Historicos)
@@ -445,14 +477,16 @@ public class ProcessosController : ControllerBase
         var trechosAnteriores = string.Join(
             " | ",
             processoExistente.Trechos.Select(t =>
-                $"{t.Denominacao} - {t.Rodovia} - KM {t.KmInicial} ao KM {t.KmFinal}"
+                $"{t.Rodovia?.RodCodigo ?? "Rodovia não informada"} - " +
+                $"KM {t.KmInicial} ao KM {t.KmFinal}"
             )
         );
 
         var trechosNovos = string.Join(
             " | ",
             (processo.Trechos ?? new List<Trecho>()).Select(t =>
-                $"{t.Denominacao} - {t.Rodovia} - KM {t.KmInicial} ao KM {t.KmFinal}"
+                $"Rodovia ID: {t.RodId?.ToString() ?? "não informado"} - " +
+                $"KM {t.KmInicial} ao KM {t.KmFinal}"
             )
         );
 
@@ -733,8 +767,7 @@ public class ProcessosController : ControllerBase
             (processo.Trechos ?? new List<Trecho>())
             .Select(t => new Trecho
             {
-                Denominacao = t.Denominacao,
-                Rodovia = t.Rodovia,
+                RodId = t.RodId,
                 KmInicial = t.KmInicial,
                 KmFinal = t.KmFinal,
 

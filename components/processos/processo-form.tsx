@@ -4,7 +4,12 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { Loader2, Save, Paperclip } from "lucide-react"
-import { Trash2 } from "lucide-react"
+import {
+  Trash2,
+  ChevronDown,
+  Search,
+  Check,
+} from "lucide-react"
 import {
   Card,
   CardContent,
@@ -35,12 +40,13 @@ import {
   type SituacaoProcesso,
   type FaseTrecho,
   type Trecho,
+  type SirgeoRodovia,
 } from "@/lib/types"
 
 function novoTrecho() {
   return {
-    denominacao: "",
-    rodovia: "",
+    rodId: null,
+    rodovia: null,
     kmInicial: "",
     kmFinal: "",
     fasesComplementares: [],
@@ -65,19 +71,22 @@ function estadoInicial(p?: Processo | null): ProcessoInput {
     denominacao: p?.denominacao ?? "",
     trechos: (p?.trechos?.length ? p.trechos : [novoTrecho()]).map((trecho) => ({
       ...trecho,
-      fases: trecho.fases?.length
-        ? trecho.fases
-        : [
-            {
-              fase: "",
-              statusFase: "",
-              numeroFase: "",
-              dataEmissaoFase: null,
-              dataValidadeFase: null,
-              anexoFase: null,
-            },
-          ],
-    })),
+      rodId: trecho.rodId ?? null,
+      fases:
+        trecho.fases?.length
+          ? trecho.fases
+          : [
+              {
+                fase: "",
+                statusFase: "",
+                numeroFase: "",
+                dataEmissaoFase: null,
+                dataValidadeFase: null,
+                anexoFase: null,
+              },
+            ],
+      })
+    ),
     interessado: p?.interessado ?? "",
     classificacao: p?.classificacao ?? null,
     pendencias: p?.pendencias ?? [],
@@ -119,6 +128,14 @@ export function ProcessoForm({
   const [fasePassadaAberta, setFasePassadaAberta] = useState(false)
   const hoje = new Date().toISOString().split("T")[0]
   const [pendenciasAbertas, setPendenciasAbertas] = useState<number[]>([])
+  const [buscaRodovia, setBuscaRodovia] = useState<Record<number, string>>({})
+  const [resultadosRodovia, setResultadosRodovia] = useState<
+    Record<number, SirgeoRodovia[]>
+  >({})
+  const [carregandoRodovia, setCarregandoRodovia] = useState<
+    Record<number, boolean>
+  >({})
+  const [rodoviaAberta, setRodoviaAberta] = useState<number | null>(null)
 
   function set<K extends keyof ProcessoInput>(campo: K, valor: ProcessoInput[K]) {
     setForm((f) => ({ ...f, [campo]: valor }))
@@ -164,19 +181,60 @@ export function ProcessoForm({
   }
 
 
-  function setTrecho(
+  function setTrecho<K extends keyof Trecho>(
     index: number,
-    campo: "denominacao" | "rodovia" | "kmInicial" | "kmFinal",
-    valor: string
+    campo: K,
+    valor: Trecho[K]
   ) {
-    const novos = [...form.trechos]
+    const novosTrechos = [...form.trechos]
 
-    novos[index] = {
-      ...novos[index],
+    novosTrechos[index] = {
+      ...novosTrechos[index],
       [campo]: valor,
     }
 
-    set("trechos", novos)
+    setForm((anterior) => ({
+      ...anterior,
+      trechos: novosTrechos,
+    }))
+  }
+
+  async function buscarRodovias(index: number, busca: string) {
+    const termo = busca.trim()
+
+    try {
+      setCarregandoRodovia((anterior) => ({
+        ...anterior,
+        [index]: true,
+      }))
+
+      const resposta = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/processos/rodovias?busca=${encodeURIComponent(termo)}`
+      )
+
+      if (!resposta.ok) {
+        throw new Error(`Erro ${resposta.status} ao buscar rodovias`)
+      }
+
+      const rodovias: SirgeoRodovia[] = await resposta.json()
+
+      setResultadosRodovia((anterior) => ({
+        ...anterior,
+        [index]: rodovias,
+      }))
+    } catch (erro) {
+      console.error("Erro ao buscar rodovias:", erro)
+
+      setResultadosRodovia((anterior) => ({
+        ...anterior,
+        [index]: [],
+      }))
+    } finally {
+      setCarregandoRodovia((anterior) => ({
+        ...anterior,
+        [index]: false,
+      }))
+    }
   }
 
   function adicionarFaseComplementar() {
@@ -322,6 +380,13 @@ export function ProcessoForm({
 
       classificacao: form.classificacao?.trim() || null,
       divisaoCap: form.divisaoCap?.trim() || null,
+      trechos: form.trechos.map((t) => ({
+        id: t.id,
+        rodId: t.rodId,
+        kmInicial: Number(t.kmInicial),
+        kmFinal: Number(t.kmFinal),
+        fases: t.fases ?? [],
+      })),
 
       fasesComplementares: (form.fasesComplementares ?? []).map((fc: any) => ({
         id: fc.id,
@@ -330,6 +395,8 @@ export function ProcessoForm({
         anexoPdf: fc.anexoPdf ?? null,
       })),
     }
+
+    console.log("PAYLOAD FINAL:", payload)
 
     try {
       if (editando && processo) {
@@ -427,25 +494,146 @@ export function ProcessoForm({
                         </div>
 
                         <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-                          <div className="lg:col-span-3">
-                            <Campo label="Código">
-                              <Input
-                                value={trecho.rodovia}
-                                onChange={(e) => setTrecho(index, "rodovia", e.target.value)}
-                                placeholder="Ex: SLM-030"
-                              />
-                            </Campo>
-                          </div>
+                            <div className="relative lg:col-span-5">
+                              <Campo label="Código">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const vaiAbrir = rodoviaAberta !== index
 
-                          <div className="lg:col-span-5">
-                            <Campo label="Denominação">
-                              <Input
-                                value={trecho.denominacao}
-                                onChange={(e) => setTrecho(index, "denominacao", e.target.value)}
-                                placeholder="Nome da rodovia/trecho"
-                              />
-                            </Campo>
-                          </div>
+                                    setRodoviaAberta(vaiAbrir ? index : null)
+
+                                    if (vaiAbrir) {
+                                      setBuscaRodovia((anterior) => ({
+                                        ...anterior,
+                                        [index]: "",
+                                      }))
+
+                                      buscarRodovias(index, "")
+                                    }
+                                  }}
+                                  className="flex h-11 w-full items-center justify-between rounded-md border border-input bg-background px-3 text-sm shadow-sm transition-colors hover:bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                >
+                                  <span
+                                    className={
+                                      trecho.rodovia?.rodCodigo
+                                        ? "text-foreground"
+                                        : "text-muted-foreground"
+                                    }
+                                  >
+                                    {trecho.rodovia?.rodCodigo || "Selecione a rodovia"}
+                                  </span>
+
+                                  <ChevronDown
+                                    className={`h-4 w-4 text-muted-foreground transition-transform ${
+                                      rodoviaAberta === index ? "rotate-180" : ""
+                                    }`}
+                                  />
+                                </button>
+                              </Campo>
+
+                              {rodoviaAberta === index && (
+                                <div className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-lg border bg-background shadow-xl">
+                                  <div className="border-b p-3">
+                                    <div className="relative">
+                                      <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+
+                                      <Input
+                                        value={buscaRodovia[index] ?? ""}
+                                        onChange={(e) => {
+                                          const valor = e.target.value
+
+                                          setBuscaRodovia((anterior) => ({
+                                            ...anterior,
+                                            [index]: valor,
+                                          }))
+
+                                          buscarRodovias(index, valor)
+                                        }}
+                                        placeholder="Pesquisar código da rodovia..."
+                                        autoComplete="off"
+                                        autoFocus
+                                        className="h-10 pl-9"
+                                      />
+                                    </div>
+                                  </div>
+
+                                  <div className="border-b bg-muted/30 px-3 py-2">
+                                    <p className="text-xs text-muted-foreground">
+                                      {carregandoRodovia[index]
+                                        ? "Buscando rodovias..."
+                                        : `${resultadosRodovia[index]?.length ?? 0} rodovia(s) encontrada(s)`}
+                                    </p>
+                                  </div>
+
+                                  <div className="max-h-64 overflow-y-auto p-1">
+                                    {carregandoRodovia[index] ? (
+                                      <div className="flex items-center justify-center gap-2 px-4 py-6 text-sm text-muted-foreground">
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                        Carregando rodovias...
+                                      </div>
+                                    ) : resultadosRodovia[index]?.length > 0 ? (
+                                      resultadosRodovia[index].map((rodovia) => {
+                                        const selecionada = trecho.rodId === rodovia.rodId
+
+                                        return (
+                                          <button
+                                            key={rodovia.rodId}
+                                            type="button"
+                                            onClick={() => {
+                                              setTrecho(index, "rodId", rodovia.rodId)
+                                              setTrecho(index, "rodovia", rodovia)
+
+                                              setBuscaRodovia((anterior) => ({
+                                                ...anterior,
+                                                [index]: "",
+                                              }))
+
+                                              setResultadosRodovia((anterior) => ({
+                                                ...anterior,
+                                                [index]: [],
+                                              }))
+
+                                              setRodoviaAberta(null)
+                                            }}
+                                            className={`flex w-full items-center justify-between rounded-md px-3 py-3 text-left transition-colors ${
+                                              selecionada
+                                                ? "bg-primary/10 text-primary"
+                                                : "hover:bg-muted"
+                                            }`}
+                                          >
+                                            <div>
+                                              <p className="text-sm font-medium">
+                                                {rodovia.rodCodigo}
+                                              </p>
+
+                                              <p className="mt-0.5 text-xs text-muted-foreground">
+                                                KM {rodovia.kmInicial ?? "—"} até KM{" "}
+                                                {rodovia.kmFinal ?? "—"}
+                                              </p>
+                                            </div>
+
+                                            {selecionada && (
+                                              <Check className="h-4 w-4 text-primary" />
+                                            )}
+                                          </button>
+                                        )
+                                      })
+                                    ) : (
+                                      <div className="px-4 py-6 text-center">
+                                        <p className="text-sm font-medium">
+                                          Nenhuma rodovia encontrada
+                                        </p>
+
+                                        <p className="mt-1 text-xs text-muted-foreground">
+                                          Tente pesquisar utilizando outro código.
+                                        </p>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
 
                           <div className="lg:col-span-2">
                             <Campo label="KM Inicial">

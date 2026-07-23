@@ -33,8 +33,7 @@ export function PdfProcesso({ processo }: PdfProcessoProps) {
     processo.trechos?.flatMap((trecho: any) =>
       (trecho.fases ?? []).map((fase: any) => ({
         ...fase,
-        rodovia: trecho.rodovia,
-        denominacao: trecho.denominacao,
+        rodovia: trecho.rodovia?.rodCodigo ?? "Sem rodovia",
       }))
     ) ?? []
 
@@ -121,15 +120,10 @@ export function PdfProcesso({ processo }: PdfProcessoProps) {
 
                         <div className="pdf-grid">
                             <PdfCampo
-                                label="Código da rodovia"
-                                valor={trecho.rodovia}
+                                label="Rodovia"
+                                valor={trecho.rodovia?.rodCodigo ?? "—"}
                             />
-
-                            <PdfCampo
-                                label="Denominação"
-                                valor={trecho.denominacao}
-                            />
-
+                            
                             <PdfCampo
                                 label="KM inicial"
                                 valor={trecho.kmInicial}
@@ -161,11 +155,6 @@ export function PdfProcesso({ processo }: PdfProcessoProps) {
                             <PdfCampo
                                 label="Rodovia"
                                 valor={fase.rodovia}
-                            />
-
-                            <PdfCampo
-                                label="Denominação"
-                                valor={fase.denominacao}
                             />
 
                             <PdfCampo

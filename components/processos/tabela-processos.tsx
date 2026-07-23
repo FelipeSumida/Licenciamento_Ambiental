@@ -99,9 +99,9 @@ export function TabelaProcessos({
       new Set(
         processos
           .flatMap((p) => p.trechos ?? [])
-          .map((t) => t.rodovia)
-          .filter(Boolean),
-      ),
+          .map((t) => t.rodovia?.rodCodigo)
+          .filter((codigo): codigo is string => Boolean(codigo))
+      )
     ).sort()
   }, [processos])
 
@@ -157,7 +157,9 @@ export function TabelaProcessos({
       const classificacaoProcesso = p.classificacao ?? ""
       const trechos = p.trechos ?? []
 
-      const rodoviasDoProcesso = trechos.map((t) => t.rodovia)
+      const rodoviasDoProcesso = trechos
+        .map((t) => t.rodovia?.rodCodigo)
+        .filter((codigo): codigo is string => Boolean(codigo))
 
       const casaRodovia =
         rodoviasSelecionadas.length === 0 ||
@@ -210,7 +212,7 @@ export function TabelaProcessos({
           p.interessado,
           ...trechos.map(
             (t) =>
-              `${t.denominacao} ${t.rodovia} ${t.kmInicial} ${t.kmFinal}`,
+              `${t.rodovia?.rodCodigo ?? ""} ${t.kmInicial} ${t.kmFinal}`
           ),
           ...pendencias.map(
             (pendencia) =>
@@ -270,8 +272,7 @@ export function TabelaProcessos({
 
       return {
         Processo: p.processo ?? "",
-        Codigo: p.trechos?.[0]?.rodovia ?? "",
-        Denominacao: p.trechos?.[0]?.denominacao ?? "",
+        Rodovia: p.trechos?.[0]?.rodovia?.rodCodigo ?? "",
         KmInicial: p.trechos?.[0]?.kmInicial ?? "",
         KmFinal: p.trechos?.[0]?.kmFinal ?? "",
         Empreendimento: p.empreendimento ?? "",
@@ -624,7 +625,7 @@ export function TabelaProcessos({
                       </TableCell>
 
                       <TableCell>
-                        {p.trechos?.[0]?.rodovia || "—"}
+                        {p.trechos?.[0]?.rodovia?.rodCodigo ?? "—"}
                       </TableCell>
 
                       <TableCell className="max-w-72 truncate">

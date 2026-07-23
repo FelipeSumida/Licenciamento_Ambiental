@@ -46,11 +46,18 @@ public class Trecho
     [Key]
     public int Id { get; set; }
 
-    public string Denominacao { get; set; } = "";
-    public string Rodovia { get; set; } = "";
-    public string KmInicial { get; set; } = "";
-    public string KmFinal { get; set; } = "";
+    public double KmInicial { get; set; }
+
+    public double KmFinal { get; set; }
+
     public int ProcessoId { get; set; }
+
+    [Column("rod_id")]
+    public long? RodId { get; set; }
+
+    [ForeignKey(nameof(RodId))]
+    public SirgeoRodovia? Rodovia { get; set; }
+
     public List<FaseTrecho> Fases { get; set; } = new();
 }
 

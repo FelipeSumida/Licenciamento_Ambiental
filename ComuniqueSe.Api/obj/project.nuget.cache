@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "MWEu9RBs2Lc=",
+  "dgSpecHash": "0XM1efN+2Ms=",
   "success": true,
-  "projectFilePath": "C:\\Users\\ffsumida\\Desktop\\licenciamento_ambiental\\ComuniqueSe.Api\\ComuniqueSe.Api.csproj",
+  "projectFilePath": "C:\\Users\\ffsumida\\desktop\\Licenciamento_Ambiental\\ComuniqueSe.Api\\ComuniqueSe.Api.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\ffsumida\\.nuget\\packages\\azure.core\\1.38.0\\azure.core.1.38.0.nupkg.sha512",
     "C:\\Users\\ffsumida\\.nuget\\packages\\azure.identity\\1.11.4\\azure.identity.1.11.4.nupkg.sha512",
