@@ -155,33 +155,57 @@ export function AcompanhamentoForm({
         }
     }
 
-    function validarIntervaloTrecho(trecho: Trecho) {
+    function validarIntervaloTrecho(trecho: Trecho): string | null {
         if (!trecho.rodovia) {
             return null
         }
 
-        const kmTrechoInicial = Number(trecho.kmInicial)
-        const kmTrechoFinal = Number(trecho.kmFinal)
+        const kmInicialDigitado = Number(trecho.kmInicial)
+        const kmFinalDigitado = Number(trecho.kmFinal)
 
-        const kmRodoviaInicial = Number(trecho.rodovia.kmInicial)
-        const kmRodoviaFinal = Number(trecho.rodovia.kmFinal)
-
-        if (
-            Number.isNaN(kmTrechoInicial) ||
-            Number.isNaN(kmTrechoFinal)
-        ) {
-            return "Informe valores válidos para KM inicial e KM final."
+        const rodovia = trecho.rodovia as SirgeoRodovia & {
+            rodKmInicial?: number | null
+            rodKmFinal?: number | null
         }
 
-        if (kmTrechoInicial > kmTrechoFinal) {
+        const kmInicialRodovia = Number(
+            rodovia.kmInicial ?? rodovia.rodKmInicial
+        )
+
+        const kmFinalRodovia = Number(
+            rodovia.kmFinal ?? rodovia.rodKmFinal
+        )
+
+        if (
+            Number.isNaN(kmInicialDigitado) ||
+            Number.isNaN(kmFinalDigitado)
+        ) {
+            return "Informe valores válidos para o KM inicial e o KM final."
+        }
+
+        if (
+            Number.isNaN(kmInicialRodovia) ||
+            Number.isNaN(kmFinalRodovia)
+        ) {
+            return "Não foi possível identificar o intervalo completo da rodovia selecionada."
+        }
+
+        if (kmInicialDigitado > kmFinalDigitado) {
             return "O KM inicial não pode ser maior que o KM final."
         }
 
         if (
-            kmTrechoInicial < kmRodoviaInicial ||
-            kmTrechoFinal > kmRodoviaFinal
+            kmInicialDigitado < kmInicialRodovia ||
+            kmInicialDigitado > kmFinalRodovia
         ) {
-            return `O trecho informado deve estar entre o KM ${kmRodoviaInicial} e o KM ${kmRodoviaFinal} da rodovia selecionada.`
+            return `O KM inicial deve estar entre ${kmInicialRodovia} e ${kmFinalRodovia}.`
+        }
+
+        if (
+            kmFinalDigitado < kmInicialRodovia ||
+            kmFinalDigitado > kmFinalRodovia
+        ) {
+            return `O KM final deve estar entre ${kmInicialRodovia} e ${kmFinalRodovia}.`
         }
 
         return null
@@ -574,13 +598,24 @@ export function AcompanhamentoForm({
                                                 </Campo>
                                             </div>
 
-                                            {validarIntervaloTrecho(trecho) && (
-                                                <div className="lg:col-span-12">
-                                                    <p className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-                                                    {validarIntervaloTrecho(trecho)}
-                                                    </p>
-                                                </div>
-                                            )}
+                                            {(() => {
+                                                const erroIntervalo = validarIntervaloTrecho(trecho)
+
+                                                if (!erroIntervalo) {
+                                                    return null
+                                                }
+
+                                                return (
+                                                    <div className="lg:col-span-12">
+                                                        <div className="rounded-md border border-red-300 bg-red-50 px-4 py-3">
+                                                            <p className="text-sm font-medium text-red-700">
+                                                                {erroIntervalo}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                )
+                                            })()}
+
                                             </div>
                                         </div>   
                                     </div>
