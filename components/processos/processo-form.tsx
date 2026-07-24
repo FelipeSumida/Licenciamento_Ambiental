@@ -186,17 +186,19 @@ export function ProcessoForm({
     campo: K,
     valor: Trecho[K]
   ) {
-    const novosTrechos = [...form.trechos]
+    setForm((anterior) => {
+      const novosTrechos = [...anterior.trechos]
 
-    novosTrechos[index] = {
-      ...novosTrechos[index],
-      [campo]: valor,
-    }
+      novosTrechos[index] = {
+        ...novosTrechos[index],
+        [campo]: valor,
+      }
 
-    setForm((anterior) => ({
-      ...anterior,
-      trechos: novosTrechos,
-    }))
+      return {
+        ...anterior,
+        trechos: novosTrechos,
+      }
+    })
   }
 
   async function buscarRodovias(index: number, busca: string) {
@@ -235,6 +237,38 @@ export function ProcessoForm({
         [index]: false,
       }))
     }
+  }
+
+  function validarIntervaloTrecho(trecho: Trecho) {
+    if (!trecho.rodovia) {
+      return null
+    }
+
+    const kmTrechoInicial = Number(trecho.kmInicial)
+    const kmTrechoFinal = Number(trecho.kmFinal)
+
+    const kmRodoviaInicial = Number(trecho.rodovia.kmInicial)
+    const kmRodoviaFinal = Number(trecho.rodovia.kmFinal)
+
+    if (
+      Number.isNaN(kmTrechoInicial) ||
+      Number.isNaN(kmTrechoFinal)
+    ) {
+      return "Informe valores válidos para KM inicial e KM final."
+    }
+
+    if (kmTrechoInicial > kmTrechoFinal) {
+      return "O KM inicial não pode ser maior que o KM final."
+    }
+
+    if (
+      kmTrechoInicial < kmRodoviaInicial ||
+      kmTrechoFinal > kmRodoviaFinal
+    ) {
+      return `O trecho informado deve estar entre o KM ${kmRodoviaInicial} e o KM ${kmRodoviaFinal} da rodovia selecionada.`
+    }
+
+    return null
   }
 
   function adicionarFaseComplementar() {
@@ -345,6 +379,18 @@ export function ProcessoForm({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+
+    const trechoInvalido = form.trechos.find((trecho) =>
+      validarIntervaloTrecho(trecho)
+    )
+
+    if (trechoInvalido) {
+      toast.error(
+        validarIntervaloTrecho(trechoInvalido) ??
+          "Existe um trecho com KM inválido."
+      )
+      return
+    }
 
     if (!form.processo.trim()) {
       toast.error("Informe o número do processo.")
@@ -581,8 +627,20 @@ export function ProcessoForm({
                                             key={rodovia.rodId}
                                             type="button"
                                             onClick={() => {
-                                              setTrecho(index, "rodId", rodovia.rodId)
-                                              setTrecho(index, "rodovia", rodovia)
+                                              setForm((anterior) => {
+                                                const novosTrechos = [...anterior.trechos]
+
+                                                novosTrechos[index] = {
+                                                  ...novosTrechos[index],
+                                                  rodId: rodovia.rodId,
+                                                  rodovia: rodovia,
+                                                }
+
+                                                return {
+                                                  ...anterior,
+                                                  trechos: novosTrechos,
+                                                }
+                                              })
 
                                               setBuscaRodovia((anterior) => ({
                                                 ...anterior,
@@ -654,6 +712,14 @@ export function ProcessoForm({
                               />
                             </Campo>
                           </div>
+
+                          {validarIntervaloTrecho(trecho) && (
+                            <div className="lg:col-span-12">
+                              <p className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                                {validarIntervaloTrecho(trecho)}
+                              </p>
+                            </div>
+                          )}
                         </div>
                       </div>
                       

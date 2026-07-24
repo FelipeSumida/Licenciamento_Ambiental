@@ -18,7 +18,7 @@ import { criarProcesso, atualizarProcesso } from "@/lib/api"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
-import { Loader2, Save } from "lucide-react"
+import { Loader2, Save, Search, ChevronDown, Check, } from "lucide-react"
 
 
 import {
@@ -87,28 +87,105 @@ export function AcompanhamentoForm({
     const [salvando, setSalvando] = useState(false)
     const editando = !!processo
     const [pendenciasAbertas, setPendenciasAbertas] = useState<number[]>([0])
-    const [buscasRodovia, setBuscasRodovia] = useState<Record<number, string>>({})
+    const [buscaRodovia, setBuscaRodovia] = useState<Record<number, string>>({})
     const [resultadosRodovia, setResultadosRodovia] = useState<Record<number, SirgeoRodovia[]>>({})
     const [carregandoRodovia, setCarregandoRodovia] = useState<Record<number, boolean>>({})
+    const [rodoviaAberta, setRodoviaAberta] = useState<number | null>(null)
     const hoje = new Date().toISOString().split("T")[0]
 
     function setTrecho<K extends keyof Trecho>(
-    index: number,
-    campo: K,
-    valor: Trecho[K]
-  ) {
-    const novosTrechos = [...form.trechos]
+        index: number,
+        campo: K,
+        valor: Trecho[K]
+    ) {
+        setForm((anterior: any) => {
+            const novosTrechos = [...anterior.trechos]
 
-    novosTrechos[index] = {
-      ...novosTrechos[index],
-      [campo]: valor,
+            novosTrechos[index] = {
+                ...novosTrechos[index],
+                [campo]: valor,
+            }
+
+            return {
+                ...anterior,
+                trechos: novosTrechos,
+            }
+        })
     }
 
-    setForm((anterior) => ({
-      ...anterior,
-      trechos: novosTrechos,
-    }))
-  }
+    async function buscarRodovias(index: number, busca = "") {
+        const termo = busca.trim()
+
+        try {
+            setCarregandoRodovia((anterior) => ({
+                ...anterior,
+                [index]: true,
+            }))
+
+            const parametros = termo
+                ? `?busca=${encodeURIComponent(termo)}`
+                : ""
+
+            const resposta = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/processos/rodovias${parametros}`
+            )
+
+            if (!resposta.ok) {
+                throw new Error(`Erro ${resposta.status} ao buscar rodovias`)
+            }
+
+            const rodovias: SirgeoRodovia[] = await resposta.json()
+
+            setResultadosRodovia((anterior) => ({
+                ...anterior,
+                [index]: rodovias,
+            }))
+        } catch (erro) {
+            console.error("Erro ao buscar rodovias:", erro)
+
+            setResultadosRodovia((anterior) => ({
+                ...anterior,
+                [index]: [],
+            }))
+        } finally {
+            setCarregandoRodovia((anterior) => ({
+                ...anterior,
+                [index]: false,
+            }))
+        }
+    }
+
+    function validarIntervaloTrecho(trecho: Trecho) {
+        if (!trecho.rodovia) {
+            return null
+        }
+
+        const kmTrechoInicial = Number(trecho.kmInicial)
+        const kmTrechoFinal = Number(trecho.kmFinal)
+
+        const kmRodoviaInicial = Number(trecho.rodovia.kmInicial)
+        const kmRodoviaFinal = Number(trecho.rodovia.kmFinal)
+
+        if (
+            Number.isNaN(kmTrechoInicial) ||
+            Number.isNaN(kmTrechoFinal)
+        ) {
+            return "Informe valores válidos para KM inicial e KM final."
+        }
+
+        if (kmTrechoInicial > kmTrechoFinal) {
+            return "O KM inicial não pode ser maior que o KM final."
+        }
+
+        if (
+            kmTrechoInicial < kmRodoviaInicial ||
+            kmTrechoFinal > kmRodoviaFinal
+        ) {
+            return `O trecho informado deve estar entre o KM ${kmRodoviaInicial} e o KM ${kmRodoviaFinal} da rodovia selecionada.`
+        }
+
+        return null
+    }
 
     function novoTrecho() {
         return {
@@ -116,6 +193,7 @@ export function AcompanhamentoForm({
             rodovia: null,
             kmInicial: "",
             kmFinal: "",
+            fases: [],
         }
     }
 
@@ -155,6 +233,17 @@ export function AcompanhamentoForm({
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault()
 
+        const trechoInvalido = form.trechos.find(
+            (trecho: Trecho) => validarIntervaloTrecho(trecho) !== null
+        )
+
+        if (trechoInvalido) {
+            const mensagem = validarIntervaloTrecho(trechoInvalido)
+
+            toast.error(mensagem ?? "Existe um trecho com KM inválido.")
+            return
+        }
+
         if (!form.classificacao) {
             alert("Selecione uma classificação antes de salvar.")
             return
@@ -165,11 +254,12 @@ export function AcompanhamentoForm({
             const payload = {
                 ...form,
 
-                trechos: form.trechos.map((t: any) => ({
+                trechos: form.trechos.map((t: Trecho) => ({
                     id: t.id,
                     rodId: t.rodId,
                     kmInicial: Number(t.kmInicial),
                     kmFinal: Number(t.kmFinal),
+                    fases: [],
                 })),
 
                 pendencias: form.pendencias.map((pendencia: any) => ({
@@ -298,80 +388,231 @@ export function AcompanhamentoForm({
                 
                 <div className="sm:col-span-2 space-y-4">
                     <Campo label="Rodovias e KM">
-                    <div className="space-y-6 rounded-lg border p-6">
-                        {form.trechos.map((trecho: any, index: number) => (
-                        <div
-                            key={index}
-                            className="grid grid-cols-12 gap-3 items-end"
-                        >
-                            <div className="col-span-12 space-y-3">
-                            <div className="rounded-lg border bg-muted/20 p-4">
-                                <div className="mb-4 flex items-center justify-between">
-                                <h3 className="font-medium">Rodovia</h3>
-                                </div>
+                        <div className="space-y-6 rounded-lg border p-6">
+                            {form.trechos.map((trecho: any, index: number) => (
+                                <div
+                                    key={index}
+                                    className="grid grid-cols-12 gap-3 items-end"
+                                >
+                                    <div className="col-span-12 space-y-3">
+                                        <div className="rounded-lg border bg-muted/20 p-4">
+                                            <div className="mb-4 flex items-center justify-between">
+                                                <h3 className="font-medium">Rodovia</h3>
+                                            </div>
 
-                                <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-                                <div className="lg:col-span-5">
-                                    <Campo label="Rodovia">
-                                        <Input
-                                            value={trecho.rodovia?.rodCodigo ?? ""}
-                                            readOnly
-                                            placeholder="Selecione uma rodovia"
-                                        />
-                                    </Campo>
-                                </div>
+                                            <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
+                                                <div className="relative lg:col-span-5">
+                                                    <Campo label="Código">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                const vaiAbrir = rodoviaAberta !== index
 
-                                <div className="lg:col-span-2">
-                                    <Campo label="KM Inicial">
-                                    <Input
-                                        value={trecho.kmInicial}
-                                        onChange={(e) => setTrecho(index, "kmInicial", e.target.value)}
-                                        placeholder="0"
-                                    />
-                                    </Campo>
-                                </div>
+                                                                setRodoviaAberta(vaiAbrir ? index : null)
 
-                                <div className="lg:col-span-2">
-                                    <Campo label="KM Final">
-                                    <Input
-                                        value={trecho.kmFinal}
-                                        onChange={(e) => setTrecho(index, "kmFinal", e.target.value)}
-                                        placeholder="0"
-                                    />
-                                    </Campo>
+                                                                if (vaiAbrir) {
+                                                                    setBuscaRodovia((anterior) => ({
+                                                                        ...anterior,
+                                                                        [index]: "",
+                                                                }))
+
+                                                                    buscarRodovias(index, "")
+                                                                }
+                                                            }}
+                                                                className="flex h-11 w-full items-center justify-between rounded-md border border-input bg-background px-3 text-sm shadow-sm transition-colors hover:bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                                        >
+                                                            <span
+                                                                className={
+                                                                    trecho.rodovia?.rodCodigo
+                                                                        ? "text-foreground"
+                                                                        : "text-muted-foreground"
+                                                                }
+                                                            >
+                                                                {trecho.rodovia?.rodCodigo || "Selecione a rodovia"}
+                                                            </span>
+
+                                                            <ChevronDown
+                                                                className={`h-4 w-4 text-muted-foreground transition-transform ${
+                                                                    rodoviaAberta === index ? "rotate-180" : ""
+                                                                }`}
+                                                            />
+                                                        </button>
+                                                    </Campo>
+
+                                                    {rodoviaAberta === index && (
+                                                        <div className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-lg border bg-background shadow-xl">
+                                                            <div className="border-b p-3">
+                                                                <div className="relative">
+                                                                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+
+                                                                    <Input
+                                                                        value={buscaRodovia[index] ?? ""}
+                                                                        onChange={(e) => {
+                                                                            const valor = e.target.value
+
+                                                                            setBuscaRodovia((anterior) => ({
+                                                                                ...anterior,
+                                                                                [index]: valor,
+                                                                            }))
+
+                                                                            buscarRodovias(index, valor)
+                                                                        }}
+                                                                        placeholder="Pesquisar código da rodovia..."
+                                                                        autoComplete="off"
+                                                                        autoFocus
+                                                                        className="h-10 pl-9"
+                                                                    />
+                                                                </div>
+                                                            </div>
+
+                                                        <div className="border-b bg-muted/30 px-3 py-2">
+                                                            <p className="text-xs text-muted-foreground">
+                                                                {carregandoRodovia[index]
+                                                                    ? "Buscando rodovias..."
+                                                                    : `${resultadosRodovia[index]?.length ?? 0} rodovia(s) encontrada(s)`}
+                                                            </p>
+                                                        </div>
+
+                                                        <div className="max-h-64 overflow-y-auto p-1">
+                                                            {carregandoRodovia[index] ? (
+                                                                <div className="flex items-center justify-center gap-2 px-4 py-6 text-sm text-muted-foreground">
+                                                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                                                    Carregando rodovias...
+                                                                </div>
+                                                            ) : resultadosRodovia[index]?.length > 0 ? (
+                                                                resultadosRodovia[index].map((rodovia) => {
+                                                                    const selecionada = trecho.rodId === rodovia.rodId
+
+                                                                    return (
+                                                                        <button
+                                                                            key={rodovia.rodId}
+                                                                            type="button"
+                                                                            onClick={() => {
+                                                                                setForm((anterior: any) => {
+                                                                                    const novosTrechos = [...anterior.trechos]
+
+                                                                                    novosTrechos[index] = {
+                                                                                        ...novosTrechos[index],
+                                                                                        rodId: rodovia.rodId,
+                                                                                        rodovia,
+                                                                                    }
+
+                                                                                    return {
+                                                                                        ...anterior,
+                                                                                        trechos: novosTrechos,
+                                                                                    }
+                                                                                })
+
+                                                                                setBuscaRodovia((anterior) => ({
+                                                                                    ...anterior,
+                                                                                    [index]: "",
+                                                                                }))
+
+                                                                                setResultadosRodovia((anterior) => ({
+                                                                                    ...anterior,
+                                                                                    [index]: [],
+                                                                                }))
+
+                                                                                setRodoviaAberta(null)
+                                                                            }}
+                                                                            className={`flex w-full items-center justify-between rounded-md px-3 py-3 text-left transition-colors ${
+                                                                                selecionada
+                                                                                    ? "bg-primary/10 text-primary"
+                                                                                    : "hover:bg-muted"
+                                                                            }`}
+                                                                        >
+                                                                            <div>
+                                                                                <p className="text-sm font-medium">
+                                                                                    {rodovia.rodCodigo}
+                                                                                </p>
+
+                                                                                <p className="mt-0.5 text-xs text-muted-foreground">
+                                                                                    KM {rodovia.kmInicial ?? "—"} até KM{" "}
+                                                                                    {rodovia.kmFinal ?? "—"}
+                                                                                </p>
+                                                                            </div>
+
+                                                                            {selecionada && (
+                                                                                <Check className="h-4 w-4 text-primary" />
+                                                                            )}
+                                                                        </button>
+                                                                    )
+                                                                })
+                                                            ) : (
+                                                                <div className="px-4 py-6 text-center">
+                                                                    <p className="text-sm font-medium">
+                                                                        Nenhuma rodovia encontrada
+                                                                    </p>
+
+                                                                    <p className="mt-1 text-xs text-muted-foreground">
+                                                                        Tente pesquisar utilizando outro código.
+                                                                    </p>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <div className="lg:col-span-2">
+                                                <Campo label="KM Inicial">
+                                                    <Input
+                                                        value={trecho.kmInicial}
+                                                        onChange={(e) => setTrecho(index, "kmInicial", e.target.value)}
+                                                        placeholder="0"
+                                                    />
+                                                </Campo>
+                                            </div>
+
+                                            <div className="lg:col-span-2">
+                                                <Campo label="KM Final">
+                                                    <Input
+                                                        value={trecho.kmFinal}
+                                                        onChange={(e) => setTrecho(index, "kmFinal", e.target.value)}
+                                                        placeholder="0"
+                                                    />
+                                                </Campo>
+                                            </div>
+
+                                            {validarIntervaloTrecho(trecho) && (
+                                                <div className="lg:col-span-12">
+                                                    <p className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                                                    {validarIntervaloTrecho(trecho)}
+                                                    </p>
+                                                </div>
+                                            )}
+                                            </div>
+                                        </div>   
+                                    </div>
                                 </div>
-                                </div>
-                            </div>   
+                            ))}
+
+                            <div className="mt-4 flex items-center gap-3">
+                                <button
+                                    type="button"
+                                    className="cursor-pointer rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700"
+                                    onClick={() =>
+                                    set("trechos", [...form.trechos, novoTrecho()])
+                                    }
+                                >
+                                    + Adicionar Trecho
+                                </button>
+
+                                
+                                <button
+                                    type="button"
+                                    className="cursor-pointer rounded-md bg-red-500 px-4 py-3 text-xs text-white hover:bg-red-700"
+                                    onClick={() =>
+                                    set(
+                                        "trechos",
+                                        form.trechos.filter((_: any, i: number) => i !== form.trechos.length - 1)
+                                    )
+                                    }
+                                >
+                                    Excluir
+                                </button>
                             </div>
                         </div>
-                        ))}
-
-                        <div className="mt-4 flex items-center gap-3">
-                        <button
-                            type="button"
-                            className="cursor-pointer rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700"
-                            onClick={() =>
-                            set("trechos", [...form.trechos, novoTrecho()])
-                            }
-                        >
-                            + Adicionar Trecho
-                        </button>
-
-                        
-                        <button
-                            type="button"
-                            className="cursor-pointer rounded-md bg-red-500 px-4 py-3 text-xs text-white hover:bg-red-700"
-                            onClick={() =>
-                            set(
-                                "trechos",
-                                form.trechos.filter((_: any, i: number) => i !== form.trechos.length - 1)
-                            )
-                            }
-                        >
-                            Excluir
-                        </button>
-                        </div>
-                    </div>
                     </Campo>
                 </div>
 

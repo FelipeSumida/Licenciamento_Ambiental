@@ -95,15 +95,25 @@ export function TabelaProcessos({
   }
 
   const rodoviasDisponiveis = useMemo(() => {
+    const processosDaPagina = processos.filter((p) => {
+      const ehAcompanhamento = ["SUP.OBRA", "OP-FAUNA", "OUTROS"].includes(
+        p.classificacao ?? ""
+      )
+
+      return modo === "outros"
+        ? ehAcompanhamento
+        : !ehAcompanhamento
+    })
+
     return Array.from(
       new Set(
-        processos
+        processosDaPagina
           .flatMap((p) => p.trechos ?? [])
-          .map((t) => t.rodovia?.rodCodigo)
+          .map((trecho) => trecho.rodovia?.rodCodigo)
           .filter((codigo): codigo is string => Boolean(codigo))
       )
-    ).sort()
-  }, [processos])
+    ).sort((a, b) => a.localeCompare(b))
+  }, [processos, modo])
 
   const rodoviasFiltradas = rodoviasDisponiveis.filter((rodovia) =>
     rodovia.toLowerCase().includes(buscaRodovia.toLowerCase())
