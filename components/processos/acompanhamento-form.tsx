@@ -727,36 +727,36 @@ export function AcompanhamentoForm({
                                 return (
                                 <div key={index} className="space-y-4 rounded-lg border p-4">
                                     <div className="mb-4 flex items-center justify-between">
-                                    <button
-                                        type="button"
-                                        onClick={() =>
-                                        setPendenciasAbertas((atual) =>
-                                            atual.includes(index)
-                                            ? atual.filter((i: number) => i !== index)
-                                            : [...atual, index]
-                                        )
-                                        }
-                                        className="flex cursor-pointer items-center gap-2 font-medium"
-                                    >
-                                        <span>{pendenciaFechada ? "▶" : "▼"}</span>
-                                        <span>Pendência {index + 1}</span>
-                                        <span className="rounded-full border px-2 py-0.5 text-xs">
-                                        {pendencia.situacao}
-                                        </span>
-                                    </button>
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                setPendenciasAbertas((atual) =>
+                                                    atual.includes(index)
+                                                    ? atual.filter((i: number) => i !== index)
+                                                    : [...atual, index]
+                                                )
+                                            }
+                                            className="flex cursor-pointer items-center gap-2 font-medium"
+                                        >
+                                            <span>{pendenciaFechada ? "▶" : "▼"}</span>
+                                            <span>Pendência {index + 1}</span>
+                                            <span className="rounded-full border px-2 py-0.5 text-xs">
+                                                {pendencia.situacao}
+                                            </span>
+                                        </button>
 
-                                    <button
-                                        type="button"
-                                        className="cursor-pointer rounded-md bg-red-500 px-3 py-2 text-xs text-white hover:bg-red-700"
-                                        onClick={() =>
-                                        set(
-                                            "pendencias",
-                                            form.pendencias.filter((_: any, i: number) => i !== index)
-                                        )
-                                        }
-                                    >
-                                        Excluir
-                                    </button>
+                                        <button
+                                            type="button"
+                                            className="cursor-pointer rounded-md bg-red-500 px-3 py-2 text-xs text-white hover:bg-red-700"
+                                            onClick={() =>
+                                                set(
+                                                    "pendencias",
+                                                    form.pendencias.filter((_: any, i: number) => i !== index)
+                                                )
+                                            }
+                                        >
+                                            Excluir
+                                        </button>
                                     </div>
                                 
                                     {!pendenciaFechada && (
@@ -765,27 +765,27 @@ export function AcompanhamentoForm({
                                         <Label>Atribuído a</Label>
 
                                         <div className="flex flex-wrap gap-3">
-                                        {["DE", "DO", "CAP", "Regional"].map((opcao) => (
-                                            <label key={opcao} className="flex items-center gap-2">
-                                            <input
-                                                type="checkbox"
-                                                checked={pendencia.atribuidoA.includes(
-                                                opcao as "DE" | "DO" | "CAP" | "Regional"
-                                                )}
-                                                onChange={(e) => {
-                                                const valor = opcao as "DE" | "DO" | "CAP" | "Regional"
+                                            {["DE", "DO", "CAP", "Regional"].map((opcao) => (
+                                                <label key={opcao} className="flex items-center gap-2">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={pendencia.atribuidoA.includes(
+                                                    opcao as "DE" | "DO" | "CAP" | "Regional"
+                                                    )}
+                                                    onChange={(e) => {
+                                                    const valor = opcao as "DE" | "DO" | "CAP" | "Regional"
 
-                                                const novoAtribuidoA = e.target.checked
-                                                    ? [...pendencia.atribuidoA, valor]
-                                                    : pendencia.atribuidoA.filter((item: string) => item !== valor)
+                                                    const novoAtribuidoA = e.target.checked
+                                                        ? [...pendencia.atribuidoA, valor]
+                                                        : pendencia.atribuidoA.filter((item: string) => item !== valor)
 
-                                                setPendencia(index, "atribuidoA", novoAtribuidoA)
-                                                }}
-                                            />
+                                                    setPendencia(index, "atribuidoA", novoAtribuidoA)
+                                                    }}
+                                                />
 
-                                            {opcao}
-                                            </label>
-                                        ))}
+                                                {opcao}
+                                                </label>
+                                            ))}
                                         </div>
 
                                         {pendencia.atribuidoA.includes("Regional") && (
@@ -793,29 +793,28 @@ export function AcompanhamentoForm({
                                             <Label>Regionais</Label>
 
                                             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                                            {Array.from({ length: 14 }, (_, i) => `CGR${i + 1}`).map((regional) => (
-                                                <label key={regional} className="flex items-center gap-2">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={pendencia.regionais.includes(regional)}
-                                                    onChange={(e) => {
-                                                    const novasRegionais = e.target.checked
-                                                        ? [...pendencia.regionais, regional]
-                                                        : pendencia.regionais.filter((r: string) => r !== regional)
+                                                {Array.from({ length: 14 }, (_, i) => `CGR${i + 1}`).map((regional) => (
+                                                    <label key={regional} className="flex items-center gap-2">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={pendencia.regionais.includes(regional)}
+                                                            onChange={(e) => {
+                                                            const novasRegionais = e.target.checked
+                                                                ? [...pendencia.regionais, regional]
+                                                                : pendencia.regionais.filter((r: string) => r !== regional)
 
-                                                    setPendencia(index, "regionais", novasRegionais)
-                                                    }}
-                                                />
+                                                            setPendencia(index, "regionais", novasRegionais)
+                                                            }}
+                                                        />
 
-                                                {regional}
-                                                </label>
-                                            ))}
+                                                        {regional}
+                                                    </label>
+                                                ))}
                                             </div>
 
-                                            {pendencia.atribuidoA.includes("Regional") &&
-                                            pendencia.regionais.length === 0 && (
+                                            {pendencia.atribuidoA.includes("Regional") && pendencia.regionais.length === 0 && (
                                                 <p className="mt-2 text-sm text-red-500">
-                                                Selecione pelo menos uma Regional.
+                                                    Selecione pelo menos uma Regional.
                                                 </p>
                                             )}
                                             
@@ -825,71 +824,71 @@ export function AcompanhamentoForm({
 
                                     <Campo label="Descrição da pendência">
                                         <Textarea
-                                        value={pendencia.descricao}
-                                        onChange={(e) =>
-                                            setPendencia(index, "descricao", e.target.value)
-                                        }
-                                        rows={3}
-                                        placeholder="Descreva a pendência..."
+                                            value={pendencia.descricao}
+                                            onChange={(e) =>
+                                                setPendencia(index, "descricao", e.target.value)
+                                            }
+                                            rows={3}
+                                            placeholder="Descreva a pendência..."
                                         />
                                     </Campo>
 
                                     <Campo label="Históricos">
 
                                         {pendencia.historicos.map((hist: any, histIndex: number) => (
-                                        <div
-                                            key={histIndex}
-                                            className="mb-3 rounded border p-3"
-                                        >
-
-                                            <div className="mb-3">
-                                            <Label>Data do histórico</Label>
-
-                                            <Input
-                                                type="date"
-                                                value={hist.data ? hist.data.substring(0, 10) : ""}
-                                                onChange={(e) => {
-                                                const novosHistoricos = [...pendencia.historicos]
-                                                novosHistoricos[histIndex].data = e.target.value
-
-                                                const novasPendencias = [...form.pendencias]
-                                                novasPendencias[index].historicos = novosHistoricos
-
-                                                set("pendencias", novasPendencias)
-                                                }}
-                                            />
-                                            </div>
-
-                                            <Textarea
-                                            value={hist.texto}
-                                            placeholder="Registro do histórico..."
-                                            rows={3}
-                                            onChange={(e) => {
-                                                const novosHistoricos = [...pendencia.historicos]
-                                                novosHistoricos[histIndex].texto = e.target.value
-
-                                                const novasPendencias = [...form.pendencias]
-                                                novasPendencias[index].historicos = novosHistoricos
-
-                                                set("pendencias", novasPendencias)
-                                            }}
-                                            />
-
-                                            <button
-                                            type="button"
-                                            className="cursor-pointer mt-2 rounded bg-red-500 px-2 py-1 text-white hover:bg-red-700"
-                                            onClick={() => {
-                                                const novosHistoricos =
-                                                pendencia.historicos.filter((_: any, i: number) => i !== histIndex)
-                                                const novasPendencias = [...form.pendencias]
-                                                novasPendencias[index].historicos = novosHistoricos
-
-                                                set("pendencias", novasPendencias)
-                                            }}
+                                            <div
+                                                key={histIndex}
+                                                className="mb-3 rounded border p-3"
                                             >
-                                            Excluir histórico
-                                            </button>
-                                        </div>
+
+                                                <div className="mb-3">
+                                                <Label>Data do histórico</Label>
+
+                                                <Input
+                                                    type="date"
+                                                    value={hist.data ? hist.data.substring(0, 10) : ""}
+                                                    onChange={(e) => {
+                                                    const novosHistoricos = [...pendencia.historicos]
+                                                    novosHistoricos[histIndex].data = e.target.value
+
+                                                    const novasPendencias = [...form.pendencias]
+                                                    novasPendencias[index].historicos = novosHistoricos
+
+                                                    set("pendencias", novasPendencias)
+                                                    }}
+                                                />
+                                                </div>
+
+                                                <Textarea
+                                                value={hist.texto}
+                                                placeholder="Registro do histórico..."
+                                                rows={3}
+                                                onChange={(e) => {
+                                                    const novosHistoricos = [...pendencia.historicos]
+                                                    novosHistoricos[histIndex].texto = e.target.value
+
+                                                    const novasPendencias = [...form.pendencias]
+                                                    novasPendencias[index].historicos = novosHistoricos
+
+                                                    set("pendencias", novasPendencias)
+                                                }}
+                                                />
+
+                                                <button
+                                                type="button"
+                                                className="cursor-pointer mt-2 rounded bg-red-500 px-2 py-1 text-white hover:bg-red-700"
+                                                onClick={() => {
+                                                    const novosHistoricos =
+                                                    pendencia.historicos.filter((_: any, i: number) => i !== histIndex)
+                                                    const novasPendencias = [...form.pendencias]
+                                                    novasPendencias[index].historicos = novosHistoricos
+
+                                                    set("pendencias", novasPendencias)
+                                                }}
+                                                >
+                                                Excluir histórico
+                                                </button>
+                                            </div>
                                         ))}
 
                                         <button
@@ -974,23 +973,29 @@ export function AcompanhamentoForm({
                                         </Campo>
 
                                         <Campo label="Data de saída">
-                                        <Input
-                                            type="date"
-                                            value={paraInputDate(pendencia.dataSaida)}
-                                            onChange={(e) =>
-                                            setPendencia(index, "dataSaida", e.target.value || null)
-                                            }
-                                        />
+                                            <Input
+                                                type="date"
+                                                value={paraInputDate(pendencia.dataSaida)}
+                                                onChange={(e) =>
+                                                    setPendencia(index, "dataSaida", e.target.value || null)
+                                                }
+                                            />
                                         </Campo>
                                     </div>
 
                                     {!pendencia.cadastrada && (
                                         <Button
-                                        type="button"
-                                        onClick={() => setPendencia(index, "cadastrada", true)}
-                                        className="cursor-pointer bg-green-600 hover:bg-green-700"
+                                            type="button"
+                                            onClick={() => {
+                                                setPendencia(index, "cadastrada", true)
+
+                                                setPendenciasAbertas((anteriores) =>
+                                                    anteriores.filter((i) => i !== index)
+                                                )
+                                            }}
+                                            className="cursor-pointer bg-green-600 hover:bg-green-700"
                                         >
-                                        Cadastrar pendência
+                                            Cadastrar pendência
                                         </Button>
                                     )}
                                     </>
