@@ -131,10 +131,6 @@ public class ProcessosController : ControllerBase
             pendencia.Regionais = pendencia.PendenciasRegionais
                 .Select(vinculo => vinculo.Regional.Codigo)
                 .ToList();
-
-            Console.WriteLine(
-                $"GET - Pendência {pendencia.Id}: {string.Join(", ", pendencia.Regionais)}"
-            );
         }
 
         return Ok(processo);
@@ -316,13 +312,6 @@ public class ProcessosController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> PutProcesso(int id, Processo processo)
     {
-        Console.WriteLine();
-        Console.WriteLine("==================================");
-        Console.WriteLine("PUTPROCESSO FOI CHAMADO");
-        Console.WriteLine($"ID: {id}");
-        Console.WriteLine($"Situação recebida: '{processo.Situacao}'");
-        Console.WriteLine("==================================");
-        Console.WriteLine();
 
         var processoExistente = await _context.Processos
             .Include(p => p.Trechos)
@@ -840,10 +829,6 @@ public class ProcessosController : ControllerBase
                     .ToList()
             };
 
-            Console.WriteLine(
-                $"Pendência: {pendenciaDto.Descricao} | Regionais recebidas: " +
-                string.Join(", ", pendenciaDto.Regionais ?? new List<string>())
-            );
 
             var idsRegionais = new List<int>();
 
@@ -857,10 +842,6 @@ public class ProcessosController : ControllerBase
                     .Select(r => r.IdRegional)
                     .ToList();
             }
-
-            Console.WriteLine(
-                $"IDs encontrados: {string.Join(", ", idsRegionais)}"
-            );
 
             processoExistente.Pendencias.Add(novaPendencia);
 

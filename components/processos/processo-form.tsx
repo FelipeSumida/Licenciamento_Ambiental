@@ -440,16 +440,6 @@ export function ProcessoForm({
 
     setSalvando(true)
 
-    console.log("FORM ENVIADO:", form)
-    console.log(
-      "REGIONAIS ENVIADAS:",
-      form.pendencias.map((p) => ({
-        descricao: p.descricao,
-        atribuidoA: p.atribuidoA,
-        regionais: p.regionais,
-      }))
-    )
-
     const payload = {
       ...form,
 
@@ -470,8 +460,6 @@ export function ProcessoForm({
         anexoPdf: fc.anexoPdf ?? null,
       })),
     }
-
-    console.log("PAYLOAD FINAL:", payload)
 
     try {
       if (editando && processo) {
