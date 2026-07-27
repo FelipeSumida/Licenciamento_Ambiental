@@ -482,12 +482,31 @@ public class ProcessosController : ControllerBase
             )
         );
 
+        var rodIdsNovos = (processo.Trechos ?? new List<Trecho>())
+            .Where(t => t.RodId.HasValue)
+            .Select(t => t.RodId!.Value)
+            .Distinct()
+            .ToList();
+
+        var rodoviasNovas = await _context.SirgeoRodovias
+            .Where(r => rodIdsNovos.Contains(r.RodId))
+            .ToDictionaryAsync(
+                r => r.RodId,
+                r => r.RodCodigo
+            );
+
         var trechosNovos = string.Join(
             " | ",
             (processo.Trechos ?? new List<Trecho>()).Select(t =>
-                $"Rodovia ID: {t.RodId?.ToString() ?? "não informado"} - " +
-                $"KM {t.KmInicial} ao KM {t.KmFinal}"
-            )
+            {
+                var codigoRodovia =
+                    t.RodId.HasValue &&
+                    rodoviasNovas.TryGetValue(t.RodId.Value, out var codigo)
+                        ? codigo
+                        : "Rodovia não informada";
+
+                return $"{codigoRodovia} - KM {t.KmInicial} ao KM {t.KmFinal}";
+            })
         );
 
         RegistrarAlteracao(

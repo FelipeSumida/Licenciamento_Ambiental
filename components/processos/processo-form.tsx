@@ -239,33 +239,62 @@ export function ProcessoForm({
     }
   }
 
-  function validarIntervaloTrecho(trecho: Trecho) {
-    if (!trecho.rodovia) {
-      return null
+  function validarIntervaloTrecho(trecho: Trecho): string | null {
+    if (!trecho.rodId) {
+      return "Selecione uma rodovia."
     }
 
-    const kmTrechoInicial = Number(trecho.kmInicial)
-    const kmTrechoFinal = Number(trecho.kmFinal)
+    if (!trecho.rodovia) {
+      return "Não foi possível identificar os dados da rodovia selecionada."
+    }
 
-    const kmRodoviaInicial = Number(trecho.rodovia.kmInicial)
-    const kmRodoviaFinal = Number(trecho.rodovia.kmFinal)
+    const kmInicialDigitado = Number(trecho.kmInicial)
+    const kmFinalDigitado = Number(trecho.kmFinal)
+
+    const rodovia = trecho.rodovia as SirgeoRodovia & {
+      rodKmInicial?: number | null
+      rodKmFinal?: number | null
+    }
+
+    const kmInicialRodovia =
+      rodovia.kmInicial ?? rodovia.rodKmInicial
+
+    const kmFinalRodovia =
+      rodovia.kmFinal ?? rodovia.rodKmFinal
 
     if (
-      Number.isNaN(kmTrechoInicial) ||
-      Number.isNaN(kmTrechoFinal)
+      kmInicialRodovia == null ||
+      kmFinalRodovia == null
+    ) {
+      return "A rodovia selecionada não possui intervalo de KM cadastrado."
+    }
+
+    const inicioRodovia = Number(kmInicialRodovia)
+    const finalRodovia = Number(kmFinalRodovia)
+
+    if (
+      Number.isNaN(kmInicialDigitado) ||
+      Number.isNaN(kmFinalDigitado)
     ) {
       return "Informe valores válidos para KM inicial e KM final."
     }
 
-    if (kmTrechoInicial > kmTrechoFinal) {
+    if (kmInicialDigitado > kmFinalDigitado) {
       return "O KM inicial não pode ser maior que o KM final."
     }
 
     if (
-      kmTrechoInicial < kmRodoviaInicial ||
-      kmTrechoFinal > kmRodoviaFinal
+      kmInicialDigitado < inicioRodovia ||
+      kmInicialDigitado > finalRodovia
     ) {
-      return `O trecho informado deve estar entre o KM ${kmRodoviaInicial} e o KM ${kmRodoviaFinal} da rodovia selecionada.`
+      return `O KM inicial deve estar entre ${inicioRodovia} e ${finalRodovia}.`
+    }
+
+    if (
+      kmFinalDigitado < inicioRodovia ||
+      kmFinalDigitado > finalRodovia
+    ) {
+      return `O KM final deve estar entre ${inicioRodovia} e ${finalRodovia}.`
     }
 
     return null
