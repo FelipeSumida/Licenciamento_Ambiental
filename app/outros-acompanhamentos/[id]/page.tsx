@@ -474,17 +474,17 @@ export default function DetalheProcessoPage({
                 </DialogHeader>
                 <DialogFooter>
                     <Button
-                    variant="outline"
-                    onClick={() => setConfirmar(false)}
-                    disabled={excluindo}
+                        variant="outline"
+                        onClick={() => setConfirmar(false)}
+                        disabled={excluindo}
                     >
                         Cancelar
-                        </Button>
-                        <Button
+                    </Button>
+                    <Button
                         variant="destructive"
                         onClick={handleExcluir}
                         disabled={excluindo}
-                        >
+                    >
                         {excluindo && <Loader2 className="size-4 animate-spin" />}
                         Excluir
                     </Button>
