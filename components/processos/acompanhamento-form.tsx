@@ -665,33 +665,33 @@ export function AcompanhamentoForm({
                 </Campo>
                 <Campo label="Adicionar Técnico Responsável">
                     {(form.tecnicoResponsavel
-                    ? form.tecnicoResponsavel.split("; ")
-                    : [""]
-                    ).map((tecnico: string, index: number, lista: string[]) => (
-                    <div key={index} className="mb-2 flex gap-2">
-                        <Input
-                        value={tecnico}
-                        onChange={(e) => {
-                            const novos = [...lista]
-                            novos[index] = e.target.value
-                            set("tecnicoResponsavel", novos.filter(Boolean).join("; "))
-                        }}
-                        placeholder="Nome do técnico"
-                        />
+                        ? form.tecnicoResponsavel.split("; ")
+                        : [""]
+                        ).map((tecnico: string, index: number, lista: string[]) => (
+                        <div key={index} className="mb-2 flex gap-2">
+                            <Input
+                                value={tecnico}
+                                onChange={(e) => {
+                                    const novos = [...lista]
+                                    novos[index] = e.target.value
+                                    set("tecnicoResponsavel", novos.filter(Boolean).join("; "))
+                                }}
+                                placeholder="Nome do técnico"
+                            />
 
-                        {lista.length > 1 && (
-                        <button
-                            type="button"
-                            className="cursor-pointer rounded-md bg-red-500 px-3 py-2 text-white hover:bg-red-700"
-                            onClick={() => {
-                            const novos = lista.filter((_: string, i: number) => i !== index)
-                            set("tecnicoResponsavel", novos.join("; "))
-                            }}
-                        >
-                            Excluir
-                        </button>
-                        )}
-                    </div>
+                            {lista.length > 1 && (
+                                <button
+                                    type="button"
+                                    className="cursor-pointer rounded-md bg-red-500 px-3 py-2 text-white hover:bg-red-700"
+                                    onClick={() => {
+                                        const novos = lista.filter((_: string, i: number) => i !== index)
+                                        set("tecnicoResponsavel", novos.join("; "))
+                                    }}
+                                >
+                                    Excluir
+                                </button>
+                            )}
+                        </div>
                     ))}
 
                     <button

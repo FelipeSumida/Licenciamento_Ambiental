@@ -383,7 +383,7 @@ export default function DetalheProcessoPage({
 
                             <CardContent className="space-y-3">
                                 {processo.historicosAlteracoes?.length ? (
-                                    <div className="w-full overflow-x-auto rounded-md border">
+                                    <div className="w-full max-h-[500px] overflow-auto rounded-md border">
                                         <table className="w-full border-collapse text-sm">
                                             <thead>
                                                 <tr className="border-b bg-muted/40 text-left">
