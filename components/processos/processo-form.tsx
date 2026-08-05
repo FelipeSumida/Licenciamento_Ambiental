@@ -826,7 +826,6 @@ export function ProcessoForm({
                                     <SelectItem value="LP">LP</SelectItem>
                                     <SelectItem value="LI">LI</SelectItem>
                                     <SelectItem value="LO">LO</SelectItem>
-                                    <SelectItem value="ASV">ASV</SelectItem>
                                   </SelectContent>
                                 </Select>
                               </Campo>
