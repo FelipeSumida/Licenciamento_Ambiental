@@ -136,6 +136,44 @@ public class ProcessosController : ControllerBase
         return Ok(processo);
     }
 
+    [HttpGet("rodovias/{rodId}/denominacoes")]
+    public async Task<IActionResult> GetDenominacoesTrecho(
+        long rodId,
+        double kmInicial,
+        double kmFinal)
+    {
+        var trechos = await (
+            from t in _context.SirgeoTrechos
+            join m in _context.Municipios
+                on t.mun_ibge_id equals m.mun_ibge_id
+            join r in _context.Regionais
+                on m.id_regional equals r.IdRegional
+            where
+                t.rod_id == rodId &&
+                t.rtr_km_final >= kmInicial &&
+                t.rtr_km_inicial <= kmFinal &&
+                t.rtr_denominacao != null
+            orderby t.rtr_km_inicial
+            select new
+            {
+                t.rtr_id,
+                t.rod_id,
+
+                kmInicial = t.rtr_km_inicial,
+                kmFinal = t.rtr_km_final,
+
+                denominacao = t.rtr_denominacao,
+
+                municipio = m.nome,
+
+                regional = r.Nome,
+                codigoRegional = r.Codigo
+            }
+        ).ToListAsync();
+
+        return Ok(trechos);
+    }
+
     [HttpPost]
     public async Task<ActionResult<Processo>> PostProcesso(Processo processo)
     {

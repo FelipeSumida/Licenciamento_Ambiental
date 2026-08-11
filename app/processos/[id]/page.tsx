@@ -1,6 +1,6 @@
 "use client"
 
-import { use, useState } from "react"
+import { use, useEffect, useState} from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
@@ -34,6 +34,22 @@ export default function DetalheProcessoPage({
 }: {
   params: Promise<{ id: string }>
 }) {
+
+  type DenominacaoTrecho = {
+    rtr_id: number
+    rod_id: number
+    kmInicial: number
+    kmFinal: number
+    denominacao: string
+    municipio: string
+    regional: string
+    codigoRegional: string
+  }
+
+  const [denominacoesPorTrecho, setDenominacoesPorTrecho] = useState<
+    Record<number, DenominacaoTrecho[]>
+  >({})
+
   const { id } = use(params)
   const router = useRouter()
   const { processo, isLoading } = useProcesso(id)
@@ -54,6 +70,51 @@ export default function DetalheProcessoPage({
       setConfirmar(false)
     }
   }
+
+  useEffect(() => {
+    const trechos = processo?.trechos ?? []
+
+    if (trechos.length === 0) return
+
+    async function carregarDenominacoes() {
+      const resultado: Record<number, DenominacaoTrecho[]> = {}
+
+      await Promise.all(
+        trechos.map(async (trecho, index) => {
+          if (
+            trecho.rodId == null ||
+            trecho.kmInicial == null ||
+            trecho.kmFinal == null
+          ) {
+            resultado[index] = []
+            return
+          }
+
+          try {
+            const resposta = await fetch(
+              `${process.env.NEXT_PUBLIC_API_URL}/processos/rodovias/${trecho.rodId}/denominacoes?kmInicial=${trecho.kmInicial}&kmFinal=${trecho.kmFinal}`
+            )
+
+            if (!resposta.ok) {
+              resultado[index] = []
+              return
+            }
+
+            const dados: DenominacaoTrecho[] = await resposta.json()
+
+            resultado[index] = dados
+          } catch (erro) {
+            console.error("Erro ao buscar denominação do trecho:", erro)
+            resultado[index] = []
+          }
+        })
+      )
+
+      setDenominacoesPorTrecho(resultado)
+    }
+
+    carregarDenominacoes()
+  }, [processo])
 
   return (
     <AppShell>
@@ -200,25 +261,115 @@ export default function DetalheProcessoPage({
                       />
                     </div>
 
-                    <Info
-                      label="Trecho"
-                      valor={
-                        processo.trechos?.length > 0
-                          ? processo.trechos
-                              .map(
-                                (t) =>
-                                  `${t.rodovia?.rodCodigo ?? "Sem rodovia"} - KM ${t.kmInicial ?? "-"} ao KM ${t.kmFinal ?? "-"}`
-                              )
-                              .join("\n")
-                          : "Sem trechos registrados."
-                      }
-                    />
-                    <Info label="Interessado" valor={processo.interessado} />
+                    <div>
+                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                        Trecho
+                      </p>
 
-                    <Info
-                      label="Técnico responsável"
-                      valor={processo.tecnicoResponsavel}
-                    />
+                      <div className="mt-2 space-y-3">
+                        {(processo.trechos ?? []).length > 0 ? (
+                          (processo.trechos ?? []).map((trecho, index) => {
+                            const denominacoes = denominacoesPorTrecho[index] ?? []
+
+                            const denominacoesUnicas = [
+                              ...new Set(
+                                denominacoes
+                                  .map((item) => item.denominacao)
+                                  .filter(Boolean)
+                              ),
+                            ]
+
+                            return (
+                              <div
+                                key={index}
+                                className="rounded-md border bg-muted/40 p-3"
+                              >
+                                <p className="font-medium text-sm">
+                                  {trecho.rodovia?.rodCodigo ?? "Sem rodovia"} - KM{" "}
+                                  {trecho.kmInicial ?? "-"} ao KM {trecho.kmFinal ?? "-"}
+                                </p>
+
+                                {denominacoesUnicas.length > 0 && (
+                                  <div className="mt-3">
+                                    <p className="text-xs font-medium uppercase text-muted-foreground">
+                                      Denominação
+                                    </p>
+
+                                    <p className="mt-1 text-sm text-foreground">
+                                      {denominacoesUnicas.join(" · ")}
+                                    </p>
+                                  </div>
+                                )}
+
+                                <div className="mt-4 grid grid-cols-2 gap-3">
+                                  <div className="rounded-md border bg-background/60 p-3">
+                                    <p className="text-xs font-medium uppercase text-muted-foreground">
+                                      Município
+                                    </p>
+
+                                    <p className="mt-1 text-sm font-medium">
+                                      {[
+                                        ...new Set(
+                                          denominacoes
+                                            .map((item) => item.municipio)
+                                            .filter(Boolean)
+                                        ),
+                                      ].join(" · ") || "-"}
+                                    </p>
+                                  </div>
+
+                                  <div className="rounded-md border bg-background/60 p-3">
+                                    <p className="text-xs font-medium uppercase text-muted-foreground">
+                                      Regional
+                                    </p>
+
+                                    <div className="mt-1 space-y-1 text-sm font-medium">
+                                      {[
+                                        ...new Set(
+                                          denominacoes
+                                            .filter(
+                                              (item) =>
+                                                item.codigoRegional &&
+                                                item.regional
+                                            )
+                                            .map(
+                                              (item) =>
+                                                `${item.codigoRegional} - ${item.regional}`
+                                            )
+                                        ),
+                                      ].length > 0 ? (
+                                        [
+                                          ...new Set(
+                                            denominacoes
+                                              .filter(
+                                                (item) =>
+                                                  item.codigoRegional &&
+                                                  item.regional
+                                              )
+                                              .map(
+                                                (item) =>
+                                                  `${item.codigoRegional} - ${item.regional}`
+                                              )
+                                          ),
+                                        ].map((regional) => (
+                                          <div key={regional}>{regional}</div>
+                                        ))
+                                      ) : (
+                                        "-"
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            )
+                          })
+                        ) : (
+                          <p className="text-sm text-muted-foreground">
+                            Sem trechos registrados.
+                          </p>
+                        )}
+                      </div>
+                    </div>
 
                     <div className="col-span-2">
                       <p className="text-xs font-medium uppercase text-muted-foreground">
@@ -586,7 +737,9 @@ function Info({ label, valor }: { label: string; valor?: string | null }) {
       <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
         {label}
       </p>
-      <p className="text-sm text-foreground">{valor || "—"}</p>
+      <p className="text-sm text-foreground whitespace-pre-line leading-relaxed">
+        {valor || "-"}
+      </p>
     </div>
   )
 }

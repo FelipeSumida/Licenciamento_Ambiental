@@ -131,11 +131,6 @@ C:\Users\ffsumida\Desktop\licenciamento_ambiental\ComuniqueSe.Api\obj\Debug\net8
 C:\Users\ffsumida\Desktop\licenciamento_ambiental\ComuniqueSe.Api\obj\Debug\net8.0\ComuniqueSe.Api.sourcelink.json
 C:\Users\ffsumida\Desktop\licenciamento_ambiental\ComuniqueSe.Api\obj\Debug\net8.0\staticwebassets.build.json
 C:\Users\ffsumida\Desktop\licenciamento_ambiental\ComuniqueSe.Api\obj\Debug\net8.0\staticwebassets.development.json
-C:\Users\ffsumida\Desktop\licenciamento_ambiental\ComuniqueSe.Api\obj\Debug\net8.0\staticwebassets\msbuild.ComuniqueSe.Api.Microsoft.AspNetCore.StaticWebAssets.props
-C:\Users\ffsumida\Desktop\licenciamento_ambiental\ComuniqueSe.Api\obj\Debug\net8.0\staticwebassets\msbuild.build.ComuniqueSe.Api.props
-C:\Users\ffsumida\Desktop\licenciamento_ambiental\ComuniqueSe.Api\obj\Debug\net8.0\staticwebassets\msbuild.buildMultiTargeting.ComuniqueSe.Api.props
-C:\Users\ffsumida\Desktop\licenciamento_ambiental\ComuniqueSe.Api\obj\Debug\net8.0\staticwebassets\msbuild.buildTransitive.ComuniqueSe.Api.props
-C:\Users\ffsumida\Desktop\licenciamento_ambiental\ComuniqueSe.Api\obj\Debug\net8.0\staticwebassets.pack.json
 C:\Users\ffsumida\Desktop\licenciamento_ambiental\ComuniqueSe.Api\obj\Debug\net8.0\scopedcss\bundle\ComuniqueSe.Api.styles.css
 C:\Users\ffsumida\Desktop\licenciamento_ambiental\ComuniqueSe.Api\obj\Debug\net8.0\Comuniqu.EC72F3C4.Up2Date
 C:\Users\ffsumida\Desktop\licenciamento_ambiental\ComuniqueSe.Api\obj\Debug\net8.0\ComuniqueSe.Api.dll
@@ -143,3 +138,11 @@ C:\Users\ffsumida\Desktop\licenciamento_ambiental\ComuniqueSe.Api\obj\Debug\net8
 C:\Users\ffsumida\Desktop\licenciamento_ambiental\ComuniqueSe.Api\obj\Debug\net8.0\ComuniqueSe.Api.pdb
 C:\Users\ffsumida\Desktop\licenciamento_ambiental\ComuniqueSe.Api\obj\Debug\net8.0\ComuniqueSe.Api.genruntimeconfig.cache
 C:\Users\ffsumida\Desktop\licenciamento_ambiental\ComuniqueSe.Api\obj\Debug\net8.0\ref\ComuniqueSe.Api.dll
+C:\Users\ffsumida\Desktop\Licenciamento_Ambiental\ComuniqueSe.Api\bin\Debug\net8.0\ComuniqueSe.Api.staticwebassets.endpoints.json
+C:\Users\ffsumida\Desktop\Licenciamento_Ambiental\ComuniqueSe.Api\obj\Debug\net8.0\rpswa.dswa.cache.json
+C:\Users\ffsumida\Desktop\Licenciamento_Ambiental\ComuniqueSe.Api\obj\Debug\net8.0\rjimswa.dswa.cache.json
+C:\Users\ffsumida\Desktop\Licenciamento_Ambiental\ComuniqueSe.Api\obj\Debug\net8.0\rjsmrazor.dswa.cache.json
+C:\Users\ffsumida\Desktop\Licenciamento_Ambiental\ComuniqueSe.Api\obj\Debug\net8.0\rjsmcshtml.dswa.cache.json
+C:\Users\ffsumida\Desktop\Licenciamento_Ambiental\ComuniqueSe.Api\obj\Debug\net8.0\staticwebassets.build.json.cache
+C:\Users\ffsumida\Desktop\Licenciamento_Ambiental\ComuniqueSe.Api\obj\Debug\net8.0\staticwebassets.build.endpoints.json
+C:\Users\ffsumida\Desktop\Licenciamento_Ambiental\ComuniqueSe.Api\obj\Debug\net8.0\swae.build.ex.cache

@@ -1,11 +1,1 @@
-{
-  "Version": 1,
-  "Hash": "efz7rHE5QCXh8zJzb2CHfgSm+NUT5fchB0fH4VkP0jQ=",
-  "Source": "ComuniqueSe.Api",
-  "BasePath": "_content/ComuniqueSe.Api",
-  "Mode": "Default",
-  "ManifestType": "Build",
-  "ReferencedProjectsConfiguration": [],
-  "DiscoveryPatterns": [],
-  "Assets": []
-}
+{"Version":1,"Hash":"Z0VhhxcnXO9aiCGEhdgwQbFfYPdQuoQpV1Hp5TtTqt4=","Source":"ComuniqueSe.Api","BasePath":"/","Mode":"Root","ManifestType":"Build","ReferencedProjectsConfiguration":[],"DiscoveryPatterns":[],"Assets":[],"Endpoints":[]}

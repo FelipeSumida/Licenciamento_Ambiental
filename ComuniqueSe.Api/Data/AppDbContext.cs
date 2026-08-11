@@ -13,6 +13,8 @@ public class AppDbContext : DbContext
     public DbSet<Processo> Processos => Set<Processo>();
     public DbSet<Trecho> Trechos => Set<Trecho>();
     public DbSet<SirgeoRodovia> SirgeoRodovias => Set<SirgeoRodovia>();
+    public DbSet<SirgeoTrecho> SirgeoTrechos => Set<SirgeoTrecho>();
+    public DbSet<Municipio> Municipios => Set<Municipio>();
     public DbSet<Regional> Regionais => Set<Regional>();
     public DbSet<PendenciaRegional> PendenciasRegionais =>
         Set<PendenciaRegional>();
@@ -79,6 +81,56 @@ public class AppDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(t => t.RodId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<SirgeoTrecho>(entity =>
+        {
+            entity.ToTable("sirgeo_trechos");
+
+            entity.HasKey(e => e.rtr_id);
+
+            entity.Property(e => e.rtr_id)
+                .HasColumnName("rtr_id");
+
+            entity.Property(e => e.rod_id)
+                .HasColumnName("rod_id");
+
+            entity.Property(e => e.rtr_km_inicial)
+                .HasColumnName("rtr_km_inicial");
+
+            entity.Property(e => e.rtr_km_final)
+                .HasColumnName("rtr_km_final");
+
+            entity.Property(e => e.rtr_km_extensao)
+                .HasColumnName("rtr_km_extensao");
+
+            entity.Property(e => e.rtr_subtrecho)
+                .HasColumnName("rtr_subtrecho");
+
+            entity.Property(e => e.rtr_denominacao)
+                .HasColumnName("rtr_denominacao");
+        });
+
+        modelBuilder.Entity<Municipio>(entity =>
+        {
+            entity.ToTable("municipio");
+
+            entity.HasKey(m => m.mun_ibge_id);
+
+            entity.Property(m => m.mun_ibge_id)
+                .HasColumnName("mun_ibge_id");
+
+            entity.Property(m => m.nome)
+                .HasColumnName("nome");
+
+            entity.Property(m => m.id_regional)
+                .HasColumnName("id_regional");
+
+            entity.Property(m => m.id_reg_adm)
+                .HasColumnName("id_reg_adm");
+
+            entity.Property(m => m.id_reg_gov)
+                .HasColumnName("id_reg_gov");
         });
 
         modelBuilder.Entity<FaseComplementar>()
