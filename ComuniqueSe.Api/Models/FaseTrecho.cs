@@ -12,6 +12,9 @@ public class FaseTrecho
 
     public string Fase { get; set; } = string.Empty;
 
+    [MaxLength(100)]
+    public string? NumeroProcesso { get; set; }
+
     public string StatusFase { get; set; } = string.Empty;
 
     public string NumeroFase { get; set; } = string.Empty;

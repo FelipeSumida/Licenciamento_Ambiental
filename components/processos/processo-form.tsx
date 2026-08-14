@@ -54,18 +54,20 @@ function novoTrecho() {
     fases: [
       {
         fase: "",
+        numeroProcesso: "",
         statusFase: "",
         numeroFase: "",
         dataEmissaoFase: null,
         dataValidadeFase: null,
         anexoFase: null,
       },
-    ],
+  ],
   }
 }
 
 function estadoInicial(p?: Processo | null): ProcessoInput {
   return {
+    idEmpreendimento: p?.idEmpreendimento ?? null,
     processo: p?.processo ?? "",
     empreendimento: p?.empreendimento ?? "",
     denominacao: p?.denominacao ?? "",
@@ -74,10 +76,14 @@ function estadoInicial(p?: Processo | null): ProcessoInput {
       rodId: trecho.rodId ?? null,
       fases:
         trecho.fases?.length
-          ? trecho.fases
+          ? trecho.fases.map((fase) => ({
+              ...fase,
+              numeroProcesso: fase.numeroProcesso ?? "",
+            }))
           : [
               {
                 fase: "",
+                numeroProcesso: "",
                 statusFase: "",
                 numeroFase: "",
                 dataEmissaoFase: null,
@@ -143,6 +149,8 @@ export function ProcessoForm({
 
   function novaPendencia(): Pendencia {
     return {
+      faseTrechoId: null,
+      faseVinculadaRef: null,
       atribuidoA: [],
       regionais: [],
       descricao: "",
@@ -178,6 +186,56 @@ export function ProcessoForm({
         pendencias: novasPendencias,
       }
     })
+  }
+
+  function obterRefFaseVinculada(pendencia: Pendencia) {
+    if (pendencia.faseVinculadaRef) {
+      return pendencia.faseVinculadaRef
+    }
+
+    if (pendencia.faseTrechoId == null) {
+      return ""
+    }
+
+    for (let trechoIndex = 0; trechoIndex < form.trechos.length; trechoIndex++) {
+      const trecho = form.trechos[trechoIndex]
+
+      for (let faseIndex = 0; faseIndex < trecho.fases.length; faseIndex++) {
+        const fase = trecho.fases[faseIndex]
+
+        if (fase.id === pendencia.faseTrechoId) {
+          return `${trechoIndex}:${faseIndex}`
+        }
+      }
+    }
+
+    return ""
+  }
+
+  function obterLabelFaseVinculada(pendencia: Pendencia) {
+    const ref = obterRefFaseVinculada(pendencia)
+
+    if (!ref) {
+      return "Selecione a fase"
+    }
+
+    const [trechoIndex, faseIndex] = ref
+      .split(":")
+      .map(Number)
+
+    const fase = form.trechos[trechoIndex]?.fases[faseIndex]
+
+    if (!fase) {
+      return "Selecione a fase"
+    }
+
+    return `Trecho ${trechoIndex + 1} - Fase ${faseIndex + 1} - ${
+      fase.fase || "Sem fase"
+    }${
+      fase.numeroProcesso
+        ? ` - ${fase.numeroProcesso}`
+        : ""
+    }`
   }
 
 
@@ -357,6 +415,7 @@ export function ProcessoForm({
 
       fases.push({
         fase: "",
+        numeroProcesso: "",
         statusFase: "",
         numeroFase: "",
         dataEmissaoFase: null,
@@ -418,11 +477,6 @@ export function ProcessoForm({
         validarIntervaloTrecho(trechoInvalido) ??
           "Existe um trecho com KM inválido."
       )
-      return
-    }
-
-    if (!form.processo.trim()) {
-      toast.error("Informe o número do processo.")
       return
     }
 
@@ -490,11 +544,14 @@ export function ProcessoForm({
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
             <div className="lg:col-span-3">
-              <Campo label="N° do processo">
+              <Campo label="Número do empreendimento">
                 <Input
-                  value={form.processo}
-                  onChange={(e) => set("processo", e.target.value)}
-                  placeholder="CETESB-0000"
+                  value={
+                    form.idEmpreendimento ??
+                    "Gerado automaticamente ao salvar"
+                  }
+                  readOnly
+                  className="bg-muted/40"
                 />
               </Campo>
             </div>
@@ -803,7 +860,7 @@ export function ProcessoForm({
                                 )}
                             </div>
 
-                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                               <Campo
                                   label={
                                     bloqueada
@@ -828,6 +885,22 @@ export function ProcessoForm({
                                     <SelectItem value="LO">LO</SelectItem>
                                   </SelectContent>
                                 </Select>
+                              </Campo>
+
+                              <Campo label="Número do processo">
+                                <Input
+                                  value={faseItem.numeroProcesso ?? ""}
+                                  onChange={(e) =>
+                                    atualizarFaseTrecho(
+                                      index,
+                                      faseIndex,
+                                      "numeroProcesso",
+                                      e.target.value
+                                    )
+                                  }
+                                  placeholder="Ex.: CETESB-123456/2026"
+                                  disabled={bloqueada}
+                                />
                               </Campo>
 
                               <Campo label="Situação">
@@ -1180,6 +1253,57 @@ export function ProcessoForm({
                   
                     {!pendenciaFechada && (
                       <>
+
+                      <Campo label="Fase vinculada">
+                        <Select
+                          value={obterRefFaseVinculada(pendencia)}
+                          onValueChange={(valor) => {
+                            if (!valor) return
+
+                            const [trechoIndex, faseIndex] = valor
+                              .split(":")
+                              .map(Number)
+
+                            const faseSelecionada =
+                              form.trechos[trechoIndex]?.fases[faseIndex]
+
+                            setPendencia(index, "faseVinculadaRef", valor)
+
+                            setPendencia(
+                              index,
+                              "faseTrechoId",
+                              faseSelecionada?.id ?? null
+                            )
+                          }}
+                        >
+                          <SelectTrigger className="w-full max-w-[520px]">
+                            <span className="truncate">
+                              {obterLabelFaseVinculada(pendencia)}
+                            </span>
+                          </SelectTrigger>
+
+                          <SelectContent className="min-w-[520px] max-w-[calc(100vw-2rem)]">
+                            {form.trechos.flatMap((trecho, trechoIndex) =>
+                              trecho.fases.map((fase, faseIndex) => (
+                                <SelectItem
+                                  key={`${trechoIndex}-${faseIndex}`}
+                                  value={`${trechoIndex}:${faseIndex}`}
+                                  className="whitespace-normal"
+                                >
+                                  {`Trecho ${trechoIndex + 1} - Fase ${faseIndex + 1} - ${
+                                    fase.fase || "Sem fase"
+                                  }${
+                                    fase.numeroProcesso
+                                      ? ` - ${fase.numeroProcesso}`
+                                      : ""
+                                  }`}
+                                </SelectItem>
+                              ))
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </Campo>
+
                       <div className="mb-4 space-y-3">
                         <Label>Atribuído a</Label>
 

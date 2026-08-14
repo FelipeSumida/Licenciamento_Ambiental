@@ -9,6 +9,10 @@ public class Processo
     [Key]
     public int Id { get; set; }
 
+    [Column("id_empreendimento")]
+    [JsonPropertyName("idEmpreendimento")]
+    public string? IdEmpreendimento { get; set; }
+
     [JsonPropertyName("processo")]
     public string NumeroProcesso { get; set; } = string.Empty;
     public string Empreendimento { get; set; } = string.Empty;
@@ -65,6 +69,11 @@ public class Pendencia
 {
     [Key]
     public int Id { get; set; }
+
+    public int? FaseTrechoId { get; set; }
+
+    [NotMapped]
+    public string? FaseVinculadaRef { get; set; }
 
     public List<string> AtribuidoA { get; set; } = new();
     [NotMapped]

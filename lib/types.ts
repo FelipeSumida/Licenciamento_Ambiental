@@ -53,6 +53,7 @@ export interface Trecho {
 export type FaseTrecho = {
   id?: number
   fase: string
+  numeroProcesso?: string | null
   statusFase: string
   numeroFase: string
   dataEmissaoFase: string | null
@@ -66,6 +67,8 @@ export type Historico = {
 }
 
 export type Pendencia = {
+  faseTrechoId?: number | null
+  faseVinculadaRef?: string | null
   atribuidoA: string[]
   regionais: string[]
   descricao: string
@@ -80,6 +83,7 @@ export type Pendencia = {
 
 export interface Processo {
   id: string
+  idEmpreendimento?: string | null
   processo: string
   empreendimento: string
   denominacao: string

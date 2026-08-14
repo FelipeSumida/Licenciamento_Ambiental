@@ -385,7 +385,14 @@ export default function DetalheProcessoPage({
 
                             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                               <Info label="Fase" valor={fase.fase || "-"} />
-                              <Info label="Situação da fase" valor={fase.statusFase || "-"} />
+                              <Info
+                                label="Número do processo"
+                                valor={fase.numeroProcesso || "-"}
+                              />
+                              <Info
+                                label="Situação da fase"
+                                valor={fase.statusFase || "-"}
+                              />
 
                               {fase.statusFase === "Emitido" && (
                                 <>

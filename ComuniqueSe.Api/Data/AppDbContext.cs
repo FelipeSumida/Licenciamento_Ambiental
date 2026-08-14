@@ -29,6 +29,28 @@ public class AppDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
+        modelBuilder.Entity<Processo>(entity =>
+        {
+            entity.ToTable("Processos");
+
+            entity.Property(p => p.IdEmpreendimento)
+                .HasColumnName("id_empreendimento")
+                .HasMaxLength(20)
+                .IsUnicode(false)
+                .IsRequired(false);
+        });
+
+        modelBuilder.Entity<FaseTrecho>(entity =>
+        {
+            entity.ToTable("FasesTrecho");
+
+            entity.Property(f => f.NumeroProcesso)
+                .HasColumnName("NumeroProcesso")
+                .HasMaxLength(100)
+                .IsUnicode(false)
+                .IsRequired(false);
+        });
+
         modelBuilder.Entity<SirgeoRodovia>(entity =>
         {
             entity.ToTable("sirgeo_rodovias");

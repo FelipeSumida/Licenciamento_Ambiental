@@ -18,6 +18,30 @@ public class ProcessosController : ControllerBase
         _context = context;
     }
 
+    private async Task<string> GerarProximoIdEmpreendimento()
+    {
+        var codigos = await _context.Processos
+            .Where(p =>
+                p.IdEmpreendimento != null &&
+                p.IdEmpreendimento.StartsWith("EMP-"))
+            .Select(p => p.IdEmpreendimento!)
+            .ToListAsync();
+
+        var maiorNumero = 0;
+
+        foreach (var codigo in codigos)
+        {
+            if (codigo.Length > 4 &&
+                int.TryParse(codigo.Substring(4), out var numero) &&
+                numero > maiorNumero)
+            {
+                maiorNumero = numero;
+            }
+        }
+
+        return $"EMP-{maiorNumero + 1:0000}";
+    }
+
     private void RegistrarAlteracao(
         int processoId,
         string campo,
@@ -192,9 +216,13 @@ public class ProcessosController : ControllerBase
                     ? "Aberta"
                     : "Atendida";
 
+        var novoIdEmpreendimento = await GerarProximoIdEmpreendimento();
         var processoNovo = new Processo
         {
-            NumeroProcesso = processo.NumeroProcesso,
+            IdEmpreendimento = novoIdEmpreendimento,
+            NumeroProcesso = string.IsNullOrWhiteSpace(processo.NumeroProcesso)
+                ? novoIdEmpreendimento
+                : processo.NumeroProcesso,
             Empreendimento = processo.Empreendimento,
             Interessado = processo.Interessado,
             Classificacao = processo.Classificacao,
@@ -228,6 +256,7 @@ public class ProcessosController : ControllerBase
                         .Select(f => new FaseTrecho
                         {
                             Fase = f.Fase,
+                            NumeroProcesso = f.NumeroProcesso,
                             StatusFase = f.StatusFase,
                             NumeroFase = f.NumeroFase,
                             DataEmissaoFase = f.DataEmissaoFase,
@@ -368,13 +397,6 @@ public class ProcessosController : ControllerBase
             return NotFound();
 
         
-        RegistrarAlteracao(
-            processoExistente.Id,
-            "Número do processo",
-            processoExistente.NumeroProcesso,
-            processo.NumeroProcesso
-        );
-
         RegistrarAlteracao(
             processoExistente.Id,
             "Empreendimento",
@@ -680,52 +702,80 @@ public class ProcessosController : ControllerBase
             );
         }
 
-        var fasesTrechoAnteriores = string.Join(
-            " | ",
-            processoExistente.Trechos
-                .SelectMany((trecho, trechoIndex) =>
-                    (trecho.Fases ?? new List<FaseTrecho>())
-                        .Select((fase, faseIndex) =>
-                            $"Trecho {trechoIndex + 1} - Fase {faseIndex + 1}: " +
-                            $"{fase.Fase}; " +
-                            $"Situação: {fase.StatusFase}; " +
-                            $"Número: {fase.NumeroFase}; " +
-                            $"Emissão: {(fase.DataEmissaoFase == default
-                                ? "Sem data"
-                                : fase.DataEmissaoFase.ToString())}; " +
-                            $"Validade: {(fase.DataValidadeFase == default
-                                ? "Sem data"
-                                : fase.DataValidadeFase.ToString())}"
-                        )
-                )
+        var trechosHistoricoAntigos = processoExistente.Trechos.ToList();
+        var trechosHistoricoNovos = processo.Trechos ?? new List<Trecho>();
+
+        var quantidadeTrechosHistorico = Math.Min(
+            trechosHistoricoAntigos.Count,
+            trechosHistoricoNovos.Count
         );
 
-        var fasesTrechoNovas = string.Join(
-            " | ",
-            (processo.Trechos ?? new List<Trecho>())
-                .SelectMany((trecho, trechoIndex) =>
-                    (trecho.Fases ?? new List<FaseTrecho>())
-                        .Select((fase, faseIndex) =>
-                            $"Trecho {trechoIndex + 1} - Fase {faseIndex + 1}: " +
-                            $"{fase.Fase}; " +
-                            $"Situação: {fase.StatusFase}; " +
-                            $"Número: {fase.NumeroFase}; " +
-                            $"Emissão: {(fase.DataEmissaoFase == default
-                                ? "Sem data"
-                                : fase.DataEmissaoFase.ToString())}; " +
-                            $"Validade: {(fase.DataValidadeFase == default
-                                ? "Sem data"
-                                : fase.DataValidadeFase.ToString())}"
-                        )
-                )
-        );
+        for (var trechoIndex = 0; trechoIndex < quantidadeTrechosHistorico; trechoIndex++)
+        {
+            var trechoAntigo = trechosHistoricoAntigos[trechoIndex];
+            var trechoNovo = trechosHistoricoNovos[trechoIndex];
 
-        RegistrarAlteracao(
-            processoExistente.Id,
-            "Fases dos trechos",
-            fasesTrechoAnteriores,
-            fasesTrechoNovas
-        );
+            var fasesAntigas = trechoAntigo.Fases ?? new List<FaseTrecho>();
+            var fasesNovas = trechoNovo.Fases ?? new List<FaseTrecho>();
+
+            var quantidadeFasesHistorico = Math.Min(
+                fasesAntigas.Count,
+                fasesNovas.Count
+            );
+
+            for (var faseIndex = 0; faseIndex < quantidadeFasesHistorico; faseIndex++)
+            {
+                var faseAntiga = fasesAntigas[faseIndex];
+                var faseNova = fasesNovas[faseIndex];
+
+                var identificacao =
+                    $"Trecho {trechoIndex + 1} / Fase {faseIndex + 1}";
+
+                RegistrarAlteracao(
+                    processoExistente.Id,
+                    $"Número do processo - {identificacao}",
+                    faseAntiga.NumeroProcesso,
+                    faseNova.NumeroProcesso
+                );
+
+                RegistrarAlteracao(
+                    processoExistente.Id,
+                    $"Fase - {identificacao}",
+                    faseAntiga.Fase,
+                    faseNova.Fase
+                );
+
+                RegistrarAlteracao(
+                    processoExistente.Id,
+                    $"Situação da fase - {identificacao}",
+                    faseAntiga.StatusFase,
+                    faseNova.StatusFase
+                );
+
+                RegistrarAlteracao(
+                    processoExistente.Id,
+                    $"N° da fase - {identificacao}",
+                    faseAntiga.NumeroFase,
+                    faseNova.NumeroFase
+                );
+
+                RegistrarAlteracao(
+                    processoExistente.Id,
+                    $"Data de emissão - {identificacao}",
+                    faseAntiga.DataEmissaoFase,
+                    faseNova.DataEmissaoFase
+                );
+
+                RegistrarAlteracao(
+                    processoExistente.Id,
+                    $"Data de validade - {identificacao}",
+                    faseAntiga.DataValidadeFase,
+                    faseNova.DataValidadeFase
+                );
+            }
+        }
+
+
 
         var fasesComplementaresAnteriores = string.Join(
             " | ",
@@ -751,7 +801,6 @@ public class ProcessosController : ControllerBase
             fasesComplementaresNovas
         );
 
-        processoExistente.NumeroProcesso = processo.NumeroProcesso;
         processoExistente.Empreendimento = processo.Empreendimento;
         processoExistente.Interessado = processo.Interessado;
         processoExistente.Classificacao = processo.Classificacao;
@@ -821,6 +870,7 @@ public class ProcessosController : ControllerBase
                     .Select(f => new FaseTrecho
                     {
                         Fase = f.Fase,
+                        NumeroProcesso = f.NumeroProcesso,
                         StatusFase = f.StatusFase,
                         NumeroFase = f.NumeroFase,
                         DataEmissaoFase = f.DataEmissaoFase,
