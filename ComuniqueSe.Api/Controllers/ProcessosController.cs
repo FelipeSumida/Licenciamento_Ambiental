@@ -92,7 +92,7 @@ public class ProcessosController : ControllerBase
     {
         return await _context.Processos
             .Include(p => p.Trechos)
-                .ThenInclude(t => t.Fases)
+                .ThenInclude(t => t.Fases.OrderBy(f => f.Ordem))
             .Include(p => p.Trechos)
                 .ThenInclude(t => t.Rodovia)
             .Include(p => p.FasesComplementares)
@@ -135,7 +135,7 @@ public class ProcessosController : ControllerBase
     {
         var processo = await _context.Processos
             .Include(p => p.Trechos)
-                .ThenInclude(t => t.Fases)
+                .ThenInclude(t => t.Fases.OrderBy(f => f.Ordem))
             .Include(p => p.Trechos)
                 .ThenInclude(t => t.Rodovia)
             .Include(p => p.FasesComplementares)
@@ -220,9 +220,6 @@ public class ProcessosController : ControllerBase
         var processoNovo = new Processo
         {
             IdEmpreendimento = novoIdEmpreendimento,
-            NumeroProcesso = string.IsNullOrWhiteSpace(processo.NumeroProcesso)
-                ? novoIdEmpreendimento
-                : processo.NumeroProcesso,
             Empreendimento = processo.Empreendimento,
             Interessado = processo.Interessado,
             Classificacao = processo.Classificacao,
@@ -253,8 +250,9 @@ public class ProcessosController : ControllerBase
                     KmFinal = t.KmFinal,
 
                     Fases = (t.Fases ?? new List<FaseTrecho>())
-                        .Select(f => new FaseTrecho
+                        .Select((f, faseIndex) => new FaseTrecho
                         {
+                            Ordem = faseIndex + 1,
                             Fase = f.Fase,
                             NumeroProcesso = f.NumeroProcesso,
                             StatusFase = f.StatusFase,
@@ -301,6 +299,26 @@ public class ProcessosController : ControllerBase
                     })
                     .ToList()
             };
+
+            if (!string.IsNullOrWhiteSpace(pendenciaRecebida.FaseVinculadaRef))
+            {
+                var partes = pendenciaRecebida.FaseVinculadaRef.Split(':');
+
+                if (
+                    partes.Length == 2 &&
+                    int.TryParse(partes[0], out var trechoIndex) &&
+                    int.TryParse(partes[1], out var faseIndex) &&
+                    trechoIndex >= 0 &&
+                    trechoIndex < processoNovo.Trechos.Count &&
+                    faseIndex >= 0 &&
+                    faseIndex < processoNovo.Trechos[trechoIndex].Fases.Count
+                )
+                {
+                    var faseSelecionada =
+                        processoNovo.Trechos[trechoIndex].Fases[faseIndex];
+                    novaPendencia.FaseTrecho = faseSelecionada;
+                }
+            }
 
             var idsRegionais = new List<int>();
 
@@ -850,36 +868,110 @@ public class ProcessosController : ControllerBase
             processoExistente.Pendencias ?? new List<Pendencia>()
         );
 
-        _context.Trechos.RemoveRange(
-            processoExistente.Trechos ?? new List<Trecho>()
-        );
-
         _context.FasesComplementares.RemoveRange(
             processoExistente.FasesComplementares ?? new List<FaseComplementar>()
         );
 
-        processoExistente.Trechos =
-            (processo.Trechos ?? new List<Trecho>())
-            .Select(t => new Trecho
-            {
-                RodId = t.RodId,
-                KmInicial = t.KmInicial,
-                KmFinal = t.KmFinal,
+        var trechosRecebidos = processo.Trechos ?? new List<Trecho>();
 
-                Fases = (t.Fases ?? new List<FaseTrecho>())
-                    .Select(f => new FaseTrecho
-                    {
-                        Fase = f.Fase,
-                        NumeroProcesso = f.NumeroProcesso,
-                        StatusFase = f.StatusFase,
-                        NumeroFase = f.NumeroFase,
-                        DataEmissaoFase = f.DataEmissaoFase,
-                        DataValidadeFase = f.DataValidadeFase,
-                        AnexoFase = f.AnexoFase
-                    })
-                    .ToList()
-            })
+        // Remove somente trechos que realmente foram excluídos pelo usuário
+        var idsTrechosRecebidos = trechosRecebidos
+            .Where(t => t.Id > 0)
+            .Select(t => t.Id)
+            .ToHashSet();
+
+        var trechosParaRemover = processoExistente.Trechos
+            .Where(t => !idsTrechosRecebidos.Contains(t.Id))
             .ToList();
+
+        _context.Trechos.RemoveRange(trechosParaRemover);
+
+
+        // Atualiza os existentes e adiciona somente os novos
+        foreach (var trechoDto in trechosRecebidos)
+        {
+            Trecho trechoExistente;
+
+            if (trechoDto.Id > 0)
+            {
+                trechoExistente = processoExistente.Trechos
+                    .FirstOrDefault(t => t.Id == trechoDto.Id)!;
+
+                if (trechoExistente == null)
+                    continue;
+
+                trechoExistente.RodId = trechoDto.RodId;
+                trechoExistente.KmInicial = trechoDto.KmInicial;
+                trechoExistente.KmFinal = trechoDto.KmFinal;
+            }
+            else
+            {
+                trechoExistente = new Trecho
+                {
+                    RodId = trechoDto.RodId,
+                    KmInicial = trechoDto.KmInicial,
+                    KmFinal = trechoDto.KmFinal,
+                    ProcessoId = processoExistente.Id,
+                    Fases = new List<FaseTrecho>()
+                };
+
+                processoExistente.Trechos.Add(trechoExistente);
+            }
+
+
+            var fasesRecebidas = trechoDto.Fases ?? new List<FaseTrecho>();
+
+            // Remove somente fases realmente excluídas
+            var idsFasesRecebidas = fasesRecebidas
+                .Where(f => f.Id > 0)
+                .Select(f => f.Id)
+                .ToHashSet();
+
+            var fasesParaRemover = trechoExistente.Fases
+                .Where(f => !idsFasesRecebidas.Contains(f.Id))
+                .ToList();
+
+            _context.FasesTrecho.RemoveRange(fasesParaRemover);
+
+
+            // Atualiza fases existentes e cria somente as novas
+            for (int faseIndex = 0; faseIndex < fasesRecebidas.Count; faseIndex++)
+            {
+                var faseDto = fasesRecebidas[faseIndex];
+                
+                if (faseDto.Id > 0)
+                {
+                    var faseExistente = trechoExistente.Fases
+                        .FirstOrDefault(f => f.Id == faseDto.Id);
+
+                    if (faseExistente == null)
+                        continue;
+
+                    faseExistente.Ordem = faseIndex + 1;
+                    faseExistente.Fase = faseDto.Fase;
+                    faseExistente.StatusFase = faseDto.StatusFase;
+                    faseExistente.NumeroProcesso = faseDto.NumeroProcesso;
+                    faseExistente.NumeroFase = faseDto.NumeroFase;
+                    faseExistente.DataEmissaoFase = faseDto.DataEmissaoFase;
+                    faseExistente.DataValidadeFase = faseDto.DataValidadeFase;
+                    faseExistente.AnexoFase = faseDto.AnexoFase;
+                }
+                else
+                {
+                    trechoExistente.Fases.Add(new FaseTrecho
+                    {
+                        Ordem = faseIndex + 1,
+                        Fase = faseDto.Fase,
+                        StatusFase = faseDto.StatusFase,
+                        NumeroProcesso = faseDto.NumeroProcesso,
+                        NumeroFase = faseDto.NumeroFase,
+                        DataEmissaoFase = faseDto.DataEmissaoFase,
+                        DataValidadeFase = faseDto.DataValidadeFase,
+                        AnexoFase = faseDto.AnexoFase
+                    });
+                }
+            }
+        }
 
 
         processoExistente.FasesComplementares = (processo.FasesComplementares ?? new List<FaseComplementar>())
@@ -907,6 +999,7 @@ public class ProcessosController : ControllerBase
                 Prazo = pendenciaDto.Prazo,
                 DataSaida = pendenciaDto.DataSaida,
                 AtribuidoA = pendenciaDto.AtribuidoA,
+                FaseTrechoId = pendenciaDto.FaseTrechoId,
 
                 Historicos = (pendenciaDto.Historicos ?? new List<Historico>())
                     .Select(h => new Historico

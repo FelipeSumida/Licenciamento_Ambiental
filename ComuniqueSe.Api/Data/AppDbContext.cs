@@ -37,7 +37,10 @@ public class AppDbContext : DbContext
                 .HasColumnName("id_empreendimento")
                 .HasMaxLength(20)
                 .IsUnicode(false)
-                .IsRequired(false);
+                .IsRequired();
+            
+            entity.HasIndex(p => p.IdEmpreendimento)
+                .IsUnique();
         });
 
         modelBuilder.Entity<FaseTrecho>(entity =>
@@ -215,5 +218,11 @@ public class AppDbContext : DbContext
                 .HasForeignKey(pr => pr.RegionalId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
+
+        modelBuilder.Entity<Pendencia>()
+            .HasOne(p => p.FaseTrecho)
+            .WithMany()
+            .HasForeignKey(p => p.FaseTrechoId)
+            .OnDelete(DeleteBehavior.NoAction);
     }
 }

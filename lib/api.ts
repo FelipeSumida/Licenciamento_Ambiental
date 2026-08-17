@@ -67,15 +67,14 @@ export async function criarProcesso(
     ...input,
 
     pendencias: (input.pendencias ?? []).map((pendencia) => ({
-      descricao: pendencia.descricao,
-      situacao: pendencia.situacao,
-      divisaoCap: pendencia.divisaoCap,
+      ...pendencia,
+
       atribuidoA: pendencia.atribuidoA ?? [],
       regionais: pendencia.regionais ?? [],
-      dataEntrada: pendencia.dataEntrada,
-      prazo: pendencia.prazo,
-      dataSaida: pendencia.dataSaida,
       historicos: pendencia.historicos ?? [],
+
+      faseVinculadaRef: pendencia.faseVinculadaRef ?? null,
+      faseTrechoId: pendencia.faseTrechoId ?? null,
     })),
   }
 
@@ -98,15 +97,14 @@ export async function atualizarProcesso(
     ...dadosDoProcesso,
 
     pendencias: (input.pendencias ?? []).map((pendencia) => ({
-      descricao: pendencia.descricao,
-      situacao: pendencia.situacao,
-      divisaoCap: pendencia.divisaoCap,
+      ...pendencia,
+
       atribuidoA: pendencia.atribuidoA ?? [],
       regionais: pendencia.regionais ?? [],
-      dataEntrada: pendencia.dataEntrada,
-      prazo: pendencia.prazo,
-      dataSaida: pendencia.dataSaida,
       historicos: pendencia.historicos ?? [],
+
+      faseVinculadaRef: pendencia.faseVinculadaRef ?? null,
+      faseTrechoId: pendencia.faseTrechoId ?? null,
     })),
   }
 

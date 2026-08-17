@@ -630,7 +630,7 @@ export function TabelaProcessos({
                           }
                           className="text-primary hover:underline"
                         >
-                          {p.processo || "Sem número"}
+                          {p.idEmpreendimento || "Sem número"}
                         </Link>
                       </TableCell>
 
@@ -759,7 +759,7 @@ export function TabelaProcessos({
             <DialogDescription>
               Tem certeza que deseja excluir o processo{" "}
               <strong>
-                {processoParaExcluir?.processo || "sem número"}
+                {processoParaExcluir?.idEmpreendimento || "Sem número"}
               </strong>
               ?
               <br />

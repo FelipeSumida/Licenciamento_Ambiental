@@ -11,10 +11,7 @@ public class Processo
 
     [Column("id_empreendimento")]
     [JsonPropertyName("idEmpreendimento")]
-    public string? IdEmpreendimento { get; set; }
-
-    [JsonPropertyName("processo")]
-    public string NumeroProcesso { get; set; } = string.Empty;
+    public string IdEmpreendimento { get; set; } = string.Empty;
     public string Empreendimento { get; set; } = string.Empty;
     public string Interessado { get; set; } = string.Empty;
     public string? Classificacao { get; set; }
@@ -70,8 +67,6 @@ public class Pendencia
     [Key]
     public int Id { get; set; }
 
-    public int? FaseTrechoId { get; set; }
-
     [NotMapped]
     public string? FaseVinculadaRef { get; set; }
 
@@ -87,6 +82,11 @@ public class Pendencia
     public DateTime? DataSaida { get; set; }
 
     public int ProcessoId { get; set; }
+
+    public int? FaseTrechoId { get; set; }
+
+    [JsonIgnore]
+    public FaseTrecho? FaseTrecho { get; set; }
     public List<Historico> Historicos { get; set; } = new();
 }
 

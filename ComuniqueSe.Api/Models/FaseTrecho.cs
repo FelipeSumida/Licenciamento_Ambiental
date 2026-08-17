@@ -9,6 +9,8 @@ public class FaseTrecho
     public int Id { get; set; }
 
     public int TrechoId { get; set; }
+    
+    public int Ordem { get; set; }
 
     public string Fase { get; set; } = string.Empty;
 
