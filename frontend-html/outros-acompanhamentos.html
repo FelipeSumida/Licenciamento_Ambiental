@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <title>Outros acompanhamentos | Comunique-se</title>
+
+        <link rel="stylesheet" href="./css/styles.css">
+    </head>
+
+    <body>
+
+        <div class="app">
+
+            <aside class="sidebar">
+
+                <div class="sidebar-header">
+                    <div class="brand-icon">
+                        <span>⌁</span>
+                    </div>
+
+                    <div>
+                        <strong>Comunique-se</strong>
+                        <small>Licenciamento Ambiental</small>
+                    </div>
+                </div>
+
+                <nav class="sidebar-nav">
+
+                    <a href="./index.html" class="nav-item">
+
+                        <span class="nav-icon">
+                            <i data-lucide="layout-grid"></i>
+                        </span>
+
+                        <span>Painel</span>
+
+                    </a>
+
+
+                    <a href="./processos.html" class="nav-item">
+
+                        <span class="nav-icon">
+                            <i data-lucide="folder"></i>
+                        </span>
+
+                        <span>Processos</span>
+
+                    </a>
+
+
+                    <a href="./outros-acompanhamentos.html" class="nav-item active">
+
+                        <span class="nav-icon">
+                            <i data-lucide="clipboard-list"></i>
+                        </span>
+
+                        <span>Outros acompanhamentos</span>
+
+                    </a>
+
+                </nav>
+
+                <div class="sidebar-user">
+
+                    <div class="user-info">
+                        <div class="user-avatar">
+                            <i data-lucide="circle-user-round"></i>
+                        </div>
+
+                        <div>
+                            <small>Usuário</small>
+                            <strong>CAP</strong>
+                        </div>
+                    </div>
+
+                    <button
+                        id="btnSair"
+                        type="button"
+                        class="logout-button"
+                    >
+                        ↪ Sair
+                    </button>
+
+                </div>
+
+            </aside>
+
+
+            <main class="main-content">
+
+                <header class="page-header">
+                    <div>
+                        <h1>Outros acompanhamentos</h1>
+                        <p>Lista completa de outros acompanhamentos ambientais</p>
+                    </div>
+
+                    <img
+                        src="./assets/logoder.png"
+                        alt="Logo DER"
+                        class="der-logo"
+                    >
+                </header>
+
+
+                <!-- FILTROS -->
+                <section class="filters-card">
+
+                    <div class="filters-grid">
+
+                        <div class="filter-group filter-search">
+                            <label for="busca">Buscar</label>
+
+                            <input
+                                id="busca"
+                                type="search"
+                                placeholder="Buscar empreendimento, identificação, rodovia..."
+                            >
+                        </div>
+
+                        <div class="filter-group">
+                            <label for="filtroSituacao">Situação</label>
+
+                            <select id="filtroSituacao">
+                                <option value="">Todas as situações</option>
+                                <option value="Aberta">Aberta</option>
+                                <option value="Atendida">Atendida</option>
+                                <option value="Sem pendência">Sem pendência</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label for="filtroTecnico">Técnico responsável</label>
+
+                            <select id="filtroTecnico">
+                                <option value="">Todos os técnicos</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label for="filtroClassificacao">
+                                Classificação
+                            </label>
+
+                            <select id="filtroClassificacao">
+                                <option value="">
+                                    Todas as classificações
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label for="filtroAtribuido">Atribuído a</label>
+
+                            <select id="filtroAtribuido">
+                                <option value="">Todos os atribuídos</option>
+                                <option value="DE">DE</option>
+                                <option value="DO">DO</option>
+                                <option value="CAP">CAP</option>
+                                <option value="Regional">Regional</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label for="filtroDivisao">Divisão CAP</label>
+
+                            <select id="filtroDivisao">
+                                <option value="">Todas as divisões</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label for="filtroRodovia">Rodovia</label>
+
+                            <select id="filtroRodovia">
+                                <option value="">Todas as rodovias</option>
+                            </select>
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- TABELA -->
+                <section class="table-card">
+
+                    <div class="table-container">
+
+                        <table class="process-table">
+
+                            <thead>
+                                <tr>
+                                    <th>Nº Empreendimento</th>
+                                    <th>Código</th>
+                                    <th>Identificação do Empreendimento</th>
+                                    <th>Classificação</th>
+                                    <th>Divisão CAP</th>
+                                    <th>Técnico Responsável</th>
+                                    <th>Prazo</th>
+                                    <th>Situação</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="processosBody">
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                    <div id="estadoVazio" class="empty-state" hidden>
+                        Nenhum processo encontrado.
+                    </div>
+
+                </section>
+
+
+                <div class="table-footer">
+
+                    <span id="contadorProcessos">
+                        0 processo(s) exibido(s)
+                    </span>
+
+                    <div class="footer-actions">
+
+                        <button
+                            type="button"
+                            id="btnExportar"
+                            class="button-secondary"
+                        >
+                            ↓ Exportar Processos (.csv)
+                        </button>
+
+                        <button
+                            type="button"
+                            id="btnNovoProcesso"
+                            class="button-primary"
+                        >
+                            + Novo acompanhamento
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </main>
+
+        </div>
+
+        <script src="./js/outros-acompanhamentos.js"></script>
+
+        <script src="https://unpkg.com/lucide@latest"></script>
+
+        <script>
+            lucide.createIcons();
+        </script>
+
+    </body>
+</html>

@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <title>Processo | Comunique-se</title>
+
+        <link rel="stylesheet" href="./css/styles.css">
+    </head>
+
+    <body>
+
+        <div class="app">
+
+            <aside class="sidebar">
+
+                <div class="sidebar-header">
+                    <div class="brand-icon">
+                        <span>⌁</span>
+                    </div>
+
+                    <div>
+                        <strong>Comunique-se</strong>
+                        <small>Licenciamento Ambiental</small>
+                    </div>
+                </div>
+
+                <nav class="sidebar-nav">
+
+                    <a href="./index.html" class="nav-item">
+
+                        <span class="nav-icon">
+                            <i data-lucide="layout-grid"></i>
+                        </span>
+
+                        <span>Painel</span>
+
+                    </a>
+
+
+                    <a href="./processos.html" class="nav-item active">
+
+                        <span class="nav-icon">
+                            <i data-lucide="folder"></i>
+                        </span>
+
+                        <span>Processos</span>
+
+                    </a>
+
+
+                    <a href="./outros-acompanhamentos.html" class="nav-item">
+
+                        <span class="nav-icon">
+                            <i data-lucide="clipboard-list"></i>
+                        </span>
+
+                        <span>Outros acompanhamentos</span>
+
+                    </a>
+
+                </nav>
+
+                <div class="sidebar-user">
+
+                    <div class="user-info">
+                        <div class="user-avatar">
+                            <i data-lucide="circle-user-round"></i>
+                        </div>
+
+                        <div>
+                            <small>Usuário</small>
+                            <strong>CAP</strong>
+                        </div>
+                    </div>
+
+                    <button
+                        id="btnSair"
+                        type="button"
+                        class="logout-button"
+                    >
+                        ↪ Sair
+                    </button>
+
+                </div>
+
+            </aside>
+
+            <main class="main-content">
+
+                <a
+                    href="./processos.html"
+                    class="back-link"
+                >
+                    ← Voltar para processos
+                </a>
+
+                <div id="carregando" class="loading-message">
+                    Carregando processo...
+                </div>
+
+                <div id="erroProcesso" class="empty-state" hidden>
+                    Processo não encontrado.
+                </div>
+
+                <div id="conteudoProcesso" hidden>
+
+                    <header class="detail-header">
+
+                        <div>
+                            <div class="detail-title-row">
+                                <h1 id="numeroEmpreendimento">—</h1>
+
+                                <span
+                                    id="situacaoProcesso"
+                                    class="status-badge"
+                                >
+                                    —
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="detail-actions">
+
+                            <button
+                                type="button"
+                                id="btnPdf"
+                                class="button-secondary"
+                            >
+                                Exportar PDF
+                            </button>
+
+                            <button
+                                type="button"
+                                id="btnEditar"
+                                class="button-secondary"
+                            >
+                                Editar
+                            </button>
+
+                        </div>
+
+                    </header>
+
+
+                    <div class="detail-layout">
+
+                        <div>
+
+                            <section class="detail-card">
+
+                                <h2>Dados do processo</h2>
+
+                                <div class="dados-processo-grid">
+
+                                    <!-- COLUNA ESQUERDA -->
+                                    <div class="dados-processo-coluna-esquerda">
+
+                                        <div class="dados-processo-info">
+                                            <span class="detail-label">
+                                                TIPO DO EMPREENDIMENTO
+                                            </span>
+
+                                            <strong id="empreendimento">
+                                                —
+                                            </strong>
+                                        </div>
+
+
+                                        <div class="dados-processo-info">
+                                            <span class="detail-label">
+                                                INTERESSADO
+                                            </span>
+
+                                            <p id="interessado">
+                                                —
+                                            </p>
+                                        </div>
+
+
+                                        <div class="dados-processo-info">
+                                            <span class="detail-label">
+                                                TÉCNICO RESPONSÁVEL
+                                            </span>
+
+                                            <p id="tecnicoResponsavel">
+                                                —
+                                            </p>
+                                        </div>
+
+                                    </div>
+
+
+                                    <!-- COLUNA DIREITA -->
+                                    <div class="dados-processo-coluna-direita">
+
+                                        <div class="dados-processo-campo-texto">
+
+                                            <span class="detail-label">
+                                                IDENTIFICAÇÃO DO EMPREENDIMENTO
+                                            </span>
+
+                                            <textarea
+                                                id="identificacaoEmpreendimento"
+                                                class="dados-processo-texto-scroll"
+                                                readonly
+                                            ></textarea>
+
+                                        </div>
+
+
+                                        <div class="dados-processo-campo-texto">
+
+                                            <span class="detail-label">
+                                                CARACTERIZAÇÃO DO EMPREENDIMENTO
+                                            </span>
+
+                                            <textarea
+                                                id="caracterizacaoEmpreendimento"
+                                                class="dados-processo-texto-scroll"
+                                                readonly
+                                            ></textarea>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </section>
+
+
+                            <section class="detail-card">
+
+                                <h2>Trechos</h2>
+
+                                <div id="listaTrechos">
+                                </div>
+
+                            </section>
+
+
+                            <section class="detail-card">
+
+                                <h2>Pendências</h2>
+
+                                <div id="listaPendencias">
+                                </div>
+
+                            </section>
+
+                            <section class="detail-card">
+                                <h2>Histórico do processo</h2>
+
+                                <div id="historicoProcesso">
+                                </div>
+                            </section>
+
+                        </div>
+
+
+                        <aside class="detail-card deadlines-card">
+
+                            <h2>Prazos</h2>
+
+                            <div id="listaPrazos">
+                            </div>
+
+                        </aside>
+
+                    </div>
+
+                </div>
+
+            </main>
+
+        </div>
+
+        <script src="./js/processo.js"></script>
+
+        <script src="https://unpkg.com/lucide@latest"></script>
+
+        <script>
+            lucide.createIcons();
+        </script>
+
+    </body>
+</html>

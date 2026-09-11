@@ -159,9 +159,10 @@ public class AppDbContext : DbContext
         });
 
         modelBuilder.Entity<FaseComplementar>()
-            .HasOne(fc => fc.Processo)
-            .WithMany(p => p.FasesComplementares)
-            .HasForeignKey(fc => fc.ProcessoId);
+            .HasOne(fc => fc.Trecho)
+            .WithMany(t => t.FasesComplementares)
+            .HasForeignKey(fc => fc.TrechoId)
+            .OnDelete(DeleteBehavior.NoAction);
 
 
         modelBuilder.Entity<Regional>(entity =>

@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+    <head>
+        <meta charset="UTF-8">
+
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0"
+        >
+
+        <title>Editar acompanhamento | Comunique-se</title>
+
+        <link
+            rel="stylesheet"
+            href="./css/styles.css"
+        >
+    </head>
+
+    <body>
+
+        <div class="app">
+
+            <!-- SIDEBAR -->
+            <aside class="sidebar">
+
+                <div class="sidebar-header">
+                    <div class="brand-icon">
+                        <span>⌁</span>
+                    </div>
+
+                    <div>
+                        <strong>Comunique-se</strong>
+                        <small>Licenciamento Ambiental</small>
+                    </div>
+                </div>
+
+                <nav class="sidebar-nav">
+
+                    <a href="./index.html" class="nav-item">
+
+                        <span class="nav-icon">
+                            <i data-lucide="layout-grid"></i>
+                        </span>
+
+                        <span>Painel</span>
+
+                    </a>
+
+
+                    <a href="./processos.html" class="nav-item">
+
+                        <span class="nav-icon">
+                            <i data-lucide="folder"></i>
+                        </span>
+
+                        <span>Processos</span>
+
+                    </a>
+
+
+                    <a href="./outros-acompanhamentos.html" class="nav-item active">
+
+                        <span class="nav-icon">
+                            <i data-lucide="clipboard-list"></i>
+                        </span>
+
+                        <span>Outros acompanhamentos</span>
+
+                    </a>
+
+                </nav>
+
+                <div class="sidebar-user">
+
+                    <div class="user-info">
+                        <div class="user-avatar">
+                            <i data-lucide="circle-user-round"></i>
+                        </div>
+
+                        <div>
+                            <small>Usuário</small>
+                            <strong>CAP</strong>
+                        </div>
+                    </div>
+
+                    <button
+                        id="btnSair"
+                        type="button"
+                        class="logout-button"
+                    >
+                        ↪ Sair
+                    </button>
+
+                </div>
+
+            </aside>
+
+
+            <!-- CONTEÚDO -->
+            <main class="main-content">
+
+                <a
+                    href="#"
+                    id="voltarAcompanhamento"
+                    class="back-link"
+                >
+                    ← Voltar para o acompanhamento
+                </a>
+
+
+                <header class="page-header">
+
+                    <div>
+                        <h1>Editar acompanhamento</h1>
+
+                        <p>
+                            Atualize os dados do acompanhamento
+                        </p>
+                    </div>
+
+                </header>
+
+
+                <div
+                    id="carregando"
+                    class="loading-message"
+                >
+                    Carregando processo...
+                </div>
+
+
+                <div
+                    id="erroProcesso"
+                    class="empty-state"
+                    hidden
+                >
+                    Não foi possível carregar o processo.
+                </div>
+
+
+                <form
+                    id="formProcesso"
+                    hidden
+                >
+
+                    <!-- IDENTIFICAÇÃO -->
+                    <section class="form-card">
+
+                        <h2>Identificação</h2>
+
+
+                        <div class="form-grid form-grid-12">
+
+
+                            <!-- Número empreendimento -->
+                            <div class="form-field span-3">
+
+                                <label for="idEmpreendimento">
+                                    Número do empreendimento
+                                </label>
+
+                                <input
+                                    id="idEmpreendimento"
+                                    name="idEmpreendimento"
+                                    type="text"
+                                    readonly
+                                >
+
+                            </div>
+
+
+                            <!-- Identificação -->
+                            <div class="form-field span-4">
+
+                                <label for="identificacaoEmpreendimento">
+                                    Identificação do Empreendimento
+                                </label>
+
+                                <textarea
+                                    id="identificacaoEmpreendimento"
+                                    name="identificacaoEmpreendimento"
+                                    rows="4"
+                                ></textarea>
+
+                            </div>
+
+
+                            <!-- Caracterização -->
+                            <div class="form-field span-5">
+
+                                <label for="caracterizacaoEmpreendimento">
+                                    Caracterização do Empreendimento
+                                </label>
+
+                                <textarea
+                                    id="caracterizacaoEmpreendimento"
+                                    name="caracterizacaoEmpreendimento"
+                                    rows="4"
+                                ></textarea>
+
+                            </div>
+
+
+                            <!-- Empreendimento -->
+                            <div class="form-field span-3">
+
+                                <label for="empreendimento">
+                                    Tipo do empreendimento
+                                </label>
+
+                                <select
+                                    id="empreendimento"
+                                    name="empreendimento"
+                                >
+
+                                    <option value="">
+                                        Selecione...
+                                    </option>
+
+                                    <option value="Rodovia">
+                                        Rodovia
+                                    </option>
+
+                                    <option value="Gerencial">
+                                        Gerencial
+                                    </option>
+
+                                    <option value="NÃO APLICÁVEL">
+                                        NÃO APLICÁVEL
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+                            <!-- Classificação -->
+                            <div class="form-field span-3">
+
+                                <label for="classificacao">
+                                    Classificação
+                                </label>
+
+                                <select
+                                    id="classificacao"
+                                    name="classificacao"
+                                    required
+                                >
+                                    <option value="">
+                                        Selecione
+                                    </option>
+
+                                    <option value="SUP.OBRA">
+                                        SUP.OBRA
+                                    </option>
+
+                                    <option value="OP-FAUNA">
+                                        OP-FAUNA
+                                    </option>
+
+                                    <option value="OUTROS">
+                                        OUTROS
+                                    </option>
+                                </select>
+
+                            </div>
+
+                        </div>
+
+                    </section>
+
+
+                    <!-- DADOS GERAIS -->
+                    <section class="form-card">
+
+                        <h2>Dados gerais</h2>
+
+
+                        <div class="form-field">
+
+                            <label for="interessado">
+                                Interessado
+                            </label>
+
+                            <input
+                                id="interessado"
+                                name="interessado"
+                                type="text"
+                            >
+
+                        </div>
+
+
+                        <div class="tecnico-responsavel-bloco">
+
+                            <label class="tecnico-responsavel-titulo">
+                                Adicionar Técnico Responsável
+                            </label>
+
+
+                            <div id="listaTecnicos">
+
+                                <div class="tecnico-responsavel-item tecnico-principal">
+
+                                    <input
+                                        type="text"
+                                        class="tecnico-responsavel"
+                                        id="tecnicoResponsavel"
+                                        placeholder="Digite o nome do técnico"
+                                    >
+
+                                </div>
+
+                            </div>
+
+
+                            <button
+                                type="button"
+                                id="btnAdicionarTecnico"
+                                class="btn-adicionar-tecnico"
+                            >
+                                + Adicionar Técnico
+                            </button>
+
+                        </div>
+
+                    </section>
+
+                    <section class="form-card">
+
+                        <div class="edit-section-header">
+                            <h2>Rodovias e KM</h2>
+                        </div>
+
+
+                        <div id="listaTrechosEdicao">
+                        </div>
+
+
+                        <div class="trechos-acoes-gerais">
+
+                            <button
+                                type="button"
+                                id="btnAdicionarTrecho"
+                                class="button-primary"
+                            >
+                                + Adicionar Trecho
+                            </button>
+
+                        </div>
+
+                    </section>
+
+                    <section class="form-card">
+
+                        <h2>Pendências</h2>
+
+                        <div id="listaPendenciasEdicao">
+                        </div>
+
+
+                        <div class="pendencias-acoes-gerais">
+
+                            <button
+                                type="button"
+                                id="btnAdicionarPendencia"
+                                class="button-primary"
+                            >
+                                + Adicionar Pendência
+                            </button>
+
+                        </div>
+
+                    </section>
+
+                    <section class="form-card">
+
+                        <h2>Histórico do Processo</h2>
+
+                        <div class="historico-processo-box">
+
+                            <div class="form-field historico-processo-data">
+
+                                <label for="historicoProcessoData">
+                                    Data do histórico
+                                </label>
+
+                                <input
+                                    id="historicoProcessoData"
+                                    name="historicoProcessoData"
+                                    type="date"
+                                >
+
+                            </div>
+
+
+                            <div class="form-field historico-processo-texto">
+
+                                <label for="historicoProcessoTexto">
+                                    Descrição do histórico
+                                </label>
+
+                                <textarea
+                                    id="historicoProcessoTexto"
+                                    name="historicoProcessoTexto"
+                                    rows="4"
+                                    placeholder="Digite o histórico do processo"
+                                ></textarea>
+
+                            </div>
+
+                        </div>
+
+                    </section>
+
+                    <div class="form-actions">
+
+                        <button
+                            id="btnCancelar"
+                            type="button"
+                            class="button-secondary"
+                        >
+                            Cancelar
+                        </button>
+
+                        <button
+                            id="btnSalvar"
+                            type="submit"
+                            class="button-primary"
+                        >
+                            Salvar alterações
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </main>
+
+        </div>
+
+
+        <script src="./js/acompanhamento-editar.js"></script>
+
+        <script src="https://unpkg.com/lucide@latest"></script>
+
+        <script>
+            lucide.createIcons();
+        </script>
+
+    </body>
+
+</html>

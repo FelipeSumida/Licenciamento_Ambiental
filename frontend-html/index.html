@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Comunique-se | Licenciamento Ambiental</title>
+
+    <link rel="stylesheet" href="./css/styles.css">
+</head>
+
+<body>
+
+    <div class="app">
+
+        <!-- MENU LATERAL -->
+        <aside class="sidebar">
+
+                <div class="sidebar-header">
+                    <div class="brand-icon">
+                        <span>⌁</span>
+                    </div>
+
+                    <div>
+                        <strong>Comunique-se</strong>
+                        <small>Licenciamento Ambiental</small>
+                    </div>
+                </div>
+
+                <nav class="sidebar-nav">
+
+                    <a href="./index.html" class="nav-item active">
+
+                        <span class="nav-icon">
+                            <i data-lucide="layout-grid"></i>
+                        </span>
+
+                        <span>Painel</span>
+
+                    </a>
+
+
+                    <a href="./processos.html" class="nav-item">
+
+                        <span class="nav-icon">
+                            <i data-lucide="folder"></i>
+                        </span>
+
+                        <span>Processos</span>
+
+                    </a>
+
+
+                    <a href="./outros-acompanhamentos.html" class="nav-item">
+
+                        <span class="nav-icon">
+                            <i data-lucide="clipboard-list"></i>
+                        </span>
+
+                        <span>Outros acompanhamentos</span>
+
+                    </a>
+
+                </nav>
+
+                <div class="sidebar-user">
+
+                    <div class="user-info">
+                        <div class="user-avatar">
+                            <i data-lucide="circle-user-round"></i>
+                        </div>
+
+                        <div>
+                            <small>Usuário</small>
+                            <strong>CAP</strong>
+                        </div>
+                    </div>
+
+                    <button
+                        id="btnSair"
+                        type="button"
+                        class="logout-button"
+                    >
+                        ↪ Sair
+                    </button>
+
+                </div>
+
+            </aside>
+
+        <!-- CONTEÚDO -->
+        <main class="main-content">
+
+            <header class="page-header">
+                <div>
+                    <h1>Painel</h1>
+                    <p>Visão geral do Licenciamento Ambiental</p>
+                </div>
+
+                <img
+                    src="./assets/logoder.png"
+                    alt="Logo DER"
+                    class="der-logo"
+                >
+            </header>
+
+            <section class="dashboard-cards">
+
+                <div class="dashboard-card">
+
+                    <div class="dashboard-card-icon card-icon-abertos">
+                        <i data-lucide="folder"></i>
+                    </div>
+
+                    <div class="dashboard-card-info">
+                        <strong id="totalAbertos">0</strong>
+                        <span>Processos abertos</span>
+                    </div>
+
+                </div>
+
+
+                <div class="dashboard-card">
+
+                    <div class="dashboard-card-icon card-icon-concluidos">
+                        <i data-lucide="circle-check"></i>
+                    </div>
+
+                    <div class="dashboard-card-info">
+                        <strong id="totalConcluidos">0</strong>
+                        <span>Processos concluídos</span>
+                    </div>
+
+                </div>
+
+
+                <div class="dashboard-card">
+
+                    <div class="dashboard-card-icon card-icon-total">
+                        <i data-lucide="copy"></i>
+                    </div>
+
+                    <div class="dashboard-card-info">
+                        <strong id="totalProcessos">0</strong>
+                        <span>Total de processos</span>
+                    </div>
+
+                </div>
+
+
+                <div class="dashboard-card">
+
+                    <div class="dashboard-card-icon card-icon-aguardando">
+                        <i data-lucide="clock-3"></i>
+                    </div>
+
+                    <div class="dashboard-card-info">
+                        <strong id="totalAguardando">0</strong>
+                        <span>Aguardando atendimento</span>
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <section class="dashboard-graficos">
+
+                <div class="dashboard-chart-card dashboard-chart-area">
+
+                    <div class="dashboard-chart-header">
+                        <div>
+                            <h2>Comunique-se por áreas da CAP</h2>
+                            <p>Distribuição de processos por divisão</p>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-chart-container">
+                        <canvas id="graficoAreasCap"></canvas>
+                    </div>
+
+                </div>
+
+
+                <div class="dashboard-chart-card dashboard-chart-tematica">
+
+                    <div class="dashboard-chart-header">
+                        <div>
+                            <h2>Distribuição por temática</h2>
+                            <p>Processos por classificação</p>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-chart-container dashboard-chart-donut">
+                        <canvas id="graficoTematicas"></canvas>
+                    </div>
+
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <script>
+        lucide.createIcons();
+    </script>
+
+    <script src="./js/app.js"></script>
+
+</body>
+</html>

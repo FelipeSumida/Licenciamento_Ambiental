@@ -23,11 +23,11 @@ public class Processo
     public string Situacao { get; set; } = "Aberta";
     public List<Trecho> Trechos { get; set; } = new();
     public List<Pendencia> Pendencias { get; set; } = new();
-    public string Fase { get; set; } = string.Empty;
-    public string StatusFase { get; set; } = string.Empty;
+    public string? Fase { get; set; }
+    public string? StatusFase { get; set; }
     public DateTime? DataEmissaoFase { get; set; }
     public DateTime? DataValidadeFase { get; set; }
-    public string NumeroFase { get; set; } = string.Empty;
+    public string? NumeroFase { get; set; }
     public string? AnexoFase { get; set; }
     public string? AnexoFaseNome { get; set; }
     public string? AnexoFaseTipo { get; set; }
@@ -39,7 +39,6 @@ public class Processo
     public string? HistoricoProcessoTexto { get; set; }
      [NotMapped]
     public string? FaseComplementar { get; set; }
-    public List<FaseComplementar> FasesComplementares { get; set; } = new();
 }
 
 public class Trecho
@@ -58,8 +57,8 @@ public class Trecho
 
     [ForeignKey(nameof(RodId))]
     public SirgeoRodovia? Rodovia { get; set; }
-
     public List<FaseTrecho> Fases { get; set; } = new();
+    public List<FaseComplementar> FasesComplementares { get; set; } = new();
 }
 
 public class Pendencia

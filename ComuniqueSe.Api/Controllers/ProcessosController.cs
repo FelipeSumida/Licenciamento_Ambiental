@@ -95,7 +95,8 @@ public class ProcessosController : ControllerBase
                 .ThenInclude(t => t.Fases.OrderBy(f => f.Ordem))
             .Include(p => p.Trechos)
                 .ThenInclude(t => t.Rodovia)
-            .Include(p => p.FasesComplementares)
+            .Include(p => p.Trechos)
+                .ThenInclude(t => t.FasesComplementares)
             .Include(p => p.Pendencias)
                 .ThenInclude(p => p.Historicos)
             .OrderByDescending(p => p.Id)
@@ -138,7 +139,8 @@ public class ProcessosController : ControllerBase
                 .ThenInclude(t => t.Fases.OrderBy(f => f.Ordem))
             .Include(p => p.Trechos)
                 .ThenInclude(t => t.Rodovia)
-            .Include(p => p.FasesComplementares)
+            .Include(p => p.Trechos)
+                .ThenInclude(t => t.FasesComplementares)
             .Include(p => p.Pendencias)
                 .ThenInclude(p => p.Historicos)
             .Include(p => p.Pendencias)
@@ -258,18 +260,20 @@ public class ProcessosController : ControllerBase
                             StatusFase = f.StatusFase,
                             NumeroFase = f.NumeroFase,
                             DataEmissaoFase = f.DataEmissaoFase,
-                            DataValidadeFase = f.DataValidadeFase
+                            DataValidadeFase = f.DataValidadeFase,
+                            AnexoFase = f.AnexoFase
+                        })
+                        .ToList(),
+
+                    FasesComplementares =
+                        (t.FasesComplementares ?? new List<FaseComplementar>())
+                        .Select(fc => new FaseComplementar
+                        {
+                            Fase = fc.Fase,
+                            DataEmissao = fc.DataEmissao,
+                            AnexoPdf = fc.AnexoPdf
                         })
                         .ToList()
-                })
-                .ToList(),
-
-            FasesComplementares = (processo.FasesComplementares ?? new List<FaseComplementar>())
-                .Select(fc => new FaseComplementar
-                {
-                    Fase = fc.Fase,
-                    DataEmissao = fc.DataEmissao,
-                    AnexoPdf = fc.AnexoPdf
                 })
                 .ToList(),
 
@@ -394,6 +398,149 @@ public class ProcessosController : ControllerBase
         });
     }
 
+    [HttpPost("fases-complementares/{faseComplementarId}/anexo")]
+    public async Task<IActionResult> UploadAnexoFaseComplementar(
+        int faseComplementarId,
+        IFormFile arquivo
+    )
+    {
+        var faseComplementar =
+            await _context.FasesComplementares
+                .FindAsync(faseComplementarId);
+
+        if (faseComplementar == null)
+        {
+            return NotFound(
+                "Fase complementar não encontrada."
+            );
+        }
+
+        if (arquivo == null || arquivo.Length == 0)
+        {
+            return BadRequest(
+                "Nenhum arquivo enviado."
+            );
+        }
+
+        const long tamanhoMaximo = 20 * 1024 * 1024;
+
+        if (arquivo.Length > tamanhoMaximo)
+        {
+            return BadRequest(
+                "O arquivo deve possuir no máximo 20 MB."
+            );
+        }
+
+        var extensao =
+            Path.GetExtension(arquivo.FileName);
+
+        if (
+            !string.Equals(
+                extensao,
+                ".pdf",
+                StringComparison.OrdinalIgnoreCase
+            )
+        )
+        {
+            return BadRequest(
+                "Apenas arquivos PDF são permitidos."
+            );
+        }
+
+        if (
+            !string.Equals(
+                arquivo.ContentType,
+                "application/pdf",
+                StringComparison.OrdinalIgnoreCase
+            )
+        )
+        {
+            return BadRequest(
+                "O arquivo enviado não é um PDF válido."
+            );
+        }
+
+        using var memoryStream =
+            new MemoryStream();
+
+        await arquivo.CopyToAsync(
+            memoryStream
+        );
+
+        faseComplementar.AnexoPdf =
+            Path.GetFileName(
+                arquivo.FileName
+            );
+
+        faseComplementar.AnexoPdfTipo =
+            arquivo.ContentType;
+
+        faseComplementar.AnexoPdfArquivo =
+            memoryStream.ToArray();
+
+        await _context.SaveChangesAsync();
+
+        return Ok(new
+        {
+            id = faseComplementar.Id,
+            anexoPdf =
+                faseComplementar.AnexoPdf
+        });
+    }
+
+    [HttpGet("fases-complementares/{faseComplementarId}/anexo")]
+    public async Task<IActionResult> GetAnexoFaseComplementar(
+        int faseComplementarId
+    )
+    {
+        var faseComplementar =
+            await _context.FasesComplementares
+                .AsNoTracking()
+                .FirstOrDefaultAsync(
+                    fc =>
+                        fc.Id ==
+                        faseComplementarId
+                );
+
+        if (faseComplementar == null)
+        {
+            return NotFound(
+                "Fase complementar não encontrada."
+            );
+        }
+
+        if (
+            faseComplementar.AnexoPdfArquivo == null ||
+            faseComplementar.AnexoPdfArquivo.Length == 0
+        )
+        {
+            return NotFound(
+                "Esta fase complementar não possui anexo."
+            );
+        }
+
+        var tipoArquivo =
+            string.IsNullOrWhiteSpace(faseComplementar.AnexoPdfTipo)
+                ? "application/pdf"
+                : faseComplementar.AnexoPdfTipo;
+
+        var nomeArquivo =
+            string.IsNullOrWhiteSpace(faseComplementar.AnexoPdf)
+                ? "anexo.pdf"
+                : faseComplementar.AnexoPdf;
+
+        var nomeArquivoCodificado =
+            Uri.EscapeDataString(nomeArquivo);
+
+        Response.Headers.ContentDisposition =
+            $"inline; filename=\"anexo.pdf\"; filename*=UTF-8''{nomeArquivoCodificado}";
+
+        return File(
+            faseComplementar.AnexoPdfArquivo,
+            tipoArquivo
+        );
+    }
+
     [HttpPut("{id}")]
     public async Task<IActionResult> PutProcesso(int id, Processo processo)
     {
@@ -403,7 +550,8 @@ public class ProcessosController : ControllerBase
                 .ThenInclude(t => t.Fases)
             .Include(p => p.Trechos)
                 .ThenInclude(t => t.Rodovia)
-            .Include(p => p.FasesComplementares)
+            .Include(p => p.Trechos)
+                .ThenInclude(t => t.FasesComplementares)
             .Include(p => p.Pendencias)
                 .ThenInclude(p => p.Historicos)
             .Include(p => p.Pendencias)
@@ -797,20 +945,39 @@ public class ProcessosController : ControllerBase
 
         var fasesComplementaresAnteriores = string.Join(
             " | ",
-            processoExistente.FasesComplementares.Select(fc =>
-                $"{fc.Fase} - " +
-                $"{(fc.DataEmissao.HasValue ? fc.DataEmissao.Value.ToString("dd/MM/yyyy") : "Sem data")}"
-            )
+            processoExistente.Trechos
+                .SelectMany(t =>
+                    t.FasesComplementares ??
+                    new List<FaseComplementar>()
+                )
+                .Select(fc =>
+                    $"{fc.Fase} - " +
+                    $"{(
+                        fc.DataEmissao.HasValue
+                            ? fc.DataEmissao.Value.ToString("dd/MM/yyyy")
+                            : "Sem data"
+                    )}"
+                )
         );
+
 
         var fasesComplementaresNovas = string.Join(
             " | ",
-            (processo.FasesComplementares ?? new List<FaseComplementar>())
+            (processo.Trechos ?? new List<Trecho>())
+                .SelectMany(t =>
+                    t.FasesComplementares ??
+                    new List<FaseComplementar>()
+                )
                 .Select(fc =>
                     $"{fc.Fase} - " +
-                    $"{(fc.DataEmissao.HasValue ? fc.DataEmissao.Value.ToString("dd/MM/yyyy") : "Sem data")}"
+                    $"{(
+                        fc.DataEmissao.HasValue
+                            ? fc.DataEmissao.Value.ToString("dd/MM/yyyy")
+                            : "Sem data"
+                    )}"
                 )
         );
+
 
         RegistrarAlteracao(
             processoExistente.Id,
@@ -868,11 +1035,17 @@ public class ProcessosController : ControllerBase
             processoExistente.Pendencias ?? new List<Pendencia>()
         );
 
-        _context.FasesComplementares.RemoveRange(
-            processoExistente.FasesComplementares ?? new List<FaseComplementar>()
-        );
-
         var trechosRecebidos = processo.Trechos ?? new List<Trecho>();
+
+        var mapaTrechosSalvos =
+            new List<(
+                int Indice,
+                Trecho Trecho,
+                List<(
+                    int Indice,
+                    FaseComplementar Fase
+                )> Complementares
+            )>();
 
         // Remove somente trechos que realmente foram excluídos pelo usuário
         var idsTrechosRecebidos = trechosRecebidos
@@ -887,9 +1060,21 @@ public class ProcessosController : ControllerBase
         _context.Trechos.RemoveRange(trechosParaRemover);
 
 
-        // Atualiza os existentes e adiciona somente os novos
-        foreach (var trechoDto in trechosRecebidos)
+        for (
+            int trechoIndex = 0;
+            trechoIndex < trechosRecebidos.Count;
+            trechoIndex++
+        )
         {
+            var trechoDto =
+                trechosRecebidos[trechoIndex];
+
+            var mapaComplementares =
+                new List<(
+                    int Indice,
+                    FaseComplementar Fase
+                )>();
+
             Trecho trechoExistente;
 
             if (trechoDto.Id > 0)
@@ -912,7 +1097,11 @@ public class ProcessosController : ControllerBase
                     KmInicial = trechoDto.KmInicial,
                     KmFinal = trechoDto.KmFinal,
                     ProcessoId = processoExistente.Id,
-                    Fases = new List<FaseTrecho>()
+
+                    Fases = new List<FaseTrecho>(),
+
+                    FasesComplementares =
+                        new List<FaseComplementar>()
                 };
 
                 processoExistente.Trechos.Add(trechoExistente);
@@ -971,18 +1160,128 @@ public class ProcessosController : ControllerBase
                     });
                 }
             }
-        }
+
+            // ============================================
+            // FASES COMPLEMENTARES DO TRECHO
+            // ============================================
+
+            var complementaresRecebidas =
+                trechoDto.FasesComplementares ??
+                new List<FaseComplementar>();
 
 
-        processoExistente.FasesComplementares = (processo.FasesComplementares ?? new List<FaseComplementar>())
-            .Select(fc => new FaseComplementar
+            // IDs que continuam existindo na tela
+            var idsComplementaresRecebidas =
+                complementaresRecebidas
+                    .Where(fc => fc.Id > 0)
+                    .Select(fc => fc.Id)
+                    .ToHashSet();
+
+
+            // Remove somente as complementares
+            // que o usuário realmente excluiu
+            var complementaresParaRemover =
+                trechoExistente.FasesComplementares
+                    .Where(fc =>
+                        !idsComplementaresRecebidas.Contains(fc.Id)
+                    )
+                    .ToList();
+
+
+            _context.FasesComplementares.RemoveRange(
+                complementaresParaRemover
+            );
+
+
+            // Atualiza existentes e cria novas
+            for (
+                int complementarIndex = 0;
+                complementarIndex < complementaresRecebidas.Count;
+                complementarIndex++
+            )
             {
-                Fase = fc.Fase,
-                DataEmissao = fc.DataEmissao,
-                AnexoPdf = fc.AnexoPdf,
-                ProcessoId = processoExistente.Id
-            })
-            .ToList();
+                var complementarDto =
+                    complementaresRecebidas[
+                        complementarIndex
+                    ];
+
+                FaseComplementar complementarSalva;
+
+
+                if (complementarDto.Id > 0)
+                {
+                    var complementarExistente =
+                        trechoExistente
+                            .FasesComplementares
+                            .FirstOrDefault(fc =>
+                                fc.Id ==
+                                complementarDto.Id
+                            );
+
+                    if (complementarExistente == null)
+                    {
+                        continue;
+                    }
+
+
+                    complementarExistente.Fase =
+                        complementarDto.Fase;
+
+                    complementarExistente.DataEmissao =
+                        complementarDto.DataEmissao;
+
+
+                    /*
+                    * NÃO alteramos:
+                    *
+                    * AnexoPdf
+                    * AnexoPdfTipo
+                    * AnexoPdfArquivo
+                    *
+                    * O anexo é atualizado somente
+                    * pelo endpoint específico de upload.
+                    */
+
+                    complementarSalva =
+                        complementarExistente;
+                }
+                else
+                {
+                    var novaComplementar =
+                        new FaseComplementar
+                        {
+                            Fase =
+                                complementarDto.Fase,
+
+                            DataEmissao =
+                                complementarDto.DataEmissao
+                        };
+
+                    trechoExistente
+                        .FasesComplementares
+                        .Add(novaComplementar);
+
+                    complementarSalva =
+                        novaComplementar;
+                }
+
+
+                mapaComplementares.Add(
+                    (
+                        complementarIndex,
+                        complementarSalva
+                    )
+                );
+            }
+
+            mapaTrechosSalvos.Add(
+                (
+                    trechoIndex,
+                    trechoExistente,
+                    mapaComplementares
+                )
+            );
+        }
 
         processoExistente.Pendencias = new List<Pendencia>();
 
@@ -1048,7 +1347,32 @@ public class ProcessosController : ControllerBase
 
         await _context.SaveChangesAsync();
 
-        return NoContent();
+        return Ok(new
+        {
+            id = processoExistente.Id,
+
+            trechos =
+                mapaTrechosSalvos
+                    .Select(t => new
+                    {
+                        indice = t.Indice,
+
+                        id = t.Trecho.Id,
+
+                        fasesComplementares =
+                            t.Complementares
+                                .Select(fc => new
+                                {
+                                    indice =
+                                        fc.Indice,
+
+                                    id =
+                                        fc.Fase.Id
+                                })
+                                .ToList()
+                    })
+                    .ToList()
+        });
     }
 
     [HttpDelete("{id}")]

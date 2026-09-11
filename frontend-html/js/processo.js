@@ -1,0 +1,947 @@
+const API_URL = "http://localhost:5161/api";
+
+document.addEventListener("DOMContentLoaded", () => {
+    carregarProcesso();
+});
+
+
+async function carregarProcesso() {
+
+    const params =
+        new URLSearchParams(window.location.search);
+
+    const id =
+        params.get("id");
+
+
+    if (!id) {
+        mostrarErro();
+        return;
+    }
+
+
+    try {
+
+        const response =
+            await fetch(`${API_URL}/processos/${id}`);
+
+
+        if (!response.ok) {
+            throw new Error(
+                `Erro HTTP ${response.status}`
+            );
+        }
+
+
+        const processo =
+            await response.json();
+
+
+        renderizarProcesso(processo);
+
+    } catch (error) {
+
+        console.error(
+            "Erro ao carregar processo:",
+            error
+        );
+
+        mostrarErro();
+
+    }
+
+}
+
+
+function renderizarProcesso(processo) {
+
+    document.getElementById("carregando").hidden = true;
+    document.getElementById("conteudoProcesso").hidden = false;
+
+
+    document.getElementById(
+        "numeroEmpreendimento"
+    ).textContent =
+        processo.idEmpreendimento ?? "Sem número";
+
+
+    document.getElementById(
+        "empreendimento"
+    ).textContent =
+        processo.empreendimento || "—";
+
+
+    document.getElementById(
+        "identificacaoEmpreendimento"
+    ).value =
+        processo.identificacaoEmpreendimento || "—";
+
+    document.getElementById(
+        "caracterizacaoEmpreendimento"
+    ).value =
+        processo.caracterizacaoEmpreendimento || "—";
+
+    document.getElementById(
+        "interessado"
+    ).textContent =
+        processo.interessado || "—";
+
+
+    document.getElementById(
+        "tecnicoResponsavel"
+    ).textContent =
+        processo.tecnicoResponsavel || "—";
+
+
+    const situacao =
+        obterSituacao(processo);
+
+
+    const badge =
+        document.getElementById("situacaoProcesso");
+
+    badge.textContent = situacao;
+
+    badge.classList.add(
+        classeSituacao(situacao)
+    );
+
+
+    renderizarTrechos(
+        processo.trechos ?? []
+    );
+
+
+    renderizarPendencias(
+        processo.pendencias ?? []
+    );
+
+    renderizarPrazos(
+        processo.pendencias ?? []
+    );
+
+    renderizarHistoricoProcesso(processo);
+
+
+
+    configurarBotoes(processo);
+
+}
+
+
+function renderizarTrechos(trechos) {
+
+    const container =
+        document.getElementById("listaTrechos");
+
+    container.innerHTML = "";
+
+
+    if (trechos.length === 0) {
+
+        container.innerHTML =
+            '<p class="muted-text">Nenhum trecho registrado.</p>';
+
+        return;
+
+    }
+
+
+    trechos.forEach((trecho, trechoIndex) => {
+
+        const bloco =
+            document.createElement("div");
+
+        bloco.className = "trecho-card";
+
+
+        const codigo =
+            trecho.rodovia?.rodCodigo ?? "—";
+
+
+        const fases =
+            [...(trecho.fases ?? [])]
+                .sort(
+                    (a, b) =>
+                        Number(a.ordem ?? 0) -
+                        Number(b.ordem ?? 0)
+                );
+
+
+        const fasesComplementares =
+            Array.isArray(trecho.fasesComplementares)
+                ? trecho.fasesComplementares
+                : [];
+
+
+        bloco.innerHTML = `
+
+            <h3>
+                Trecho ${trechoIndex + 1}
+            </h3>
+
+
+            <div class="detail-grid trecho-info">
+
+                <div>
+                    <span class="detail-label">
+                        RODOVIA
+                    </span>
+
+                    <strong>
+                        ${escapeHtml(codigo)}
+                    </strong>
+                </div>
+
+
+                <div>
+                    <span class="detail-label">
+                        KM INICIAL
+                    </span>
+
+                    <strong>
+                        ${escapeHtml(
+                            trecho.kmInicial ?? "—"
+                        )}
+                    </strong>
+                </div>
+
+
+                <div>
+                    <span class="detail-label">
+                        KM FINAL
+                    </span>
+
+                    <strong>
+                        ${escapeHtml(
+                            trecho.kmFinal ?? "—"
+                        )}
+                    </strong>
+                </div>
+
+            </div>
+
+
+            <div class="fases-container">
+
+                <h4>
+                    Fases do trecho
+                </h4>
+
+
+                ${
+                    fases.length === 0
+
+                        ? `
+                            <p class="muted-text">
+                                Nenhuma fase registrada.
+                            </p>
+                        `
+
+                        : fases
+                            .map(
+                                (fase, index) => `
+
+                                    <div class="fase-card">
+
+                                        <strong>
+                                            Fase ${index + 1}
+                                        </strong>
+
+
+                                        <div class="detail-grid">
+
+                                            <div>
+                                                <span class="detail-label">
+                                                    FASE
+                                                </span>
+
+                                                <p>
+                                                    ${escapeHtml(fase.fase ?? "—")}
+                                                </p>
+                                            </div>
+
+
+                                            <div>
+                                                <span class="detail-label">
+                                                    NÚMERO DO PROCESSO
+                                                </span>
+
+                                                <p>
+                                                    ${escapeHtml(fase.numeroProcesso ?? "—")}
+                                                </p>
+                                            </div>
+
+
+                                            <div>
+                                                <span class="detail-label">
+                                                    SITUAÇÃO DA FASE
+                                                </span>
+
+                                                <p>
+                                                    ${escapeHtml(fase.statusFase ?? "—")}
+                                                </p>
+                                            </div>
+
+
+                                            ${
+                                                fase.statusFase !== "Em andamento" &&
+                                                fase.statusFase !== "Dispensado"
+                                                    ? `
+                                                        <div>
+                                                            <span class="detail-label">
+                                                                Nº
+                                                            </span>
+
+                                                            <p>
+                                                                ${escapeHtml(fase.numeroFase ?? "—")}
+                                                            </p>
+                                                        </div>
+
+
+                                                        <div>
+                                                            <span class="detail-label">
+                                                                DATA DE EMISSÃO
+                                                            </span>
+
+                                                            <p>
+                                                                ${
+                                                                    fase.dataEmissaoFase
+                                                                        ? formatarData(fase.dataEmissaoFase)
+                                                                        : "—"
+                                                                }
+                                                            </p>
+                                                        </div>
+
+
+                                                        <div>
+                                                            <span class="detail-label">
+                                                                DATA DE VALIDADE
+                                                            </span>
+
+                                                            <p>
+                                                                ${
+                                                                    fase.dataValidadeFase
+                                                                        ? formatarData(fase.dataValidadeFase)
+                                                                        : "—"
+                                                                }
+                                                            </p>
+                                                        </div>
+                                                    `
+                                                    : ""
+                                            }
+
+                                        </div>
+
+                                    </div>
+                                `
+                            )
+                            .join("")
+                }
+
+            </div>
+
+
+            <div class="fases-complementares-visual">
+
+                <h4>
+                    Fases Complementares
+                </h4>
+
+
+                ${
+                    fasesComplementares.length === 0
+
+                        ? `
+                            <p class="muted-text">
+                                Nenhuma fase complementar registrada.
+                            </p>
+                        `
+
+                        : `
+                            <div class="fases-complementares-lista">
+
+                                ${fasesComplementares
+                                    .map(
+                                        (
+                                            faseComplementar,
+                                            complementarIndex
+                                        ) => `
+
+                                            <div class="fase-complementar-visual-card">
+
+                                                <div class="fase-complementar-visual-header">
+
+                                                    <strong>
+                                                        Fase Complementar ${complementarIndex + 1}
+                                                    </strong>
+
+                                                </div>
+
+
+                                                <div class="detail-grid">
+
+                                                    <div>
+
+                                                        <span class="detail-label">
+                                                            FASE
+                                                        </span>
+
+                                                        <p>
+                                                            ${escapeHtml(
+                                                                faseComplementar.fase ?? "—"
+                                                            )}
+                                                        </p>
+
+                                                    </div>
+
+
+                                                    <div>
+
+                                                        <span class="detail-label">
+                                                            DATA DE EMISSÃO
+                                                        </span>
+
+                                                        <p>
+                                                            ${
+                                                                faseComplementar.dataEmissao
+                                                                    ? formatarData(
+                                                                        faseComplementar.dataEmissao
+                                                                    )
+                                                                    : "—"
+                                                            }
+                                                        </p>
+
+                                                    </div>
+
+
+                                                    <div>
+
+                                                        <span class="detail-label">
+                                                            ANEXO
+                                                        </span>
+
+                                                        ${
+                                                            faseComplementar.anexoPdf
+
+                                                                ? `
+                                                                    <a
+                                                                        class="fase-complementar-anexo-link"
+                                                                        href="${API_URL}/processos/fases-complementares/${faseComplementar.id}/anexo"
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                    >
+                                                                        <i
+                                                                            data-lucide="paperclip"
+                                                                            class="fase-complementar-anexo-icon"
+                                                                        ></i>
+
+                                                                        ${escapeHtml(faseComplementar.anexoPdf)}
+                                                                    </a>
+                                                                `
+
+                                                                : `
+                                                                    <p class="muted-text">
+                                                                        Sem anexo
+                                                                    </p>
+                                                                `
+                                                        }
+
+                                                    </div>
+
+                                                </div>
+
+                                            </div>
+
+                                        `
+                                    )
+                                    .join("")}
+
+                            </div>
+                        `
+                }
+
+            </div>
+
+        `;
+
+
+        container.appendChild(bloco);
+
+    });
+
+    if (window.lucide) {
+        lucide.createIcons();
+    }
+
+}
+
+
+function renderizarPendencias(pendencias) {
+
+    const container =
+        document.getElementById("listaPendencias");
+
+    container.innerHTML = "";
+
+
+    if (pendencias.length === 0) {
+
+        container.innerHTML =
+            '<p class="muted-text">Sem pendências registradas.</p>';
+
+        return;
+    }
+
+
+    pendencias.forEach((pendencia, index) => {
+
+        const bloco =
+            document.createElement("div");
+
+        bloco.className =
+            "pendencia-card pendencia-card-visual";
+
+
+        const historicos =
+            Array.isArray(pendencia.historicos)
+                ? pendencia.historicos
+                : [];
+
+
+        const atribuidoA =
+            Array.isArray(pendencia.atribuidoA)
+                ? pendencia.atribuidoA
+                : pendencia.atribuidoA
+                    ? [pendencia.atribuidoA]
+                    : [];
+
+
+        const regionais =
+            Array.isArray(pendencia.regionais)
+                ? pendencia.regionais
+                : [];
+
+
+        const situacao =
+            pendencia.situacao || "—";
+
+
+        const classeStatus =
+            situacao === "Aberta"
+                ? "pendencia-badge-aberta"
+                : situacao === "Atendida"
+                    ? "pendencia-badge-atendida"
+                    : "pendencia-badge-neutra";
+
+
+        bloco.innerHTML = `
+
+            <div class="pendencia-visual-header">
+
+                <div>
+                    <span class="pendencia-numero">
+                        Pendência ${index + 1}
+                    </span>
+                </div>
+
+                <span class="pendencia-status-badge ${classeStatus}">
+                    ${escapeHtml(situacao)}
+                </span>
+
+            </div>
+
+
+            <div class="pendencia-descricao-bloco">
+
+                <span class="detail-label">
+                    DESCRIÇÃO
+                </span>
+
+                <p class="pendencia-descricao-texto">
+                    ${escapeHtml(
+                        pendencia.descricao || "Sem descrição"
+                    )}
+                </p>
+
+            </div>
+
+
+            <div class="pendencia-informacoes-grid">
+
+                <div class="pendencia-info-item">
+
+                    <span class="detail-label">
+                        DIVISÃO CAP
+                    </span>
+
+                    <strong>
+                        ${escapeHtml(
+                            pendencia.divisaoCap || "—"
+                        )}
+                    </strong>
+
+                </div>
+
+
+                <div class="pendencia-info-item">
+
+                    <span class="detail-label">
+                        ATRIBUÍDO A
+                    </span>
+
+                    <strong>
+                        ${
+                            atribuidoA.length > 0
+                                ? escapeHtml(
+                                    atribuidoA.join(", ")
+                                )
+                                : "—"
+                        }
+                    </strong>
+
+                </div>
+
+
+                ${
+                    regionais.length > 0
+                        ? `
+                            <div class="pendencia-info-item">
+
+                                <span class="detail-label">
+                                    REGIONAIS
+                                </span>
+
+                                <strong>
+                                    ${escapeHtml(
+                                        regionais.join(", ")
+                                    )}
+                                </strong>
+
+                            </div>
+                        `
+                        : ""
+                }
+
+            </div>
+
+
+            <div class="historico-pendencia historico-pendencia-visual">
+
+                <div class="historico-pendencia-titulo">
+
+                    <h4>
+                        Histórico da pendência
+                    </h4>
+
+                    ${
+                        historicos.length > 0
+                            ? `
+                                <span class="historico-contador">
+                                    ${historicos.length}
+                                    ${
+                                        historicos.length === 1
+                                            ? "registro"
+                                            : "registros"
+                                    }
+                                </span>
+                            `
+                            : ""
+                    }
+
+                </div>
+
+
+                ${
+                    historicos.length === 0
+
+                        ? `
+                            <p class="muted-text">
+                                Nenhum histórico registrado.
+                            </p>
+                        `
+
+                        : `
+                            <div class="historico-pendencia-lista">
+
+                                ${historicos
+                                    .map(
+                                        (
+                                            historico,
+                                            historicoIndex
+                                        ) => `
+
+                                            <div class="historico-visual-item">
+
+                                                <div class="historico-visual-header">
+
+                                                    <strong>
+                                                        Histórico ${historicoIndex + 1}
+                                                    </strong>
+
+                                                    <span class="historico-visual-data">
+                                                        ${
+                                                            historico.data
+                                                                ? formatarData(
+                                                                    historico.data
+                                                                )
+                                                                : "—"
+                                                        }
+                                                    </span>
+
+                                                </div>
+
+
+                                                <p class="historico-visual-texto">
+                                                    ${escapeHtml(
+                                                        historico.texto || "—"
+                                                    )}
+                                                </p>
+
+                                            </div>
+
+                                        `
+                                    )
+                                    .join("")}
+
+                            </div>
+                        `
+                }
+
+            </div>
+
+        `;
+
+
+        container.appendChild(bloco);
+
+    });
+
+}
+
+function renderizarHistoricoProcesso(processo) {
+
+    const container =
+        document.getElementById("historicoProcesso");
+
+    if (!container) {
+        return;
+    }
+
+    const data =
+        processo.historicoProcessoData;
+
+    const texto =
+        processo.historicoProcessoTexto;
+
+    if (!data && !texto) {
+
+        container.innerHTML = `
+            <p class="muted-text">
+                Nenhum histórico do processo registrado.
+            </p>
+        `;
+
+        return;
+    }
+
+    container.innerHTML = `
+        <div class="detail-grid">
+
+            <div>
+                <span class="detail-label">
+                    DATA
+                </span>
+
+                <p>
+                    ${data ? formatarData(data) : "—"}
+                </p>
+            </div>
+
+            <div>
+                <span class="detail-label">
+                    HISTÓRICO
+                </span>
+
+                <p>
+                    ${escapeHtml(texto || "—")}
+                </p>
+            </div>
+
+        </div>
+    `;
+}
+
+
+function renderizarPrazos(pendencias) {
+
+    const container =
+        document.getElementById("listaPrazos");
+
+    container.innerHTML = "";
+
+
+    if (pendencias.length === 0) {
+
+        container.innerHTML =
+            '<p class="muted-text">Sem prazos registrados.</p>';
+
+        return;
+
+    }
+
+
+    pendencias.forEach((pendencia, index) => {
+
+        const bloco =
+            document.createElement("div");
+
+        bloco.className = "prazo-item";
+
+
+        bloco.innerHTML = `
+            <strong>
+                Pendência ${index + 1}
+            </strong>
+
+            <span class="detail-label">
+                DATA DE ENTRADA
+            </span>
+
+            <p>
+                ${formatarData(pendencia.dataEntrada)}
+            </p>
+
+            <span class="detail-label">
+                PRAZO
+            </span>
+
+            <p>
+                ${formatarData(pendencia.prazo)}
+            </p>
+
+            <span class="detail-label">
+                DATA DE SAÍDA
+            </span>
+
+            <p>
+                ${formatarData(pendencia.dataSaida)}
+            </p>
+        `;
+
+
+        container.appendChild(bloco);
+
+    });
+
+}
+
+
+function configurarBotoes(processo) {
+
+    document
+        .getElementById("btnEditar")
+        .addEventListener("click", () => {
+
+            window.location.href =
+                `./processo-editar.html?id=${processo.id}`;
+
+        });
+
+
+    document
+        .getElementById("btnPdf")
+        .addEventListener("click", () => {
+
+            window.print();
+
+        });
+
+}
+
+
+function obterSituacao(processo) {
+
+    const pendencias =
+        processo.pendencias ?? [];
+
+
+    if (pendencias.length === 0) {
+        return "Sem pendência";
+    }
+
+
+    return pendencias.some(
+        (p) => p.situacao === "Aberta"
+    )
+        ? "Aberta"
+        : "Atendida";
+
+}
+
+
+function classeSituacao(situacao) {
+
+    if (situacao === "Aberta") {
+        return "status-aberta";
+    }
+
+    if (situacao === "Atendida") {
+        return "status-atendida";
+    }
+
+    return "status-sem-pendencia";
+
+}
+
+
+function formatarData(valor) {
+
+    if (!valor) {
+        return "—";
+    }
+
+    const texto =
+        String(valor).trim();
+
+    // Pega somente a parte da data,
+    // ignorando horário e fuso.
+    const dataTexto =
+        texto.split("T")[0];
+
+    const partes =
+        dataTexto.match(
+            /^(\d{4})-(\d{2})-(\d{2})$/
+        );
+
+    if (partes) {
+
+        const ano = partes[1];
+        const mes = partes[2];
+        const dia = partes[3];
+
+        return `${dia}/${mes}/${ano}`;
+    }
+
+    return "—";
+}
+
+
+function mostrarErro() {
+
+    document.getElementById("carregando").hidden = true;
+    document.getElementById("erroProcesso").hidden = false;
+
+}
+
+
+function escapeHtml(valor) {
+
+    return String(valor)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+
+}
