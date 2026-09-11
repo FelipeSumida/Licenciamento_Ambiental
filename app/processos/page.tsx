@@ -17,7 +17,7 @@ export default function ProcessosPage() {
       <header className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-balance text-foreground">
-            Processos
+            Empreendimentos
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Lista completa de processos de licenciamento

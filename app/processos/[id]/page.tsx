@@ -123,7 +123,7 @@ export default function DetalheProcessoPage({
         className="mb-4 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="size-4" />
-        Voltar para processos
+        Voltar para empreendimentos
       </Link>
 
       <ApiStatusBanner />
@@ -202,7 +202,7 @@ export default function DetalheProcessoPage({
               <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                 <Card className="lg:col-span-2">
                   <CardHeader>
-                    <CardTitle className="text-base">Dados do processo</CardTitle>
+                    <CardTitle className="text-base">Dados do empreendimento</CardTitle>
                   </CardHeader>
                   <CardContent className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
                     <Info label="Empreendimento" valor={processo.empreendimento} />

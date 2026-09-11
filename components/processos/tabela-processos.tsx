@@ -216,6 +216,7 @@ export function TabelaProcessos({
       const casaBusca =
         !termo ||
         [
+          p.idEmpreendimento ?? "",
           p.processo,
           p.empreendimento,
           p.denominacao,
@@ -580,7 +581,9 @@ export function TabelaProcessos({
           <Table>
             <TableHeader>
               <TableRow className="bg-muted/50">
-                <TableHead>Processo</TableHead>
+                <TableHead>
+                  {modo === "outros" ? "Número do empreendimento" : "Processo"}
+                </TableHead>
                 <TableHead>Código</TableHead>
                 <TableHead>Identificação do Empreendimento</TableHead>
                 {modo === "processos" && (

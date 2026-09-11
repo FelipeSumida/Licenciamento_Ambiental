@@ -143,7 +143,7 @@ export default function DetalheProcessoPage({
                             <div className="space-y-2">
                                 <div className="flex flex-wrap items-center gap-3">
                                     <h1 className="print-title font-mono text-xl font-semibold text-foreground">
-                                        {processo.processo}
+                                        {processo.idEmpreendimento ?? "Sem número"}
                                     </h1>
                                     <SituacaoBadge
                                     situacao={

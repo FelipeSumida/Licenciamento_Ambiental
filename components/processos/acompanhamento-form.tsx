@@ -344,11 +344,11 @@ export function AcompanhamentoForm({
                 <CardContent className="space-y-6">
                     <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
                         <div className="lg:col-span-3">
-                            <Campo label="N° do processo">
+                            <Campo label="Número do empreendimento">
                                 <Input
-                                value={form.processo}
-                                onChange={(e) => set("processo", e.target.value)}
-                                placeholder="CETESB-0000"
+                                    value={processo?.idEmpreendimento ?? ""}
+                                    readOnly
+                                    placeholder="Gerado automaticamente"
                                 />
                             </Campo>
                         </div>
