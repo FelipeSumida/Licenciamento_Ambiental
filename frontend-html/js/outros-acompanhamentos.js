@@ -46,6 +46,7 @@ async function carregarProcessos() {
         });
 
         preencherFiltros();
+        configurarMultiselectTecnicos();
         configurarSelectsCustomizados();
         aplicarFiltros();
 
@@ -110,8 +111,11 @@ function aplicarFiltros() {
     const situacao =
         document.getElementById("filtroSituacao").value;
 
-    const tecnico =
-        document.getElementById("filtroTecnico").value;
+    const tecnicosSelecionados = Array.from(
+        document.getElementById("filtroTecnico").selectedOptions
+    )
+        .map((option) => option.value.trim())
+        .filter(Boolean);
 
     const classificacao =
         document.getElementById(
@@ -176,9 +180,17 @@ function aplicarFiltros() {
             situacaoProcesso === situacao;
 
 
+        const tecnicosDoProcesso =
+            String(processo.tecnicoResponsavel ?? "")
+                .split(";")
+                .map((nome) => nome.trim())
+                .filter(Boolean);
+
         const correspondeTecnico =
-            !tecnico ||
-            processo.tecnicoResponsavel === tecnico;
+            tecnicosSelecionados.length === 0 ||
+            tecnicosSelecionados.some((nome) =>
+                tecnicosDoProcesso.includes(nome)
+            );
 
 
         const correspondeClassificacao =
@@ -604,8 +616,12 @@ function preencherFiltros() {
 
     preencherSelect(
         "filtroTecnico",
-        todosProcessos
-            .map((p) => p.tecnicoResponsavel)
+        todosProcessos.flatMap((processo) =>
+            String(processo.tecnicoResponsavel ?? "")
+                .split(";")
+                .map((nome) => nome.trim())
+                .filter(Boolean)
+        )
     );
 
 
@@ -705,6 +721,255 @@ function configurarBotoes() {
         console.log("Sair");
 
     });
+
+}
+
+function configurarMultiselectTecnicos() {
+
+    const multiselect =
+        document.querySelector(
+            ".tecnicos-multiselect"
+        );
+
+    if (!multiselect) {
+        return;
+    }
+
+
+    const trigger =
+        multiselect.querySelector(
+            ".tecnicos-trigger"
+        );
+
+    const textoTrigger =
+        multiselect.querySelector(
+            ".tecnicos-trigger-text"
+        );
+
+    const dropdown =
+        multiselect.querySelector(
+            ".tecnicos-dropdown"
+        );
+
+    const lista =
+        multiselect.querySelector(
+            ".tecnicos-opcoes"
+        );
+
+    const selectOriginal =
+        multiselect.querySelector(
+            "#filtroTecnico"
+        );
+
+
+    if (
+        !trigger ||
+        !textoTrigger ||
+        !dropdown ||
+        !lista ||
+        !selectOriginal
+    ) {
+        return;
+    }
+
+
+    lista.innerHTML = "";
+
+
+    function atualizarTexto() {
+
+        const selecionados =
+            Array.from(
+                selectOriginal.selectedOptions
+            )
+            .filter(
+                option => option.value !== ""
+            )
+            .map(
+                option =>
+                    option.textContent.trim()
+            );
+
+
+        if (selecionados.length === 0) {
+
+            textoTrigger.textContent =
+                "Todos os técnicos";
+
+            return;
+        }
+
+
+        if (selecionados.length <= 2) {
+
+            textoTrigger.textContent =
+                selecionados.join(", ");
+
+            return;
+        }
+
+
+        textoTrigger.textContent =
+            `${selecionados.length} técnicos selecionados`;
+
+    }
+
+
+    Array.from(
+        selectOriginal.options
+    )
+    .filter(
+        option => option.value !== ""
+    )
+    .forEach((option) => {
+
+        const label =
+            document.createElement(
+                "label"
+            );
+
+        label.className =
+            "regional-opcao";
+
+
+        const checkbox =
+            document.createElement(
+                "input"
+            );
+
+        checkbox.type =
+            "checkbox";
+
+        checkbox.value =
+            option.value;
+
+        checkbox.checked =
+            option.selected;
+
+
+        const texto =
+            document.createElement(
+                "span"
+            );
+
+        texto.textContent =
+            option.textContent;
+
+
+        checkbox.addEventListener(
+            "change",
+            () => {
+
+                option.selected =
+                    checkbox.checked;
+
+
+                const opcaoTodos =
+                    selectOriginal
+                        .querySelector(
+                            'option[value=""]'
+                        );
+
+                if (opcaoTodos) {
+                    opcaoTodos.selected =
+                        false;
+                }
+
+
+                atualizarTexto();
+
+
+                selectOriginal.dispatchEvent(
+                    new Event(
+                        "change",
+                        {
+                            bubbles: true
+                        }
+                    )
+                );
+
+            }
+        );
+
+
+        label.appendChild(
+            checkbox
+        );
+
+        label.appendChild(
+            texto
+        );
+
+        lista.appendChild(
+            label
+        );
+
+    });
+
+
+    trigger.addEventListener(
+        "click",
+        () => {
+
+            const aberto =
+                !dropdown.hidden;
+
+
+            document
+                .querySelectorAll(
+                    ".regionais-dropdown"
+                )
+                .forEach(
+                    outroDropdown => {
+
+                        if (
+                            outroDropdown !==
+                            dropdown
+                        ) {
+                            outroDropdown.hidden =
+                                true;
+                        }
+
+                    }
+                );
+
+
+            dropdown.hidden =
+                aberto;
+
+            trigger.setAttribute(
+                "aria-expanded",
+                String(!aberto)
+            );
+
+        }
+    );
+
+
+    document.addEventListener(
+        "click",
+        (event) => {
+
+            if (
+                !multiselect.contains(
+                    event.target
+                )
+            ) {
+
+                dropdown.hidden = true;
+
+                trigger.setAttribute(
+                    "aria-expanded",
+                    "false"
+                );
+
+            }
+
+        }
+    );
+
+
+    atualizarTexto();
 
 }
 

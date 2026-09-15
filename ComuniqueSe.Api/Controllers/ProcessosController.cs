@@ -1020,19 +1020,35 @@ public class ProcessosController : ControllerBase
         processoExistente.HistoricoProcessoData = processo.HistoricoProcessoData;
         processoExistente.HistoricoProcessoTexto = processo.HistoricoProcessoTexto;
 
-        foreach (var pendencia in (processoExistente.Pendencias ?? new List<Pendencia>()))
+        var idsPendenciasRecebidas =
+            pendenciasRecebidas
+                .Where(p => p.Id > 0)
+                .Select(p => p.Id)
+                .ToHashSet();
+
+        var pendenciasParaRemover =
+            (processoExistente.Pendencias ?? new List<Pendencia>())
+                .Where(
+                    p =>
+                        p.Id > 0 &&
+                        !idsPendenciasRecebidas.Contains(p.Id)
+                )
+                .ToList();
+
+        foreach (var pendencia in pendenciasParaRemover)
         {
             _context.Historicos.RemoveRange(
                 pendencia.Historicos ?? new List<Historico>()
             );
 
             _context.PendenciasRegionais.RemoveRange(
-                pendencia.PendenciasRegionais ?? new List<PendenciaRegional>()
+                pendencia.PendenciasRegionais
+                    ?? new List<PendenciaRegional>()
             );
         }
 
         _context.Pendencias.RemoveRange(
-            processoExistente.Pendencias ?? new List<Pendencia>()
+            pendenciasParaRemover
         );
 
         var trechosRecebidos = processo.Trechos ?? new List<Trecho>();
@@ -1283,65 +1299,146 @@ public class ProcessosController : ControllerBase
             );
         }
 
-        processoExistente.Pendencias = new List<Pendencia>();
+        processoExistente.Pendencias ??= new List<Pendencia>();
 
-        var vinculosRegionaisPendentes = new List<(Pendencia Pendencia, List<int> RegionalIds)>();
+        var vinculosRegionaisPendentes =
+            new List<(Pendencia Pendencia, List<int> RegionalIds)>();
 
-        foreach (var pendenciaDto in (processo.Pendencias ?? new List<Pendencia>()))
+        foreach (var pendenciaDto in pendenciasRecebidas)
         {
-            var novaPendencia = new Pendencia
-            {
-                Descricao = pendenciaDto.Descricao,
-                Situacao = pendenciaDto.Situacao,
-                DivisaoCap = pendenciaDto.DivisaoCap,
-                DataEntrada = pendenciaDto.DataEntrada,
-                Prazo = pendenciaDto.Prazo,
-                DataSaida = pendenciaDto.DataSaida,
-                AtribuidoA = pendenciaDto.AtribuidoA,
-                FaseTrechoId = pendenciaDto.FaseTrechoId,
+            Pendencia? pendenciaDestino;
 
-                Historicos = (pendenciaDto.Historicos ?? new List<Historico>())
-                    .Select(h => new Historico
+            // Pendência que já existe: mantém o mesmo ID
+            if (pendenciaDto.Id > 0)
+            {
+                pendenciaDestino =
+                    processoExistente.Pendencias
+                        .FirstOrDefault(
+                            p => p.Id == pendenciaDto.Id
+                        );
+
+                if (pendenciaDestino == null)
+                {
+                    return BadRequest(
+                        $"A pendência {pendenciaDto.Id} não pertence a este processo."
+                    );
+                }
+
+                // Os históricos serão atualizados conforme o que veio da tela
+                _context.Historicos.RemoveRange(
+                    pendenciaDestino.Historicos
+                        ?? new List<Historico>()
+                );
+
+                // Os vínculos regionais também serão refeitos
+                _context.PendenciasRegionais.RemoveRange(
+                    pendenciaDestino.PendenciasRegionais
+                        ?? new List<PendenciaRegional>()
+                );
+            }
+            else
+            {
+                // Somente pendência realmente nova recebe novo ID
+                pendenciaDestino = new Pendencia();
+
+                processoExistente.Pendencias.Add(
+                    pendenciaDestino
+                );
+            }
+
+            pendenciaDestino.Descricao =
+                pendenciaDto.Descricao;
+
+            pendenciaDestino.Situacao =
+                pendenciaDto.Situacao;
+
+            pendenciaDestino.DivisaoCap =
+                pendenciaDto.DivisaoCap;
+
+            pendenciaDestino.DataEntrada =
+                pendenciaDto.DataEntrada;
+
+            pendenciaDestino.Prazo =
+                pendenciaDto.Prazo;
+
+            pendenciaDestino.DataSaida =
+                pendenciaDto.DataSaida;
+
+            pendenciaDestino.AtribuidoA =
+                pendenciaDto.AtribuidoA;
+
+            pendenciaDestino.FaseTrechoId =
+                pendenciaDto.FaseTrechoId;
+
+            pendenciaDestino.Historicos =
+                (pendenciaDto.Historicos
+                    ?? new List<Historico>())
+                .Select(
+                    h => new Historico
                     {
                         Data = h.Data,
                         Texto = h.Texto
-                    })
-                    .ToList()
-            };
+                    }
+                )
+                .ToList();
 
+            var idsRegionais =
+                new List<int>();
 
-            var idsRegionais = new List<int>();
-
-            if (pendenciaDto.Regionais != null && pendenciaDto.Regionais.Count > 0)
+            if (
+                pendenciaDto.Regionais != null &&
+                pendenciaDto.Regionais.Count > 0
+            )
             {
-                var regionaisEncontradas = await _context.Regionais
-                    .Where(r => pendenciaDto.Regionais.Contains(r.Codigo))
-                    .ToListAsync();
+                var regionaisEncontradas =
+                    await _context.Regionais
+                        .Where(
+                            r =>
+                                pendenciaDto.Regionais
+                                    .Contains(r.Codigo)
+                        )
+                        .ToListAsync();
 
-                idsRegionais = regionaisEncontradas
-                    .Select(r => r.IdRegional)
-                    .ToList();
+                idsRegionais =
+                    regionaisEncontradas
+                        .Select(r => r.IdRegional)
+                        .ToList();
             }
 
-            processoExistente.Pendencias.Add(novaPendencia);
-
-            vinculosRegionaisPendentes.Add((
-                novaPendencia,
-                idsRegionais
-            ));
+            vinculosRegionaisPendentes.Add(
+                (
+                    pendenciaDestino,
+                    idsRegionais
+                )
+            );
         }
 
+        // Aqui:
+        // - UPDATE nas pendências existentes
+        // - INSERT somente nas novas
+        // - gera ID das novas antes dos vínculos regionais
         await _context.SaveChangesAsync();
 
-        foreach (var item in vinculosRegionaisPendentes)
+        foreach (
+            var item
+            in vinculosRegionaisPendentes
+        )
         {
-            foreach (var regionalId in item.RegionalIds)
+            foreach (
+                var regionalId
+                in item.RegionalIds
+            )
             {
-                _context.PendenciasRegionais.Add(new PendenciaRegional
-                {
-                    PendenciaId = item.Pendencia.Id,
-                    RegionalId = regionalId
-                });
+                _context.PendenciasRegionais.Add(
+                    new PendenciaRegional
+                    {
+                        PendenciaId =
+                            item.Pendencia.Id,
+
+                        RegionalId =
+                            regionalId
+                    }
+                );
             }
         }
 

@@ -4502,6 +4502,23 @@ function configurarBotoes() {
                                     []
                                 );
 
+                        console.log(
+                            "PENDENCIA DEBUG:",
+                            {
+                                indice: pendenciaIndex,
+
+                                idInput:
+                                    card
+                                        .querySelector(
+                                            ".pendencia-id"
+                                        )
+                                        ?.value,
+
+                                idOriginal:
+                                    pendenciaOriginal.id
+                            }
+                        );
+
 
                         return {
 
@@ -4715,11 +4732,12 @@ function configurarBotoes() {
                     null
             };
 
-
             console.log(
-                "Payload atualização processo:",
-                payload
+                "PENDENCIAS QUE SERIAM ENVIADAS:",
+                payload.pendencias
             );
+
+
 
 
             // ==========================================

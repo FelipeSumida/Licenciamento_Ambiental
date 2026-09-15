@@ -2651,6 +2651,10 @@ function configurarBotoes() {
 
                 pendencias.push({
 
+                    id: Number(
+                        card.querySelector(".pendencia-id")?.value ?? 0
+                    ),
+
                     descricao:
                         card
                             .querySelector(

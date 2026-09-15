@@ -2608,3 +2608,78 @@ a {
 .km-intervalo-aviso[hidden] {
     display: none;
 }
+
+/* Processos: tabela com rolagem e botões sempre visíveis */
+.pagina-processos .main-content {
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    box-sizing: border-box;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.pagina-processos .page-header,
+.pagina-processos .filters-card,
+.pagina-processos .table-footer {
+    flex-shrink: 0;
+}
+
+.pagina-processos .table-card {
+    flex: 1;
+    min-height: 0;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.pagina-processos .table-container {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+}
+
+.pagina-processos .process-table th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: #fafcfb;
+}
+
+/* Mantém o conteúdo acessível em telas pequenas ou com zoom */
+@media (max-width: 850px), (max-height: 600px) {
+    .pagina-processos .main-content {
+        height: auto;
+        min-height: 100dvh;
+    }
+
+    .pagina-processos .table-card {
+        flex: none;
+    }
+
+    .pagina-processos .table-container {
+        flex: none;
+        max-height: 50dvh;
+    }
+
+    .pagina-processos .table-footer {
+        position: sticky;
+        bottom: 0;
+        z-index: 3;
+        background: var(--fundo);
+        padding: 12px 0;
+    }
+}
+
+/* Aparência dos botões desabilitados */
+button.button-secondary:disabled,
+button.button-secondary:disabled:hover {
+    background: #ecefee;
+    color: #8a928e;
+    border: 1px dashed #bdc5c0;
+    box-shadow: none;
+    transform: none;
+    cursor: not-allowed;
+    opacity: 0.65;
+}

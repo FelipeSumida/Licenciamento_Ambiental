@@ -9,7 +9,7 @@
         <link rel="stylesheet" href="./css/styles.css">
     </head>
 
-    <body>
+    <body class="pagina-acompanhamentos">
 
         <div class="app">
 
@@ -131,11 +131,43 @@
                         </div>
 
                         <div class="filter-group">
-                            <label for="filtroTecnico">Técnico responsável</label>
+                            <label for="botaoFiltroTecnico">
+                                Técnico responsável
+                            </label>
 
-                            <select id="filtroTecnico">
-                                <option value="">Todos os técnicos</option>
-                            </select>
+                            <div class="regionais-multiselect tecnicos-multiselect">
+
+                                <button
+                                    id="botaoFiltroTecnico"
+                                    type="button"
+                                    class="regionais-trigger tecnicos-trigger"
+                                    aria-expanded="false"
+                                >
+                                    <span class="tecnicos-trigger-text">
+                                        Todos os técnicos
+                                    </span>
+
+                                    <span class="regionais-trigger-seta">
+                                        ▾
+                                    </span>
+                                </button>
+
+                                <div
+                                    class="regionais-dropdown tecnicos-dropdown"
+                                    hidden
+                                >
+                                    <div class="regionais-opcoes tecnicos-opcoes">
+                                    </div>
+                                </div>
+
+                                <select
+                                    id="filtroTecnico"
+                                    aria-label="Técnico responsável"
+                                    multiple
+                                    hidden
+                                ></select>
+
+                            </div>
                         </div>
 
                         <div class="filter-group">
@@ -230,6 +262,8 @@
                             type="button"
                             id="btnExportar"
                             class="button-secondary"
+                            disabled
+                            title="Exportação em desenvolvimento"
                         >
                             ↓ Exportar Processos (.csv)
                         </button>
