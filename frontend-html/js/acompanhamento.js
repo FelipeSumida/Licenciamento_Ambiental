@@ -226,6 +226,7 @@ function renderizarPendencias(pendencias) {
             "pendencia-card pendencia-card-visual";
 
 
+
         const historicos =
             Array.isArray(pendencia.historicos)
                 ? pendencia.historicos

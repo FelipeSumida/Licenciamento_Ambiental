@@ -113,7 +113,8 @@ function renderizarProcesso(processo) {
 
 
     renderizarPendencias(
-        processo.pendencias ?? []
+        processo.pendencias ?? [],
+        processo.trechos ?? []
     );
 
     renderizarPrazos(
@@ -477,7 +478,7 @@ function renderizarTrechos(trechos) {
 }
 
 
-function renderizarPendencias(pendencias) {
+function renderizarPendencias(pendencias, trechos = []) {
 
     const container =
         document.getElementById("listaPendencias");
@@ -534,6 +535,13 @@ function renderizarPendencias(pendencias) {
                     ? "pendencia-badge-atendida"
                     : "pendencia-badge-neutra";
 
+        const faseVinculada =
+            obterFaseVinculadaTexto(
+                pendencia.faseTrechoId ??
+                pendencia.faseVinculadaRef,
+                trechos
+            );
+
 
         bloco.innerHTML = `
 
@@ -579,6 +587,18 @@ function renderizarPendencias(pendencias) {
                         ${escapeHtml(
                             pendencia.divisaoCap || "—"
                         )}
+                    </strong>
+
+                </div>
+
+                <div class="pendencia-info-item">
+
+                    <span class="detail-label">
+                        FASE VINCULADA
+                    </span>
+
+                    <strong>
+                        ${escapeHtml(faseVinculada)}
                     </strong>
 
                 </div>
@@ -717,6 +737,52 @@ function renderizarPendencias(pendencias) {
 
     });
 
+}
+
+function obterFaseVinculadaTexto(
+    faseTrechoId,
+    trechos
+) {
+
+    if (!faseTrechoId) {
+        return "—";
+    }
+
+
+    for (
+        let trechoIndex = 0;
+        trechoIndex < trechos.length;
+        trechoIndex++
+    ) {
+
+        const trecho =
+            trechos[trechoIndex];
+
+        const fases =
+            trecho.fases ?? [];
+
+
+        const faseEncontrada =
+            fases.find(
+                fase =>
+                    Number(fase.id) ===
+                    Number(faseTrechoId)
+            );
+
+
+        if (faseEncontrada) {
+
+            return (
+                `Trecho ${trechoIndex + 1} - ` +
+                `${faseEncontrada.fase || "—"}`
+            );
+
+        }
+
+    }
+
+
+    return "—";
 }
 
 function renderizarHistoricoProcesso(processo) {
