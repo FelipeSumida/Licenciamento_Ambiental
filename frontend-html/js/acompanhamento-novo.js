@@ -222,6 +222,8 @@ function renderizarTrechosEdicao(trechos) {
                                 value="${escapeHtml(
                                     trecho.rodovia?.rodCodigo ?? ""
                                 )}"
+                                data-km-inicial="${trecho.rodovia?.rodKmInicial ?? ""}"
+                                data-km-final="${trecho.rodovia?.rodKmFinal ?? ""}"
                                 autocomplete="off"
                                 placeholder="Digite o código..."
                             >
@@ -267,6 +269,11 @@ function renderizarTrechosEdicao(trechos) {
 
                     </div>
 
+                    <div
+                        class="km-intervalo-aviso"
+                        hidden
+                    ></div>
+
                 </div>
 
                 <button
@@ -287,6 +294,167 @@ function renderizarTrechosEdicao(trechos) {
     );
 
     configurarBuscaRodovias();
+    configurarValidacaoKmTrechos();
+
+}
+
+function configurarValidacaoKmTrechos() {
+
+    document
+        .querySelectorAll(".edit-trecho-card")
+        .forEach((card) => {
+
+            const rodovia =
+                card.querySelector(
+                    ".trecho-rodovia"
+                );
+
+            const kmInicialInput =
+                card.querySelector(
+                    ".trecho-km-inicial"
+                );
+
+            const kmFinalInput =
+                card.querySelector(
+                    ".trecho-km-final"
+                );
+
+            const aviso =
+                card.querySelector(
+                    ".km-intervalo-aviso"
+                );
+
+
+            if (
+                !rodovia ||
+                !kmInicialInput ||
+                !kmFinalInput ||
+                !aviso
+            ) {
+                return;
+            }
+
+
+            if (
+                rodovia.dataset
+                    .validacaoKmConfigurada ===
+                "true"
+            ) {
+                return;
+            }
+
+
+            rodovia.dataset
+                .validacaoKmConfigurada =
+                "true";
+
+
+            function validar() {
+
+                const limiteInicialValor =
+                    rodovia.dataset.kmInicial;
+
+                const limiteFinalValor =
+                    rodovia.dataset.kmFinal;
+
+
+                if (
+                    limiteInicialValor === undefined ||
+                    limiteInicialValor === "" ||
+                    limiteFinalValor === undefined ||
+                    limiteFinalValor === ""
+                ) {
+
+                    aviso.hidden = true;
+                    aviso.textContent = "";
+
+                    return;
+                }
+
+
+                const limiteInicial =
+                    Number(limiteInicialValor);
+
+                const limiteFinal =
+                    Number(limiteFinalValor);
+
+
+                if (
+                    Number.isNaN(limiteInicial) ||
+                    Number.isNaN(limiteFinal)
+                ) {
+
+                    aviso.hidden = true;
+                    aviso.textContent = "";
+
+                    return;
+                }
+
+
+                const kmInicial =
+                    kmInicialInput.value === ""
+                        ? null
+                        : Number(
+                            kmInicialInput.value
+                        );
+
+                const kmFinal =
+                    kmFinalInput.value === ""
+                        ? null
+                        : Number(
+                            kmFinalInput.value
+                        );
+
+
+                const foraInicial =
+                    kmInicial !== null &&
+                    (
+                        kmInicial < limiteInicial ||
+                        kmInicial > limiteFinal
+                    );
+
+                const foraFinal =
+                    kmFinal !== null &&
+                    (
+                        kmFinal < limiteInicial ||
+                        kmFinal > limiteFinal
+                    );
+
+
+                if (
+                    !foraInicial &&
+                    !foraFinal
+                ) {
+
+                    aviso.hidden = true;
+                    aviso.textContent = "";
+
+                    return;
+                }
+
+
+                aviso.textContent =
+                    `⚠ Atenção: o intervalo permitido desta rodovia é de KM ${limiteInicial} até KM ${limiteFinal}.`;
+
+                aviso.hidden = false;
+
+            }
+
+
+            kmInicialInput.addEventListener(
+                "input",
+                validar
+            );
+
+            kmFinalInput.addEventListener(
+                "input",
+                validar
+            );
+
+
+            validar();
+
+        });
 
 }
 
@@ -359,7 +527,45 @@ function configurarBuscaRodovias() {
                         rodovia.rodId ?? 0
                     );
 
+
+                inputRodovia.dataset.kmInicial =
+                    rodovia.kmInicial ?? "";
+
+                inputRodovia.dataset.kmFinal =
+                    rodovia.kmFinal ?? "";
+
+
                 fecharResultados();
+
+
+                const kmInicialInput =
+                    card.querySelector(
+                        ".trecho-km-inicial"
+                    );
+
+                const kmFinalInput =
+                    card.querySelector(
+                        ".trecho-km-final"
+                    );
+
+
+                kmInicialInput?.dispatchEvent(
+                    new Event(
+                        "input",
+                        {
+                            bubbles: true
+                        }
+                    )
+                );
+
+                kmFinalInput?.dispatchEvent(
+                    new Event(
+                        "input",
+                        {
+                            bubbles: true
+                        }
+                    )
+                );
 
             }
 
@@ -369,6 +575,22 @@ function configurarBuscaRodovias() {
                 () => {
 
                     inputRodId.value = "0";
+
+                    delete inputRodovia.dataset.kmInicial;
+                    delete inputRodovia.dataset.kmFinal;
+
+
+                    const avisoKm =
+                        card.querySelector(
+                            ".km-intervalo-aviso"
+                        );
+
+                    if (avisoKm) {
+
+                        avisoKm.hidden = true;
+                        avisoKm.textContent = "";
+
+                    }
 
                     clearTimeout(
                         timerBusca
@@ -1725,6 +1947,17 @@ function atualizarTrechosCadastroPelaTela() {
                     ".trecho-rodovia"
                 )?.value?.trim() ?? "";
 
+            const inputRodovia =
+                card.querySelector(
+                    ".trecho-rodovia"
+                );
+
+            const rodKmInicial =
+                inputRodovia?.dataset.kmInicial ?? "";
+
+            const rodKmFinal =
+                inputRodovia?.dataset.kmFinal ?? "";
+
             const kmInicialValor =
                 card.querySelector(
                     ".trecho-km-inicial"
@@ -1747,7 +1980,9 @@ function atualizarTrechosCadastroPelaTela() {
 
                 rodovia: {
                     rodId,
-                    rodCodigo
+                    rodCodigo,
+                    rodKmInicial,
+                    rodKmFinal
                 },
 
                 kmInicial:
