@@ -54,11 +54,6 @@ a {
     text-decoration: none;
 }
 
-
-/* ========================================
-   ESTRUTURA PRINCIPAL
-======================================== */
-
 .app {
     min-height: 100vh;
 }
@@ -88,11 +83,6 @@ a {
 
     background: var(--fundo);
 }
-
-
-/* ========================================
-   CABEÇALHO DO MENU
-======================================== */
 
 .sidebar-header {
     display: flex;
@@ -142,11 +132,6 @@ a {
 
     stroke-width: 2;
 }
-
-
-/* ========================================
-   NAVEGAÇÃO
-======================================== */
 
 .sidebar-nav {
     display: flex;
@@ -209,11 +194,6 @@ a {
     stroke-linecap: round;
     stroke-linejoin: round;
 }
-
-
-/* ========================================
-   USUÁRIO
-======================================== */
 
 .sidebar-user {
     margin-top: auto;
@@ -288,11 +268,6 @@ a {
     background: rgba(255, 255, 255, 0.18);
 }
 
-
-/* ========================================
-   CABEÇALHO DA PÁGINA
-======================================== */
-
 .page-header {
     display: flex;
     align-items: flex-start;
@@ -319,11 +294,6 @@ a {
 
     object-fit: contain;
 }
-
-
-/* ========================================
-   DASHBOARD
-======================================== */
 
 .dashboard-grid {
     display: grid;
@@ -380,11 +350,6 @@ a {
     color: var(--texto-secundario);
 }
 
-
-/* ========================================
-   RESPONSIVO
-======================================== */
-
 @media (max-width: 900px) {
 
     .dashboard-grid {
@@ -408,10 +373,6 @@ a {
     }
 
 }
-
-/* ========================================
-   FILTROS
-======================================== */
 
 .filters-card {
     margin-bottom: 16px;
@@ -459,11 +420,6 @@ a {
 .filter-group select:focus {
     border-color: #82b894;
 }
-
-
-/* ========================================
-   TABELA
-======================================== */
 
 .table-card {
     overflow: hidden;
@@ -516,11 +472,6 @@ a {
     color: #008b3d;
 }
 
-
-/* ========================================
-   STATUS
-======================================== */
-
 .status-badge {
     display: inline-flex;
     align-items: center;
@@ -553,11 +504,6 @@ a {
     color: #626762;
 }
 
-
-/* ========================================
-   AÇÕES
-======================================== */
-
 .action-button {
     width: 32px;
     height: 32px;
@@ -575,11 +521,6 @@ a {
 .action-button:hover {
     background: #edf4ef;
 }
-
-
-/* ========================================
-   RODAPÉ DA TABELA
-======================================== */
 
 .table-footer {
     display: flex;
@@ -638,11 +579,6 @@ a {
     color: var(--texto-secundario);
 }
 
-
-/* ========================================
-   RESPONSIVO - PROCESSOS
-======================================== */
-
 @media (max-width: 1200px) {
 
     .filters-grid {
@@ -686,10 +622,6 @@ a {
 .process-link:hover {
     text-decoration: underline;
 }
-
-/* ========================================
-   VISUALIZAÇÃO DE PROCESSO
-======================================== */
 
 .back-link {
     display: inline-block;
@@ -845,10 +777,6 @@ a {
 
 }
 
-/* ========================================
-   FORMULÁRIOS
-======================================== */
-
 .form-card {
     margin-bottom: 18px;
     padding: 20px;
@@ -961,10 +889,6 @@ a {
     }
 
 }
-
-/* ========================================
-   EDIÇÃO - TRECHOS E FASES
-======================================== */
 
 .edit-trecho-card {
     margin-top: 16px;
@@ -1827,10 +1751,6 @@ a {
 
 }
 
-/* =========================================
-   FASES COMPLEMENTARES - VISUALIZAÇÃO
-   ========================================= */
-
 .fases-complementares-visual {
     margin-top: 18px;
 }
@@ -2364,10 +2284,6 @@ a {
     margin-top: 10px;
 }
 
-/* =========================================
-   SELECTS PADRÃO DO SISTEMA
-   ========================================= */
-
 .form-field select:not([multiple]),
 .pendencia-edit-card select:not([multiple]),
 .edit-fase-card select:not([multiple]) {
@@ -2421,10 +2337,6 @@ a {
         0 0 0 3px
         rgba(0, 168, 79, 0.10);
 }
-
-/* =========================================
-   SELECT CUSTOMIZADO
-   ========================================= */
 
 .custom-select {
     position: relative;
@@ -2487,9 +2399,6 @@ a {
     transform: rotate(180deg);
 }
 
-
-/* LISTA */
-
 .custom-select-dropdown {
     position: absolute;
 
@@ -2518,9 +2427,6 @@ a {
         0 10px 25px
         rgba(0, 0, 0, 0.10);
 }
-
-
-/* OPÇÃO */
 
 .custom-select-option {
     width: 100%;
@@ -2616,7 +2522,6 @@ a {
     display: none;
 }
 
-/* Processos: tabela com rolagem e botões sempre visíveis */
 .pagina-processos .main-content {
     height: 100vh;
     height: 100dvh;
@@ -2654,7 +2559,6 @@ a {
     background: #fafcfb;
 }
 
-/* Mantém o conteúdo acessível em telas pequenas ou com zoom */
 @media (max-width: 850px), (max-height: 600px) {
     .pagina-processos .main-content {
         height: auto;
@@ -2679,7 +2583,6 @@ a {
     }
 }
 
-/* Aparência dos botões desabilitados */
 button.button-secondary:disabled,
 button.button-secondary:disabled:hover {
     background: #ecefee;
@@ -2691,9 +2594,6 @@ button.button-secondary:disabled:hover {
     opacity: 0.65;
 }
 
-/* =========================================
-   DADOS DO ACOMPANHAMENTO - VISUALIZAÇÃO
-   ========================================= */
 
 .acompanhamento-texto-simples {
     margin: 0;
