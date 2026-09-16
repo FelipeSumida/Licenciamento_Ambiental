@@ -121,19 +121,26 @@ a {
 }
 
 .brand-icon {
-    width: 34px;
-    height: 34px;
+    width: 36px;
+    height: 36px;
 
     display: flex;
     align-items: center;
     justify-content: center;
 
-    border-radius: 7px;
+    flex-shrink: 0;
 
-    background: #4fb875;
+    background: #4ade80;
+    border-radius: 8px;
 
-    font-size: 23px;
-    color: #0d3321;
+    color: #064e3b;
+}
+
+.brand-icon svg {
+    width: 20px;
+    height: 20px;
+
+    stroke-width: 2;
 }
 
 
@@ -2682,4 +2689,54 @@ button.button-secondary:disabled:hover {
     transform: none;
     cursor: not-allowed;
     opacity: 0.65;
+}
+
+/* =========================================
+   DADOS DO ACOMPANHAMENTO - VISUALIZAÇÃO
+   ========================================= */
+
+.acompanhamento-texto-simples {
+    margin: 0;
+
+    font-size: 14px;
+    line-height: 1.5;
+
+    color: #202923;
+}
+
+
+.tecnicos-visual-lista {
+    display: flex;
+    flex-direction: column;
+
+    gap: 6px;
+
+    margin-top: 1px;
+}
+
+
+.tecnico-visual-item {
+    display: flex;
+    align-items: center;
+
+    gap: 8px;
+
+    width: fit-content;
+
+    font-size: 14px;
+    line-height: 1.4;
+
+    color: #202923;
+}
+
+
+.tecnico-visual-ponto {
+    width: 6px;
+    height: 6px;
+
+    flex-shrink: 0;
+
+    border-radius: 50%;
+
+    background: #169b58;
 }

@@ -87,10 +87,59 @@ function renderizarProcesso(processo) {
         processo.interessado || "—";
 
 
-    document.getElementById(
-        "tecnicoResponsavel"
-    ).textContent =
-        processo.tecnicoResponsavel || "—";
+    const containerTecnicos =
+        document.getElementById(
+            "tecnicoResponsavel"
+        );
+
+
+    const tecnicos =
+        String(
+            processo.tecnicoResponsavel ?? ""
+        )
+            .split(";")
+            .map(
+                tecnico =>
+                    tecnico.trim()
+            )
+            .filter(Boolean);
+
+
+    containerTecnicos.innerHTML = "";
+
+
+    if (tecnicos.length === 0) {
+
+        containerTecnicos.textContent = "—";
+
+    }
+    else {
+
+        tecnicos.forEach(
+            tecnico => {
+
+                const item =
+                    document.createElement("div");
+
+                item.className =
+                    "tecnico-visual-item";
+
+                item.innerHTML = `
+                    <span class="tecnico-visual-ponto"></span>
+
+                    <span>
+                        ${escapeHtml(tecnico)}
+                    </span>
+                `;
+
+                containerTecnicos.appendChild(
+                    item
+                );
+
+            }
+        );
+
+    }
 
 
     const situacao =

@@ -17,7 +17,7 @@
 
                 <div class="sidebar-header">
                     <div class="brand-icon">
-                        <span>⌁</span>
+                        <i data-lucide="leaf"></i>
                     </div>
 
                     <div>
@@ -153,46 +153,102 @@
 
                                 <h2>Dados do acompanhamento</h2>
 
-                                <div class="detail-grid">
+                                <div class="dados-processo-grid">
 
-                                    <div>
-                                        <span class="detail-label">
-                                            TIPO DO EMPREENDIMENTO
-                                        </span>
+                                    <!-- COLUNA ESQUERDA -->
+                                    <div class="dados-processo-coluna-esquerda">
 
-                                        <strong id="empreendimento">
-                                            —
-                                        </strong>
+                                        <div class="dados-processo-info">
+
+                                            <span class="detail-label">
+                                                TIPO DO EMPREENDIMENTO
+                                            </span>
+
+                                            <strong id="empreendimento">
+                                                —
+                                            </strong>
+
+                                        </div>
+
+
+                                        <div class="dados-processo-info">
+
+                                            <span class="detail-label">
+                                                CLASSIFICAÇÃO
+                                            </span>
+
+                                            <strong id="classificacao">
+                                                —
+                                            </strong>
+
+                                        </div>
+
+                                        <div class="dados-processo-info">
+
+                                            <span class="detail-label">
+                                                INTERESSADO
+                                            </span>
+
+                                            <p
+                                                id="interessado"
+                                                class="acompanhamento-texto-simples"
+                                            >
+                                                —
+                                            </p>
+
+                                        </div>
+
+
+                                        <div class="dados-processo-info">
+
+                                            <span class="detail-label">
+                                                TÉCNICO RESPONSÁVEL
+                                            </span>
+
+                                            <div
+                                                id="tecnicoResponsavel"
+                                                class="tecnicos-visual-lista"
+                                            >
+                                                —
+                                            </div>
+
+                                        </div>
+
                                     </div>
 
-                                    <div>
-                                        <span class="detail-label">
-                                            CLASSIFICAÇÃO
-                                        </span>
 
-                                        <strong id="classificacao">
-                                            —
-                                        </strong>
-                                    </div>
+                                    <!-- COLUNA DIREITA -->
+                                    <div class="dados-processo-coluna-direita">
 
-                                    <div>
-                                        <span class="detail-label">
-                                            IDENTIFICAÇÃO DO EMPREENDIMENTO
-                                        </span>
+                                        <div class="dados-processo-campo-texto">
 
-                                        <p id="identificacaoEmpreendimento">
-                                            —
-                                        </p>
-                                    </div>
+                                            <span class="detail-label">
+                                                IDENTIFICAÇÃO DO EMPREENDIMENTO
+                                            </span>
 
-                                    <div>
-                                        <span class="detail-label">
-                                            CARACTERIZAÇÃO DO EMPREENDIMENTO
-                                        </span>
+                                            <textarea
+                                                id="identificacaoEmpreendimento"
+                                                class="dados-processo-texto-scroll"
+                                                readonly
+                                            ></textarea>
 
-                                        <p id="caracterizacaoEmpreendimento">
-                                            —
-                                        </p>
+                                        </div>
+
+
+                                        <div class="dados-processo-campo-texto">
+
+                                            <span class="detail-label">
+                                                CARACTERIZAÇÃO DO EMPREENDIMENTO
+                                            </span>
+
+                                            <textarea
+                                                id="caracterizacaoEmpreendimento"
+                                                class="dados-processo-texto-scroll"
+                                                readonly
+                                            ></textarea>
+
+                                        </div>
+
                                     </div>
 
                                 </div>
