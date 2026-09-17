@@ -170,16 +170,20 @@ public class ProcessosController : ControllerBase
     {
         var trechos = await (
             from t in _context.SirgeoTrechos
+
             join m in _context.Municipios
                 on t.mun_ibge_id equals m.mun_ibge_id
+
             join r in _context.Regionais
                 on m.id_regional equals r.IdRegional
+
             where
                 t.rod_id == rodId &&
                 t.rtr_km_final >= kmInicial &&
-                t.rtr_km_inicial <= kmFinal &&
-                t.rtr_denominacao != null
+                t.rtr_km_inicial <= kmFinal
+
             orderby t.rtr_km_inicial
+
             select new
             {
                 t.rtr_id,

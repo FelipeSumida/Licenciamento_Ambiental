@@ -64,6 +64,11 @@ function renderizarProcesso(processo) {
     ).textContent =
         processo.idEmpreendimento ?? "Sem número";
 
+    document.getElementById(
+        "pdfNumeroProcesso"
+    ).textContent =
+        processo.idEmpreendimento ?? "Sem número";
+
 
     document.getElementById(
         "empreendimento"
@@ -267,6 +272,52 @@ function renderizarTrechos(trechos) {
                             trecho.kmFinal ?? "—"
                         )}
                     </strong>
+                </div>
+
+            </div>
+
+            <div class="trecho-sirgeo-info">
+
+                <div class="trecho-denominacao">
+
+                    <span class="detail-label">
+                        DENOMINAÇÃO
+                    </span>
+
+                    <p class="trecho-denominacao-valor">
+                        Carregando...
+                    </p>
+
+                </div>
+
+
+                <div class="trecho-sirgeo-grid">
+
+                    <div class="trecho-sirgeo-box">
+
+                        <span class="detail-label">
+                            MUNICÍPIO
+                        </span>
+
+                        <div class="trecho-municipios">
+                            Carregando...
+                        </div>
+
+                    </div>
+
+
+                    <div class="trecho-sirgeo-box">
+
+                        <span class="detail-label">
+                            REGIONAL
+                        </span>
+
+                        <div class="trecho-regionais">
+                            Carregando...
+                        </div>
+
+                    </div>
+
                 </div>
 
             </div>
@@ -518,10 +569,196 @@ function renderizarTrechos(trechos) {
 
         container.appendChild(bloco);
 
+        carregarDadosSirgeoTrecho(
+            trecho,
+            bloco
+        );
+
     });
 
     if (window.lucide) {
         lucide.createIcons();
+    }
+
+}
+
+async function carregarDadosSirgeoTrecho(
+    trecho,
+    bloco
+) {
+
+    const rodId =
+        trecho.rodId ??
+        trecho.rodovia?.rodId;
+
+
+    const area =
+        bloco.querySelector(
+            ".trecho-sirgeo-info"
+        );
+
+
+    if (
+        !area ||
+        !rodId ||
+        trecho.kmInicial == null ||
+        trecho.kmFinal == null
+    ) {
+
+        if (area) {
+            area.hidden = true;
+        }
+
+        return;
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/processos/rodovias/${rodId}/denominacoes` +
+                `?kmInicial=${encodeURIComponent(trecho.kmInicial)}` +
+                `&kmFinal=${encodeURIComponent(trecho.kmFinal)}`
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                `Erro HTTP ${response.status}`
+            );
+
+        }
+
+
+        const dados =
+            await response.json();
+
+
+        const denominacoes =
+            [
+                ...new Set(
+                    dados
+                        .map(
+                            item =>
+                                item.denominacao
+                                    ?.trim()
+                        )
+                        .filter(Boolean)
+                )
+            ];
+
+
+        const municipios =
+            [
+                ...new Set(
+                    dados
+                        .map(
+                            item =>
+                                item.municipio
+                                    ?.trim()
+                        )
+                        .filter(Boolean)
+                )
+            ];
+
+
+        const regionais =
+            [
+                ...new Set(
+                    dados
+                        .filter(
+                            item =>
+                                item.codigoRegional &&
+                                item.regional
+                        )
+                        .map(
+                            item =>
+                                `${item.codigoRegional} - ${item.regional}`
+                        )
+                )
+            ];
+
+
+        const denominacaoElemento =
+            bloco.querySelector(
+                ".trecho-denominacao-valor"
+            );
+
+        const municipiosElemento =
+            bloco.querySelector(
+                ".trecho-municipios"
+            );
+
+        const regionaisElemento =
+            bloco.querySelector(
+                ".trecho-regionais"
+            );
+
+
+        denominacaoElemento.textContent =
+            denominacoes.length > 0
+                ? denominacoes.join(" · ")
+                : "—";
+
+
+        municipiosElemento.textContent =
+            municipios.length > 0
+                ? municipios.join(" · ")
+                : "—";
+
+
+        regionaisElemento.innerHTML =
+            regionais.length > 0
+                ? regionais
+                    .map(
+                        regional => `
+                            <div>
+                                ${escapeHtml(regional)}
+                            </div>
+                        `
+                    )
+                    .join("")
+                : "—";
+
+    }
+    catch (error) {
+
+        console.error(
+            "Erro ao carregar dados SIRGEO do trecho:",
+            error
+        );
+
+
+        const denominacaoElemento =
+            bloco.querySelector(
+                ".trecho-denominacao-valor"
+            );
+
+        const municipiosElemento =
+            bloco.querySelector(
+                ".trecho-municipios"
+            );
+
+        const regionaisElemento =
+            bloco.querySelector(
+                ".trecho-regionais"
+            );
+
+
+        if (denominacaoElemento) {
+            denominacaoElemento.textContent = "—";
+        }
+
+        if (municipiosElemento) {
+            municipiosElemento.textContent = "—";
+        }
+
+        if (regionaisElemento) {
+            regionaisElemento.textContent = "—";
+        }
+
     }
 
 }
@@ -968,7 +1205,69 @@ function configurarBotoes(processo) {
         .getElementById("btnPdf")
         .addEventListener("click", () => {
 
+            const tituloAnterior =
+                document.title;
+
+            const numeroProcesso =
+                processo.idEmpreendimento ||
+                "processo";
+
+            document.title =
+                `Processo_${numeroProcesso}_Licenciamento_Ambiental`;
+
+            const dataGeracao =
+                document.getElementById(
+                    "pdfDataGeracao"
+                );
+
+            if (dataGeracao) {
+
+                dataGeracao.textContent =
+                    new Date().toLocaleDateString(
+                        "pt-BR"
+                    );
+
+            }
+
+            const textareas =
+                document.querySelectorAll(
+                    ".dados-processo-texto-scroll"
+                );
+
+
+            textareas.forEach(
+                (textarea) => {
+
+                    textarea.dataset.alturaAnterior =
+                        textarea.style.height;
+
+                    textarea.style.height =
+                        "auto";
+
+                    textarea.style.height =
+                        `${textarea.scrollHeight}px`;
+
+                }
+            );
+
             window.print();
+
+            textareas.forEach(
+                (textarea) => {
+
+                    textarea.style.height =
+                        textarea.dataset
+                            .alturaAnterior || "";
+
+                    delete textarea.dataset
+                        .alturaAnterior;
+
+                }
+            );
+
+
+            document.title =
+                tituloAnterior;
 
         });
 
