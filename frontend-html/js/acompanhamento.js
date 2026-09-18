@@ -182,6 +182,10 @@ function renderizarProcesso(processo) {
 
     renderizarHistoricoProcesso(processo);
 
+    renderizarHistoricoAlteracoes(
+        processo.historicosAlteracoes ?? []
+    );
+
 
     configurarBotoes(processo);
 
@@ -864,6 +868,187 @@ function renderizarHistoricoProcesso(processo) {
     `;
 }
 
+function formatarValorAlteracao(valor) {
+
+    if (!valor || valor === "—") {
+        return `<span class="alteracao-vazio">—</span>`;
+    }
+
+    const itens = String(valor)
+        .split(";")
+        .map(item => item.trim())
+        .filter(Boolean);
+
+    if (itens.length === 0) {
+        return `<span class="alteracao-vazio">—</span>`;
+    }
+
+    return `
+        <div class="alteracao-lista">
+            ${itens.map(item => `
+                <span class="alteracao-lista-item">
+                    <span class="alteracao-bolinha"></span>
+                    <span>${item}</span>
+                </span>
+            `).join("")}
+        </div>
+    `;
+}
+
+function renderizarHistoricoAlteracoes(historicos) {
+
+    const container =
+        document.getElementById(
+            "historicoAlteracoes"
+        );
+
+    const contador =
+        document.getElementById(
+            "historicoAlteracoesContador"
+        );
+
+
+    if (!container) {
+        return;
+    }
+
+
+    container.innerHTML = "";
+
+
+    if (contador) {
+
+        contador.textContent =
+            historicos.length > 0
+                ? `${historicos.length} ${
+                    historicos.length === 1
+                        ? "registro"
+                        : "registros"
+                }`
+                : "";
+
+    }
+
+
+    if (historicos.length === 0) {
+
+        container.innerHTML = `
+            <p class="muted-text">
+                Nenhuma alteração registrada.
+            </p>
+        `;
+
+        return;
+    }
+
+
+    const ordenados =
+        [...historicos].sort(
+            (a, b) =>
+                new Date(b.dataHora) -
+                new Date(a.dataHora)
+        );
+
+
+    ordenados.forEach((historico) => {
+
+        const bloco =
+            document.createElement("div");
+
+        bloco.className =
+            "alteracao-item";
+
+
+        const anterior =
+            historico.valorAnterior ||
+            "—";
+
+        const novo =
+            historico.valorNovo ||
+            "—";
+
+
+        bloco.innerHTML = `
+
+            <div class="alteracao-linha-principal">
+
+                <div class="alteracao-identificacao">
+
+                    <strong class="alteracao-campo">
+                        ${escapeHtml(
+                            historico.campo ||
+                            "Alteração"
+                        )}
+                    </strong>
+
+                    <span class="alteracao-operacao">
+                        ${escapeHtml(
+                            historico.operacao ||
+                            "Alteração"
+                        )}
+                    </span>
+
+                </div>
+
+
+                <span class="alteracao-data">
+                    ${
+                        historico.dataHora
+                            ? formatarDataHora(
+                                historico.dataHora
+                            )
+                            : "—"
+                    }
+                </span>
+
+            </div>
+
+
+            <div class="alteracao-linha-valores">
+
+                <div class="alteracao-valor">
+
+                    ${
+                        historico.campo === "Técnico responsável"
+                            ? formatarValorAlteracao(anterior)
+                            : `<span class="alteracao-texto-anterior">
+                                ${escapeHtml(anterior)}
+                            </span>`
+                    }
+
+                    <span class="alteracao-seta">
+                        →
+                    </span>
+
+                    ${
+                        historico.campo === "Técnico responsável"
+                            ? formatarValorAlteracao(novo)
+                            : `<span class="alteracao-texto-novo">
+                                ${escapeHtml(novo)}
+                            </span>`
+                    }
+
+                </div>
+
+
+                <span class="alteracao-usuario">
+                    ${escapeHtml(
+                        historico.usuario ||
+                        "—"
+                    )}
+                </span>
+
+            </div>
+
+        `;
+
+
+        container.appendChild(bloco);
+
+    });
+
+}
+
 
 function configurarBotoes(processo) {
 
@@ -1017,6 +1202,24 @@ function formatarData(valor) {
     const dia = correspondencia[3];
 
     return `${dia}/${mes}/${ano}`;
+}
+
+function formatarDataHora(valor) {
+
+    if (!valor) {
+        return "—";
+    }
+
+    const data =
+        new Date(valor);
+
+    if (Number.isNaN(data.getTime())) {
+        return "—";
+    }
+
+    return data.toLocaleString(
+        "pt-BR"
+    );
 }
 
 

@@ -3289,6 +3289,826 @@ function configurarSelectsCustomizados() {
 
 }
 
+function validarFormularioNovoProcesso() {
+
+    function erro(mensagem, elemento) {
+
+        alert(mensagem);
+
+        elemento?.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+        });
+
+        elemento?.focus();
+
+        return false;
+    }
+
+
+    const empreendimento =
+        document.getElementById("empreendimento");
+
+    const identificacao =
+        document.getElementById(
+            "identificacaoEmpreendimento"
+        );
+
+    const caracterizacao =
+        document.getElementById(
+            "caracterizacaoEmpreendimento"
+        );
+
+    const interessado =
+        document.getElementById("interessado");
+
+
+    if (!empreendimento?.value?.trim()) {
+
+        return erro(
+            "Selecione o Tipo do empreendimento.",
+            empreendimento
+        );
+    }
+
+
+    if (!identificacao?.value?.trim()) {
+
+        return erro(
+            "Preencha a Identificação do Empreendimento.",
+            identificacao
+        );
+    }
+
+
+    if (!caracterizacao?.value?.trim()) {
+
+        return erro(
+            "Preencha a Caracterização do Empreendimento.",
+            caracterizacao
+        );
+    }
+
+
+    if (!interessado?.value?.trim()) {
+
+        return erro(
+            "Preencha o Interessado.",
+            interessado
+        );
+    }
+
+
+    const tecnicos =
+        Array.from(
+            document.querySelectorAll(
+                ".tecnico-responsavel"
+            )
+        )
+        .map(input => input.value.trim())
+        .filter(Boolean);
+
+
+    if (tecnicos.length === 0) {
+
+        const primeiroTecnico =
+            document.querySelector(
+                ".tecnico-responsavel"
+            );
+
+        return erro(
+            "Adicione pelo menos um Técnico Responsável.",
+            primeiroTecnico
+        );
+    }
+
+
+    const cardsTrechos =
+        Array.from(
+            document.querySelectorAll(
+                ".edit-trecho-card"
+            )
+        );
+
+
+    if (cardsTrechos.length === 0) {
+
+        alert(
+            "Adicione pelo menos um trecho ao processo."
+        );
+
+        return false;
+    }
+
+
+    for (
+        let trechoIndex = 0;
+        trechoIndex < cardsTrechos.length;
+        trechoIndex++
+    ) {
+
+        const card =
+            cardsTrechos[trechoIndex];
+
+
+        const rodoviaInput =
+            card.querySelector(
+                ".trecho-rodovia"
+            );
+
+        const rodIdInput =
+            card.querySelector(
+                ".trecho-rod-id"
+            );
+
+        const kmInicialInput =
+            card.querySelector(
+                ".trecho-km-inicial"
+            );
+
+        const kmFinalInput =
+            card.querySelector(
+                ".trecho-km-final"
+            );
+
+
+        const rodovia =
+            rodoviaInput?.value?.trim() ?? "";
+
+        const rodId =
+            Number(
+                rodIdInput?.value ?? 0
+            );
+
+        const kmInicialTexto =
+            kmInicialInput?.value?.trim() ?? "";
+
+        const kmFinalTexto =
+            kmFinalInput?.value?.trim() ?? "";
+
+
+        if (!rodovia || !rodId) {
+
+            return erro(
+                `Trecho ${trechoIndex + 1}: ` +
+                "selecione uma rodovia.",
+                rodoviaInput
+            );
+        }
+
+
+        if (kmInicialTexto === "") {
+
+            return erro(
+                `Trecho ${trechoIndex + 1}: ` +
+                "o KM Inicial é obrigatório.",
+                kmInicialInput
+            );
+        }
+
+
+        if (kmFinalTexto === "") {
+
+            return erro(
+                `Trecho ${trechoIndex + 1}: ` +
+                "o KM Final é obrigatório.",
+                kmFinalInput
+            );
+        }
+
+
+        const kmInicial =
+            Number(kmInicialTexto);
+
+        const kmFinal =
+            Number(kmFinalTexto);
+
+
+        if (
+            !Number.isFinite(kmInicial)
+        ) {
+
+            return erro(
+                `Trecho ${trechoIndex + 1}: ` +
+                "o KM Inicial é inválido.",
+                kmInicialInput
+            );
+        }
+
+
+        if (
+            !Number.isFinite(kmFinal)
+        ) {
+
+            return erro(
+                `Trecho ${trechoIndex + 1}: ` +
+                "o KM Final é inválido.",
+                kmFinalInput
+            );
+        }
+
+
+        if (kmInicial > kmFinal) {
+
+            return erro(
+                `Trecho ${trechoIndex + 1}: ` +
+                "o KM Inicial não pode ser maior que o KM Final.",
+                kmInicialInput
+            );
+        }
+
+
+        const limiteInicial =
+            Number(
+                rodoviaInput?.dataset
+                    ?.kmInicial
+            );
+
+        const limiteFinal =
+            Number(
+                rodoviaInput?.dataset
+                    ?.kmFinal
+            );
+
+
+        if (
+            Number.isFinite(limiteInicial) &&
+            Number.isFinite(limiteFinal)
+        ) {
+
+            if (
+                kmInicial < limiteInicial ||
+                kmInicial > limiteFinal ||
+                kmFinal < limiteInicial ||
+                kmFinal > limiteFinal
+            ) {
+
+                return erro(
+                    `Trecho ${trechoIndex + 1}: ` +
+                    `o intervalo permitido desta rodovia é ` +
+                    `de KM ${limiteInicial} até KM ${limiteFinal}.`,
+                    kmInicialInput
+                );
+            }
+        }
+
+
+        const cardsFases =
+            Array.from(
+                card.querySelectorAll(
+                    ".edit-fase-card"
+                )
+            );
+
+
+        if (cardsFases.length === 0) {
+
+            alert(
+                `Trecho ${trechoIndex + 1}: ` +
+                "adicione pelo menos uma fase."
+            );
+
+            return false;
+        }
+
+
+        for (
+            let faseIndex = 0;
+            faseIndex < cardsFases.length;
+            faseIndex++
+        ) {
+
+            const faseCard =
+                cardsFases[faseIndex];
+
+
+            const faseInput =
+                faseCard.querySelector(
+                    ".fase-tipo, .fase-fase"
+                );
+
+            const numeroProcessoInput =
+                faseCard.querySelector(
+                    ".fase-numero-processo"
+                );
+
+            const situacaoInput =
+                faseCard.querySelector(
+                    ".fase-status, " +
+                    ".fase-status-fase, " +
+                    ".fase-situacao"
+                );
+
+
+            const fase =
+                faseInput?.value?.trim() ?? "";
+
+            const numeroProcesso =
+                numeroProcessoInput
+                    ?.value
+                    ?.trim() ?? "";
+
+            const situacao =
+                situacaoInput
+                    ?.value
+                    ?.trim() ?? "";
+
+
+            if (!fase) {
+
+                return erro(
+                    `Trecho ${trechoIndex + 1}, ` +
+                    `Fase ${faseIndex + 1}: ` +
+                    "selecione a fase.",
+                    faseInput
+                );
+            }
+
+
+            if (!numeroProcesso) {
+
+                return erro(
+                    `Trecho ${trechoIndex + 1}, ` +
+                    `Fase ${faseIndex + 1}: ` +
+                    "informe o Número do processo.",
+                    numeroProcessoInput
+                );
+            }
+
+
+            if (!situacao) {
+
+                return erro(
+                    `Trecho ${trechoIndex + 1}, ` +
+                    `Fase ${faseIndex + 1}: ` +
+                    "selecione a Situação.",
+                    situacaoInput
+                );
+            }
+
+
+            const faseEmitida =
+                situacao.toLowerCase() ===
+                    "emitido" ||
+                situacao.toLowerCase() ===
+                    "emitida";
+
+
+            if (faseEmitida) {
+
+                const numeroFaseInput =
+                    faseCard.querySelector(
+                        ".fase-numero"
+                    );
+
+                const dataEmissaoInput =
+                    faseCard.querySelector(
+                        ".fase-data-emissao"
+                    );
+
+                const dataValidadeInput =
+                    faseCard.querySelector(
+                        ".fase-data-validade"
+                    );
+
+
+                const numeroFase =
+                    numeroFaseInput
+                        ?.value
+                        ?.trim() ?? "";
+
+                const dataEmissao =
+                    dataEmissaoInput
+                        ?.value ?? "";
+
+                const dataValidade =
+                    dataValidadeInput
+                        ?.value ?? "";
+
+
+                if (!numeroFase) {
+
+                    return erro(
+                        `Trecho ${trechoIndex + 1}, ` +
+                        `Fase ${faseIndex + 1}: ` +
+                        "informe o Nº da fase.",
+                        numeroFaseInput
+                    );
+                }
+
+
+                if (!dataEmissao) {
+
+                    return erro(
+                        `Trecho ${trechoIndex + 1}, ` +
+                        `Fase ${faseIndex + 1}: ` +
+                        "informe a Data de emissão.",
+                        dataEmissaoInput
+                    );
+                }
+
+
+                if (!dataValidade) {
+
+                    return erro(
+                        `Trecho ${trechoIndex + 1}, ` +
+                        `Fase ${faseIndex + 1}: ` +
+                        "informe a Data de validade.",
+                        dataValidadeInput
+                    );
+                }
+
+
+                if (
+                    new Date(dataValidade) <
+                    new Date(dataEmissao)
+                ) {
+
+                    return erro(
+                        `Trecho ${trechoIndex + 1}, ` +
+                        `Fase ${faseIndex + 1}: ` +
+                        "a Data de validade não pode ser " +
+                        "anterior à Data de emissão.",
+                        dataValidadeInput
+                    );
+                }
+            }
+        }
+
+
+        const complementares =
+            Array.from(
+                card.querySelectorAll(
+                    ".fase-complementar-item"
+                )
+            );
+
+
+        for (
+            let complementarIndex = 0;
+            complementarIndex < complementares.length;
+            complementarIndex++
+        ) {
+
+            const complementar =
+                complementares[
+                    complementarIndex
+                ];
+
+
+            const faseInput =
+                complementar.querySelector(
+                    ".fase-complementar-tipo"
+                );
+
+            const dataInput =
+                complementar.querySelector(
+                    ".fase-complementar-data"
+                );
+
+
+            if (!faseInput?.value?.trim()) {
+
+                return erro(
+                    `Trecho ${trechoIndex + 1}, ` +
+                    `Fase Complementar ${complementarIndex + 1}: ` +
+                    "selecione a fase.",
+                    faseInput
+                );
+            }
+
+
+            if (!dataInput?.value) {
+
+                return erro(
+                    `Trecho ${trechoIndex + 1}, ` +
+                    `Fase Complementar ${complementarIndex + 1}: ` +
+                    "informe a Data de emissão.",
+                    dataInput
+                );
+            }
+        }
+    }
+
+
+    const cardsPendencias =
+        Array.from(
+            document.querySelectorAll(
+                ".edit-pendencia-card"
+            )
+        );
+
+
+    for (
+        let pendenciaIndex = 0;
+        pendenciaIndex < cardsPendencias.length;
+        pendenciaIndex++
+    ) {
+
+        const card =
+            cardsPendencias[
+                pendenciaIndex
+            ];
+
+
+        const descricaoInput =
+            card.querySelector(
+                ".pendencia-descricao"
+            );
+
+        const divisaoInput =
+            card.querySelector(
+                ".pendencia-divisao"
+            );
+
+        const situacaoInput =
+            card.querySelector(
+                ".pendencia-situacao"
+            );
+
+        const faseVinculadaInput =
+            card.querySelector(
+                ".pendencia-fase-vinculada"
+            );
+
+        const dataEntradaInput =
+            card.querySelector(
+                ".pendencia-data-entrada"
+            );
+
+        const prazoInput =
+            card.querySelector(
+                ".pendencia-prazo"
+            );
+
+        const dataSaidaInput =
+            card.querySelector(
+                ".pendencia-data-saida"
+            );
+
+
+        if (
+            !descricaoInput
+                ?.value
+                ?.trim()
+        ) {
+
+            return erro(
+                `Pendência ${pendenciaIndex + 1}: ` +
+                "preencha a Descrição.",
+                descricaoInput
+            );
+        }
+
+
+        if (!divisaoInput?.value) {
+
+            return erro(
+                `Pendência ${pendenciaIndex + 1}: ` +
+                "selecione a Divisão CAP.",
+                divisaoInput
+            );
+        }
+
+
+        if (
+            faseVinculadaInput &&
+            !faseVinculadaInput.value
+        ) {
+
+            return erro(
+                `Pendência ${pendenciaIndex + 1}: ` +
+                "selecione a Fase vinculada.",
+                faseVinculadaInput
+            );
+        }
+
+
+        if (!dataEntradaInput?.value) {
+
+            return erro(
+                `Pendência ${pendenciaIndex + 1}: ` +
+                "informe a Data de entrada.",
+                dataEntradaInput
+            );
+        }
+
+
+        if (!prazoInput?.value) {
+
+            return erro(
+                `Pendência ${pendenciaIndex + 1}: ` +
+                "informe o Prazo.",
+                prazoInput
+            );
+        }
+
+
+        if (
+            dataEntradaInput?.value &&
+            prazoInput?.value &&
+            new Date(prazoInput.value) <
+            new Date(dataEntradaInput.value)
+        ) {
+
+            return erro(
+                `Pendência ${pendenciaIndex + 1}: ` +
+                "o Prazo não pode ser anterior " +
+                "à Data de entrada.",
+                prazoInput
+            );
+        }
+
+
+        const atribuicoes =
+            Array.from(
+                card.querySelectorAll(
+                    ".atribuicao-checkbox:checked"
+                )
+            );
+
+
+        if (atribuicoes.length === 0) {
+
+            const primeiraAtribuicao =
+                card.querySelector(
+                    ".atribuicao-checkbox"
+                );
+
+            return erro(
+                `Pendência ${pendenciaIndex + 1}: ` +
+                "selecione pelo menos uma opção em Atribuído a.",
+                primeiraAtribuicao
+            );
+        }
+
+
+        const possuiRegional =
+            atribuicoes.some(
+                checkbox =>
+                    checkbox.value ===
+                    "Regional"
+            );
+
+
+        if (possuiRegional) {
+
+            const regionais =
+                card.querySelector(
+                    ".pendencia-regionais"
+                );
+
+
+            if (
+                !regionais ||
+                regionais.selectedOptions
+                    .length === 0
+            ) {
+
+                return erro(
+                    `Pendência ${pendenciaIndex + 1}: ` +
+                    "selecione pelo menos uma Regional.",
+                    regionais
+                );
+            }
+        }
+
+
+        const situacao =
+            situacaoInput?.value ?? "";
+
+
+        if (
+            situacao === "Atendida" &&
+            !dataSaidaInput?.value
+        ) {
+
+            return erro(
+                `Pendência ${pendenciaIndex + 1}: ` +
+                "informe a Data de saída.",
+                dataSaidaInput
+            );
+        }
+
+
+        const historicos =
+            Array.from(
+                card.querySelectorAll(
+                    ".historico-edit-card"
+                )
+            );
+
+
+        for (
+            let historicoIndex = 0;
+            historicoIndex < historicos.length;
+            historicoIndex++
+        ) {
+
+            const historico =
+                historicos[
+                    historicoIndex
+                ];
+
+
+            const dataInput =
+                historico.querySelector(
+                    ".historico-data"
+                );
+
+            const textoInput =
+                historico.querySelector(
+                    ".historico-texto"
+                );
+
+
+            const data =
+                dataInput?.value ?? "";
+
+            const texto =
+                textoInput
+                    ?.value
+                    ?.trim() ?? "";
+
+            if (!data && !texto) {
+                continue;
+            }
+
+
+            if (!data) {
+
+                return erro(
+                    `Pendência ${pendenciaIndex + 1}, ` +
+                    `Histórico ${historicoIndex + 1}: ` +
+                    "informe a Data.",
+                    dataInput
+                );
+            }
+
+
+            if (!texto) {
+
+                return erro(
+                    `Pendência ${pendenciaIndex + 1}, ` +
+                    `Histórico ${historicoIndex + 1}: ` +
+                    "preencha o Histórico.",
+                    textoInput
+                );
+            }
+        }
+    }
+
+    const historicoData =
+        document.getElementById(
+            "historicoProcessoData"
+        );
+
+    const historicoTexto =
+        document.getElementById(
+            "historicoProcessoTexto"
+        );
+
+
+    const temDataHistorico =
+        Boolean(
+            historicoData?.value
+        );
+
+    const temTextoHistorico =
+        Boolean(
+            historicoTexto
+                ?.value
+                ?.trim()
+        );
+
+
+    if (
+        temDataHistorico &&
+        !temTextoHistorico
+    ) {
+
+        return erro(
+            "Preencha a descrição do Histórico do Processo.",
+            historicoTexto
+        );
+    }
+
+
+    if (
+        temTextoHistorico &&
+        !temDataHistorico
+    ) {
+
+        return erro(
+            "Informe a data do Histórico do Processo.",
+            historicoData
+        );
+    }
+
+
+    return true;
+}
+
 
 function configurarBotoes() {
 
@@ -3450,14 +4270,102 @@ function configurarBotoes() {
 
             event.preventDefault();
 
-            // Salva no array tudo que estiver atualmente digitado na tela
+            if (!validarFormularioNovoProcesso()) {
+                return;
+            }
+
+            const TAMANHO_MAXIMO_PDF =
+                20 * 1024 * 1024; // 20 MB
+
+
+            const inputsAnexos =
+                Array.from(
+                    document.querySelectorAll(
+                        ".fase-complementar-anexo"
+                    )
+                );
+
+
+            for (const input of inputsAnexos) {
+
+                const arquivo =
+                    input.files?.[0];
+
+
+                if (!arquivo) {
+                    continue;
+                }
+
+                if (
+                    arquivo.size >
+                    TAMANHO_MAXIMO_PDF
+                ) {
+
+                    const tamanhoMb =
+                        (
+                            arquivo.size /
+                            1024 /
+                            1024
+                        ).toFixed(1);
+
+
+                    alert(
+                        `O arquivo "${arquivo.name}" possui ${tamanhoMb} MB.\n\n` +
+                        "O tamanho máximo permitido é 20 MB."
+                    );
+
+
+                    input.value = "";
+
+
+                    input.scrollIntoView({
+                        behavior: "smooth",
+                        block: "center"
+                    });
+
+
+                    return;
+                }
+
+                const extensaoPdf =
+                    arquivo.name
+                        .toLowerCase()
+                        .endsWith(".pdf");
+
+
+                const tipoPdf =
+                    arquivo.type ===
+                    "application/pdf";
+
+
+                if (
+                    !extensaoPdf ||
+                    !tipoPdf
+                ) {
+
+                    alert(
+                        `O arquivo "${arquivo.name}" não é um PDF válido.\n\n` +
+                        "Selecione um arquivo no formato PDF."
+                    );
+
+
+                    input.value = "";
+
+
+                    input.scrollIntoView({
+                        behavior: "smooth",
+                        block: "center"
+                    });
+
+
+                    return;
+                }
+
+            }
+
             atualizarTrechosCadastroPelaTela();
             atualizarPendenciasCadastroPelaTela();
 
-
-            // ==========================================
-            // FASE ATUAL DO PROCESSO
-            // ==========================================
 
             const primeiraFaseAtual =
                 trechosCadastro
@@ -3473,10 +4381,6 @@ function configurarBotoes() {
                     .find(fase => fase !== null)
                     ?? {};
 
-
-            // ==========================================
-            // PAYLOAD
-            // ==========================================
 
             const payload = {
 

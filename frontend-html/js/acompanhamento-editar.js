@@ -2070,7 +2070,7 @@ function adicionarCampoTecnico(valor = "") {
         document.createElement("button");
 
     botaoRemover.type = "button";
-    botaoRemover.className = "button-secondary";
+    botaoRemover.className = "button-secondary button-danger";
     botaoRemover.textContent = "Remover";
 
     botaoRemover.addEventListener(
@@ -2265,6 +2265,600 @@ function atualizarPendenciasCadastroPelaTela() {
             };
 
         });
+}
+
+function validarFormularioEditarAcompanhamento() {
+
+    function erro(mensagem, elemento) {
+
+        alert(mensagem);
+
+        elemento?.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+        });
+
+        elemento?.focus();
+
+        return false;
+    }
+
+
+    // ==========================================
+    // DADOS PRINCIPAIS
+    // ==========================================
+
+    const empreendimento =
+        document.getElementById("empreendimento");
+
+    const classificacao =
+        document.getElementById("classificacao");
+
+    const interessado =
+        document.getElementById("interessado");
+
+    const identificacao =
+        document.getElementById(
+            "identificacaoEmpreendimento"
+        );
+
+    const caracterizacao =
+        document.getElementById(
+            "caracterizacaoEmpreendimento"
+        );
+
+
+    if (!empreendimento?.value?.trim()) {
+
+        return erro(
+            "Selecione o Tipo do empreendimento.",
+            empreendimento
+        );
+    }
+
+
+    if (!classificacao?.value?.trim()) {
+
+        return erro(
+            "Selecione a Classificação.",
+            classificacao
+        );
+    }
+
+
+    if (!identificacao?.value?.trim()) {
+
+        return erro(
+            "Preencha a Identificação do Empreendimento.",
+            identificacao
+        );
+    }
+
+
+    if (!caracterizacao?.value?.trim()) {
+
+        return erro(
+            "Preencha a Caracterização do Empreendimento.",
+            caracterizacao
+        );
+    }
+
+
+    if (!interessado?.value?.trim()) {
+
+        return erro(
+            "Preencha o Interessado.",
+            interessado
+        );
+    }
+
+
+    // ==========================================
+    // TÉCNICO RESPONSÁVEL
+    // ==========================================
+
+    const tecnicos =
+        Array.from(
+            document.querySelectorAll(
+                ".tecnico-responsavel"
+            )
+        )
+        .map(input => input.value.trim())
+        .filter(Boolean);
+
+
+    if (tecnicos.length === 0) {
+
+        return erro(
+            "Adicione pelo menos um Técnico Responsável.",
+            document.querySelector(
+                ".tecnico-responsavel"
+            )
+        );
+    }
+
+
+    // ==========================================
+    // TRECHOS
+    // ==========================================
+
+    const cardsTrechos =
+        Array.from(
+            document.querySelectorAll(
+                ".edit-trecho-card"
+            )
+        );
+
+
+    if (cardsTrechos.length === 0) {
+
+        alert(
+            "Adicione pelo menos um trecho ao acompanhamento."
+        );
+
+        return false;
+    }
+
+
+    for (
+        let indice = 0;
+        indice < cardsTrechos.length;
+        indice++
+    ) {
+
+        const card =
+            cardsTrechos[indice];
+
+
+        const rodoviaInput =
+            card.querySelector(
+                ".trecho-rodovia"
+            );
+
+        const rodIdInput =
+            card.querySelector(
+                ".trecho-rod-id"
+            );
+
+        const kmInicialInput =
+            card.querySelector(
+                ".trecho-km-inicial"
+            );
+
+        const kmFinalInput =
+            card.querySelector(
+                ".trecho-km-final"
+            );
+
+
+        const rodovia =
+            rodoviaInput?.value?.trim() ?? "";
+
+        const rodId =
+            Number(
+                rodIdInput?.value ?? 0
+            );
+
+        const kmInicialTexto =
+            kmInicialInput?.value?.trim() ?? "";
+
+        const kmFinalTexto =
+            kmFinalInput?.value?.trim() ?? "";
+
+
+        if (!rodovia || !rodId) {
+
+            return erro(
+                `Trecho ${indice + 1}: selecione uma rodovia.`,
+                rodoviaInput
+            );
+        }
+
+
+        if (kmInicialTexto === "") {
+
+            return erro(
+                `Trecho ${indice + 1}: o KM Inicial é obrigatório.`,
+                kmInicialInput
+            );
+        }
+
+
+        if (kmFinalTexto === "") {
+
+            return erro(
+                `Trecho ${indice + 1}: o KM Final é obrigatório.`,
+                kmFinalInput
+            );
+        }
+
+
+        const kmInicial =
+            Number(kmInicialTexto);
+
+        const kmFinal =
+            Number(kmFinalTexto);
+
+
+        if (!Number.isFinite(kmInicial)) {
+
+            return erro(
+                `Trecho ${indice + 1}: o KM Inicial é inválido.`,
+                kmInicialInput
+            );
+        }
+
+
+        if (!Number.isFinite(kmFinal)) {
+
+            return erro(
+                `Trecho ${indice + 1}: o KM Final é inválido.`,
+                kmFinalInput
+            );
+        }
+
+
+        if (kmInicial > kmFinal) {
+
+            return erro(
+                `Trecho ${indice + 1}: ` +
+                "o KM Inicial não pode ser maior que o KM Final.",
+                kmInicialInput
+            );
+        }
+
+
+        // Limites cadastrados da rodovia
+
+        const limiteInicial =
+            Number(
+                rodoviaInput?.dataset
+                    ?.kmInicial
+            );
+
+        const limiteFinal =
+            Number(
+                rodoviaInput?.dataset
+                    ?.kmFinal
+            );
+
+
+        if (
+            Number.isFinite(limiteInicial) &&
+            Number.isFinite(limiteFinal)
+        ) {
+
+            if (
+                kmInicial < limiteInicial ||
+                kmInicial > limiteFinal ||
+                kmFinal < limiteInicial ||
+                kmFinal > limiteFinal
+            ) {
+
+                return erro(
+                    `Trecho ${indice + 1}: ` +
+                    `o intervalo permitido desta rodovia é ` +
+                    `de KM ${limiteInicial} até KM ${limiteFinal}.`,
+                    kmInicialInput
+                );
+            }
+        }
+    }
+
+
+    // ==========================================
+    // PENDÊNCIAS
+    // ==========================================
+
+    const cardsPendencias =
+        Array.from(
+            document.querySelectorAll(
+                ".edit-pendencia-card"
+            )
+        );
+
+
+    for (
+        let indice = 0;
+        indice < cardsPendencias.length;
+        indice++
+    ) {
+
+        const card =
+            cardsPendencias[indice];
+
+
+        const descricaoInput =
+            card.querySelector(
+                ".pendencia-descricao"
+            );
+
+        const divisaoInput =
+            card.querySelector(
+                ".pendencia-divisao"
+            );
+
+        const situacaoInput =
+            card.querySelector(
+                ".pendencia-situacao"
+            );
+
+        const dataEntradaInput =
+            card.querySelector(
+                ".pendencia-data-entrada"
+            );
+
+        const prazoInput =
+            card.querySelector(
+                ".pendencia-prazo"
+            );
+
+        const dataSaidaInput =
+            card.querySelector(
+                ".pendencia-data-saida"
+            );
+
+
+        if (!descricaoInput?.value?.trim()) {
+
+            return erro(
+                `Pendência ${indice + 1}: preencha a Descrição.`,
+                descricaoInput
+            );
+        }
+
+
+        if (!divisaoInput?.value) {
+
+            return erro(
+                `Pendência ${indice + 1}: selecione a Divisão CAP.`,
+                divisaoInput
+            );
+        }
+
+
+        if (!situacaoInput?.value) {
+
+            return erro(
+                `Pendência ${indice + 1}: selecione a Situação.`,
+                situacaoInput
+            );
+        }
+
+
+        if (!dataEntradaInput?.value) {
+
+            return erro(
+                `Pendência ${indice + 1}: informe a Data de entrada.`,
+                dataEntradaInput
+            );
+        }
+
+
+        if (!prazoInput?.value) {
+
+            return erro(
+                `Pendência ${indice + 1}: informe o Prazo.`,
+                prazoInput
+            );
+        }
+
+
+        if (
+            new Date(prazoInput.value) <
+            new Date(dataEntradaInput.value)
+        ) {
+
+            return erro(
+                `Pendência ${indice + 1}: ` +
+                "o Prazo não pode ser anterior à Data de entrada.",
+                prazoInput
+            );
+        }
+
+
+        // ======================================
+        // ATRIBUÍDO A
+        // ======================================
+
+        const atribuicoes =
+            Array.from(
+                card.querySelectorAll(
+                    ".atribuicao-checkbox:checked"
+                )
+            );
+
+
+        if (atribuicoes.length === 0) {
+
+            return erro(
+                `Pendência ${indice + 1}: ` +
+                "selecione pelo menos uma opção em Atribuído a.",
+                card.querySelector(
+                    ".atribuicao-checkbox"
+                )
+            );
+        }
+
+
+        const regionalMarcada =
+            atribuicoes.some(
+                checkbox =>
+                    checkbox.value === "Regional"
+            );
+
+
+        if (regionalMarcada) {
+
+            const regionaisInput =
+                card.querySelector(
+                    ".pendencia-regionais"
+                );
+
+
+            if (
+                !regionaisInput ||
+                regionaisInput
+                    .selectedOptions
+                    .length === 0
+            ) {
+
+                return erro(
+                    `Pendência ${indice + 1}: ` +
+                    "selecione pelo menos uma Regional.",
+                    regionaisInput
+                );
+            }
+        }
+
+
+        // ======================================
+        // PENDÊNCIA ATENDIDA
+        // ======================================
+
+        if (
+            situacaoInput.value === "Atendida" &&
+            !dataSaidaInput?.value
+        ) {
+
+            return erro(
+                `Pendência ${indice + 1}: ` +
+                "informe a Data de saída.",
+                dataSaidaInput
+            );
+        }
+
+
+        if (
+            dataSaidaInput?.value &&
+            dataEntradaInput?.value &&
+            new Date(dataSaidaInput.value) <
+            new Date(dataEntradaInput.value)
+        ) {
+
+            return erro(
+                `Pendência ${indice + 1}: ` +
+                "a Data de saída não pode ser anterior à Data de entrada.",
+                dataSaidaInput
+            );
+        }
+
+
+        // ======================================
+        // HISTÓRICOS DA PENDÊNCIA
+        // ======================================
+
+        const historicos =
+            Array.from(
+                card.querySelectorAll(
+                    ".historico-edit-card"
+                )
+            );
+
+
+        for (
+            let h = 0;
+            h < historicos.length;
+            h++
+        ) {
+
+            const historico =
+                historicos[h];
+
+            const dataInput =
+                historico.querySelector(
+                    ".historico-data"
+                );
+
+            const textoInput =
+                historico.querySelector(
+                    ".historico-texto"
+                );
+
+
+            const data =
+                dataInput?.value ?? "";
+
+            const texto =
+                textoInput?.value?.trim() ?? "";
+
+
+            // Se os dois estiverem vazios,
+            // ignoramos o histórico.
+            if (!data && !texto) {
+                continue;
+            }
+
+
+            if (!data) {
+
+                return erro(
+                    `Pendência ${indice + 1}, ` +
+                    `Histórico ${h + 1}: informe a Data.`,
+                    dataInput
+                );
+            }
+
+
+            if (!texto) {
+
+                return erro(
+                    `Pendência ${indice + 1}, ` +
+                    `Histórico ${h + 1}: preencha o Histórico.`,
+                    textoInput
+                );
+            }
+        }
+    }
+
+
+    // ==========================================
+    // HISTÓRICO DO ACOMPANHAMENTO
+    // ==========================================
+
+    const historicoData =
+        document.getElementById(
+            "historicoProcessoData"
+        );
+
+    const historicoTexto =
+        document.getElementById(
+            "historicoProcessoTexto"
+        );
+
+
+    const temData =
+        Boolean(
+            historicoData?.value
+        );
+
+    const temTexto =
+        Boolean(
+            historicoTexto
+                ?.value
+                ?.trim()
+        );
+
+
+    if (temData && !temTexto) {
+
+        return erro(
+            "Preencha a descrição do Histórico do acompanhamento.",
+            historicoTexto
+        );
+    }
+
+
+    if (temTexto && !temData) {
+
+        return erro(
+            "Informe a data do Histórico do acompanhamento.",
+            historicoData
+        );
+    }
+
+
+    return true;
 }
 
 
@@ -2632,14 +3226,13 @@ function configurarBotoes() {
                 return;
             }
 
-            const classificacao =
-                document.getElementById("classificacao").value.trim();
-
-            if (!classificacao) {
-                alert("Selecione a classificação.");
+            if (!validarFormularioEditarAcompanhamento()) {
                 return;
             }
 
+            const classificacao =
+                document.getElementById("classificacao").value.trim();
+                
             const tecnicosResponsaveis =
                 Array.from(
                     document.querySelectorAll(

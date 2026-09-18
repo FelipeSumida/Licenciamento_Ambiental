@@ -1,6 +1,7 @@
 const API_URL = "http://localhost:5161/api";
 
 let todosProcessos = [];
+let processosExibidos = [];
 
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -481,6 +482,8 @@ function aplicarFiltros() {
 
 
 function renderizarProcessos(processos) {
+
+    processosExibidos = [...processos];
 
     const tbody =
         document.getElementById("processosBody");
@@ -1286,71 +1289,546 @@ function configurarBotoes() {
 }
 
 
-function exportarCSV() {
+async function exportarCSV() {
 
-    const linhas = [
-        [
-            "Número do empreendimento",
-            "Código",
-            "Identificação",
-            "Fase atual",
-            "Divisão CAP",
-            "Técnico",
-            "Situação"
-        ]
-    ];
+    if (processosExibidos.length === 0) {
+
+        alert(
+            "Não há processos exibidos para exportar."
+        );
+
+        return;
+
+    }
 
 
-    todosProcessos.forEach((processo) => {
+    try {
+
+        // ==========================================
+        // BUSCA O DETALHE COMPLETO DOS PROCESSOS
+        // QUE ESTÃO EXIBIDOS APÓS OS FILTROS
+        // ==========================================
+
+        const processosCompletos =
+            await Promise.all(
+
+                processosExibidos.map(
+                    async (processo) => {
+
+                        const response =
+                            await fetch(
+                                `${API_URL}/processos/${processo.id}`
+                            );
+
+
+                        if (!response.ok) {
+
+                            throw new Error(
+                                `Erro ao carregar ${processo.idEmpreendimento}`
+                            );
+
+                        }
+
+
+                        return await response.json();
+
+                    }
+                )
+
+            );
+
+
+        const linhas = [];
+
+
+        // ==========================================
+        // CABEÇALHO
+        // ==========================================
 
         linhas.push([
-            processo.idEmpreendimento ?? "",
-            obterCodigoRodovia(processo),
-            processo.identificacaoEmpreendimento ?? "",
-            obterFaseAtual(processo),
-            obterDivisaoCap(processo),
-            processo.tecnicoResponsavel ?? "",
-            obterSituacao(processo)
+            "Nº Empreendimento",
+            "Tipo de Empreendimento",
+            "Classificação",
+            "Identificação do Empreendimento",
+            "Caracterização do Empreendimento",
+            "Interessado",
+            "Técnico Responsável",
+            "Situação",
+            "Fase Atual",
+            "Histórico do Processo - Data",
+            "Histórico do Processo",
+            "Trechos",
+            "Fases dos Trechos",
+            "Fases Complementares",
+            "Pendências",
+            "Históricos das Pendências",
+            "Histórico de Alterações"
         ]);
 
-    });
+
+        // ==========================================
+        // PROCESSOS
+        // ==========================================
+
+        for (
+            const processo
+            of processosCompletos
+        ) {
+
+            // ======================================
+            // TRECHOS + DADOS SIRGEO
+            // ======================================
+
+            const trechosTexto = [];
 
 
-    const csv =
-        linhas
-            .map((linha) =>
-                linha
-                    .map((valor) =>
-                        `"${String(valor)
-                            .replaceAll('"', '""')}"`
-                    )
-                    .join(";")
-            )
-            .join("\n");
+            for (
+                let trechoIndex = 0;
+                trechoIndex < (processo.trechos ?? []).length;
+                trechoIndex++
+            ) {
+
+                const trecho =
+                    processo.trechos[trechoIndex];
 
 
-    const blob =
-        new Blob(
-            ["\ufeff" + csv],
-            {
-                type: "text/csv;charset=utf-8;"
+                const rodovia =
+                    trecho.rodovia?.rodCodigo ??
+                    "";
+
+
+                let denominacoes = [];
+                let municipios = [];
+                let regionais = [];
+
+
+                if (
+                    trecho.rodId &&
+                    trecho.kmInicial != null &&
+                    trecho.kmFinal != null
+                ) {
+
+                    try {
+
+                        const responseSirgeo =
+                            await fetch(
+                                `${API_URL}/processos/rodovias/${trecho.rodId}/denominacoes` +
+                                `?kmInicial=${encodeURIComponent(trecho.kmInicial)}` +
+                                `&kmFinal=${encodeURIComponent(trecho.kmFinal)}`
+                            );
+
+
+                        if (responseSirgeo.ok) {
+
+                            const dadosSirgeo =
+                                await responseSirgeo.json();
+
+
+                            denominacoes = [
+                                ...new Set(
+                                    dadosSirgeo
+                                        .map(
+                                            item =>
+                                                item.denominacao
+                                                    ?.trim()
+                                        )
+                                        .filter(Boolean)
+                                )
+                            ];
+
+
+                            municipios = [
+                                ...new Set(
+                                    dadosSirgeo
+                                        .map(
+                                            item =>
+                                                item.municipio
+                                                    ?.trim()
+                                        )
+                                        .filter(Boolean)
+                                )
+                            ];
+
+
+                            regionais = [
+                                ...new Set(
+                                    dadosSirgeo
+                                        .filter(
+                                            item =>
+                                                item.codigoRegional &&
+                                                item.regional
+                                        )
+                                        .map(
+                                            item =>
+                                                `${item.codigoRegional} - ${item.regional}`
+                                        )
+                                )
+                            ];
+
+                        }
+
+                    }
+                    catch (error) {
+
+                        console.error(
+                            "Erro ao carregar dados SIRGEO para CSV:",
+                            error
+                        );
+
+                    }
+
+                }
+
+
+                trechosTexto.push(
+                    [
+                        `Trecho ${trechoIndex + 1}`,
+                        `Rodovia: ${rodovia}`,
+                        `KM Inicial: ${trecho.kmInicial ?? ""}`,
+                        `KM Final: ${trecho.kmFinal ?? ""}`,
+                        `Denominação: ${denominacoes.join(" / ")}`,
+                        `Município: ${municipios.join(" / ")}`,
+                        `Regional: ${regionais.join(" / ")}`
+                    ].join(" | ")
+                );
+
             }
+
+
+            // ======================================
+            // FASES DOS TRECHOS
+            // ======================================
+
+            const fasesTexto =
+                (processo.trechos ?? [])
+                    .flatMap(
+                        (trecho, trechoIndex) =>
+
+                            (trecho.fases ?? [])
+                                .map(
+                                    (fase, faseIndex) =>
+
+                                        [
+                                            `Trecho ${trechoIndex + 1}`,
+                                            `Fase ${faseIndex + 1}`,
+                                            `Tipo: ${fase.fase ?? ""}`,
+                                            `Número do Processo: ${fase.numeroProcesso ?? ""}`,
+                                            `Situação: ${fase.statusFase ?? ""}`,
+                                            `Nº: ${fase.numeroFase ?? ""}`,
+                                            `Data de Emissão: ${formatarDataCsv(fase.dataEmissaoFase)}`,
+                                            `Data de Validade: ${formatarDataCsv(fase.dataValidadeFase)}`
+                                        ].join(" | ")
+
+                                )
+
+                    )
+                    .join(" || ");
+
+
+            // ======================================
+            // FASES COMPLEMENTARES
+            // ======================================
+
+            const fasesComplementaresTexto =
+                (processo.trechos ?? [])
+                    .flatMap(
+                        (trecho, trechoIndex) =>
+
+                            (trecho.fasesComplementares ?? [])
+                                .map(
+                                    (fase, faseIndex) =>
+
+                                        [
+                                            `Trecho ${trechoIndex + 1}`,
+                                            `Complementar ${faseIndex + 1}`,
+                                            `Fase: ${fase.fase ?? ""}`,
+                                            `Data de Emissão: ${formatarDataCsv(fase.dataEmissao)}`,
+                                            `Anexo: ${fase.anexoPdf ?? ""}`
+                                        ].join(" | ")
+
+                                )
+
+                    )
+                    .join(" || ");
+
+
+            // ======================================
+            // PENDÊNCIAS
+            // ======================================
+
+            const pendenciasTexto =
+                (processo.pendencias ?? [])
+                    .map(
+                        (pendencia, index) => {
+
+                            const atribuidoA =
+                                Array.isArray(
+                                    pendencia.atribuidoA
+                                )
+                                    ? pendencia.atribuidoA.join(", ")
+                                    : "";
+
+
+                            const regionais =
+                                Array.isArray(
+                                    pendencia.regionais
+                                )
+                                    ? pendencia.regionais.join(", ")
+                                    : "";
+
+
+                            return [
+                                `Pendência ${index + 1}`,
+                                `Descrição: ${pendencia.descricao ?? ""}`,
+                                `Situação: ${pendencia.situacao ?? ""}`,
+                                `Divisão CAP: ${pendencia.divisaoCap ?? ""}`,
+                                `Fase vinculada: ${pendencia.faseVinculadaRef ?? ""}`,
+                                `Atribuído a: ${atribuidoA}`,
+                                `Regionais: ${regionais}`,
+                                `Data de Entrada: ${formatarDataCsv(pendencia.dataEntrada)}`,
+                                `Prazo: ${formatarDataCsv(pendencia.prazo)}`,
+                                `Data de Saída: ${formatarDataCsv(pendencia.dataSaida)}`
+                            ].join(" | ");
+
+                        }
+                    )
+                    .join(" || ");
+
+
+            // ======================================
+            // HISTÓRICOS DAS PENDÊNCIAS
+            // ======================================
+
+            const historicosPendenciasTexto =
+                (processo.pendencias ?? [])
+                    .flatMap(
+                        (pendencia, pendenciaIndex) =>
+
+                            (pendencia.historicos ?? [])
+                                .map(
+                                    (historico, historicoIndex) =>
+
+                                        [
+                                            `Pendência ${pendenciaIndex + 1}`,
+                                            `Histórico ${historicoIndex + 1}`,
+                                            `Data: ${formatarDataCsv(historico.data)}`,
+                                            `Texto: ${historico.texto ?? ""}`
+                                        ].join(" | ")
+
+                                )
+
+                    )
+                    .join(" || ");
+
+
+            // ======================================
+            // HISTÓRICO DE ALTERAÇÕES
+            // ======================================
+
+            const historicoAlteracoesTexto =
+                (processo.historicosAlteracoes ?? [])
+                    .map(
+                        (historico) =>
+
+                            [
+                                `Data: ${formatarDataHoraCsv(historico.dataHora)}`,
+                                `Usuário: ${historico.usuario ?? ""}`,
+                                `Operação: ${historico.operacao ?? ""}`,
+                                `Campo: ${historico.campo ?? ""}`,
+                                `Anterior: ${historico.valorAnterior ?? ""}`,
+                                `Novo: ${historico.valorNovo ?? ""}`
+                            ].join(" | ")
+
+                    )
+                    .join(" || ");
+
+
+            // ======================================
+            // LINHA DO PROCESSO
+            // ======================================
+
+            linhas.push([
+
+                processo.idEmpreendimento ?? "",
+
+                processo.empreendimento ?? "",
+
+                processo.classificacao ?? "",
+
+                processo.identificacaoEmpreendimento ?? "",
+
+                processo.caracterizacaoEmpreendimento ?? "",
+
+                processo.interessado ?? "",
+
+                processo.tecnicoResponsavel ?? "",
+
+                obterSituacao(processo),
+
+                obterFaseAtual(processo),
+
+                formatarDataCsv(
+                    processo.historicoProcessoData
+                ),
+
+                processo.historicoProcessoTexto ?? "",
+
+                trechosTexto.join(" || "),
+
+                fasesTexto,
+
+                fasesComplementaresTexto,
+
+                pendenciasTexto,
+
+                historicosPendenciasTexto,
+
+                historicoAlteracoesTexto
+
+            ]);
+
+        }
+
+
+        // ==========================================
+        // MONTA O CSV
+        // ==========================================
+
+        const csv =
+            linhas
+                .map(
+                    linha =>
+                        linha
+                            .map(
+                                valor =>
+                                    `"${String(valor ?? "")
+                                        .replaceAll('"', '""')}"`
+                            )
+                            .join(";")
+                )
+                .join("\n");
+
+
+        const blob =
+            new Blob(
+                [
+                    "\ufeff" +
+                    csv
+                ],
+                {
+                    type:
+                        "text/csv;charset=utf-8;"
+                }
+            );
+
+
+        const url =
+            URL.createObjectURL(blob);
+
+
+        const link =
+            document.createElement("a");
+
+
+        const data =
+            new Date()
+                .toLocaleDateString("pt-BR")
+                .replaceAll("/", "-");
+
+
+        link.href = url;
+
+        link.download =
+            `Processos_Licenciamento_Ambiental_${data}.csv`;
+
+
+        document.body.appendChild(
+            link
         );
 
 
-    const url =
-        URL.createObjectURL(blob);
-
-    const link =
-        document.createElement("a");
+        link.click();
 
 
-    link.href = url;
-    link.download = "processos.csv";
+        link.remove();
 
-    link.click();
+        URL.revokeObjectURL(url);
 
-    URL.revokeObjectURL(url);
+    }
+    catch (error) {
+
+        console.error(
+            "Erro ao exportar CSV:",
+            error
+        );
+
+
+        alert(
+            "Não foi possível exportar os processos."
+        );
+
+    }
+
+}
+
+function formatarDataCsv(valor) {
+
+    if (!valor) {
+        return "";
+    }
+
+
+    const texto =
+        String(valor);
+
+    const dataIso =
+        texto.substring(0, 10);
+
+
+    const partes =
+        dataIso.split("-");
+
+
+    if (partes.length !== 3) {
+        return texto;
+    }
+
+
+    const [
+        ano,
+        mes,
+        dia
+    ] = partes;
+
+
+    return `${dia}/${mes}/${ano}`;
+
+}
+
+
+function formatarDataHoraCsv(valor) {
+
+    if (!valor) {
+        return "";
+    }
+
+
+    const data =
+        new Date(valor);
+
+
+    if (
+        Number.isNaN(
+            data.getTime()
+        )
+    ) {
+        return "";
+    }
+
+
+    return data.toLocaleString(
+        "pt-BR"
+    );
 
 }
 

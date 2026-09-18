@@ -87,6 +87,116 @@ public class ProcessosController : ControllerBase
         });
     }
 
+    private void RegistrarAlteracaoTecnicos(
+        int processoId,
+        string? valorAnterior,
+        string? valorNovo)
+    {
+        var anteriores =
+            (valorAnterior ?? string.Empty)
+                .Split(
+                    ';',
+                    StringSplitOptions.RemoveEmptyEntries |
+                    StringSplitOptions.TrimEntries
+                )
+                .Where(t => !string.IsNullOrWhiteSpace(t))
+                .ToList();
+
+
+        var novos =
+            (valorNovo ?? string.Empty)
+                .Split(
+                    ';',
+                    StringSplitOptions.RemoveEmptyEntries |
+                    StringSplitOptions.TrimEntries
+                )
+                .Where(t => !string.IsNullOrWhiteSpace(t))
+                .ToList();
+
+
+        var adicionados =
+            novos
+                .Where(n =>
+                    !anteriores.Contains(
+                        n,
+                        StringComparer.OrdinalIgnoreCase
+                    )
+                )
+                .ToList();
+
+
+        var removidos =
+            anteriores
+                .Where(a =>
+                    !novos.Contains(
+                        a,
+                        StringComparer.OrdinalIgnoreCase
+                    )
+                )
+                .ToList();
+
+
+        /*
+        * Apenas adicionou técnico(s)
+        */
+        if (
+            adicionados.Count > 0 &&
+            removidos.Count == 0
+        )
+        {
+            foreach (var tecnico in adicionados)
+            {
+                RegistrarAlteracao(
+                    processoId,
+                    "Técnico responsável",
+                    null,
+                    tecnico
+                );
+            }
+
+            return;
+        }
+
+
+        /*
+        * Apenas removeu técnico(s)
+        */
+        if (
+            removidos.Count > 0 &&
+            adicionados.Count == 0
+        )
+        {
+            foreach (var tecnico in removidos)
+            {
+                RegistrarAlteracao(
+                    processoId,
+                    "Técnico responsável",
+                    tecnico,
+                    null
+                );
+            }
+
+            return;
+        }
+
+
+        /*
+        * Houve troca/edição
+        */
+        if (
+            adicionados.Count > 0 ||
+            removidos.Count > 0
+        )
+        {
+            RegistrarAlteracao(
+                processoId,
+                "Técnico responsável",
+                valorAnterior,
+                valorNovo
+            );
+        }
+    }
+
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Processo>>> GetProcessos()
     {
@@ -566,6 +676,22 @@ public class ProcessosController : ControllerBase
         if (processoExistente == null)
             return NotFound();
 
+        var pendenciasRecebidas =
+            processo.Pendencias ??
+            new List<Pendencia>();
+
+
+        var novaSituacao =
+            pendenciasRecebidas.Any(p =>
+                string.Equals(
+                    p.Situacao,
+                    "Aberta",
+                    StringComparison.OrdinalIgnoreCase
+                )
+            )
+                ? "Aberta"
+                : "Atendida";
+
         
         RegistrarAlteracao(
             processoExistente.Id,
@@ -588,9 +714,8 @@ public class ProcessosController : ControllerBase
             processo.Interessado
         );
 
-        RegistrarAlteracao(
+        RegistrarAlteracaoTecnicos(
             processoExistente.Id,
-            "Técnico responsável",
             processoExistente.TecnicoResponsavel,
             processo.TecnicoResponsavel
         );
@@ -606,7 +731,7 @@ public class ProcessosController : ControllerBase
             processoExistente.Id,
             "Situação",
             processoExistente.Situacao,
-            processo.Situacao
+            novaSituacao
         );
 
         RegistrarAlteracao(
@@ -1001,18 +1126,7 @@ public class ProcessosController : ControllerBase
         processoExistente.Prazo = processo.Prazo;
         processoExistente.DataSaida = processo.DataSaida;
         processoExistente.TecnicoResponsavel = processo.TecnicoResponsavel;
-        var pendenciasRecebidas = processo.Pendencias ?? new List<Pendencia>();
-
-        processoExistente.Situacao =
-            pendenciasRecebidas.Any(p =>
-                string.Equals(
-                    p.Situacao,
-                    "Aberta",
-                    StringComparison.OrdinalIgnoreCase
-                )
-            )
-                ? "Aberta"
-                : "Atendida";
+        processoExistente.Situacao = novaSituacao;
         processoExistente.Fase = processo.Fase;
         processoExistente.StatusFase = processo.StatusFase;
         processoExistente.DataEmissaoFase = processo.DataEmissaoFase;

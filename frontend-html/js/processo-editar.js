@@ -202,7 +202,7 @@ function preencherTecnicosResponsaveis(valor) {
                         ? `
                             <button
                                 type="button"
-                                class="button-secondary btn-remover-tecnico"
+                                class="button-danger btn-remover-tecnico"
                             >
                                 Remover
                             </button>
@@ -3898,7 +3898,7 @@ function configurarBotoes() {
 
                 <button
                     type="button"
-                    class="button-secondary btn-remover-tecnico"
+                    class="button-danger btn-remover-tecnico"
                 >
                     Remover
                 </button>
@@ -4113,6 +4113,95 @@ function configurarBotoes() {
                         behavior: "smooth",
                         block: "center"
                     });
+
+                    return;
+                }
+
+            }
+
+            const TAMANHO_MAXIMO_PDF =
+                20 * 1024 * 1024; // 20 MB
+
+
+            const inputsAnexos =
+                Array.from(
+                    document.querySelectorAll(
+                        ".fase-complementar-anexo"
+                    )
+                );
+
+
+            for (const input of inputsAnexos) {
+
+                const arquivo =
+                    input.files?.[0];
+
+
+                if (!arquivo) {
+                    continue;
+                }
+
+                if (
+                    arquivo.size >
+                    TAMANHO_MAXIMO_PDF
+                ) {
+
+                    const tamanhoMb =
+                        (
+                            arquivo.size /
+                            1024 /
+                            1024
+                        ).toFixed(1);
+
+
+                    alert(
+                        `O arquivo "${arquivo.name}" possui ${tamanhoMb} MB.\n\n` +
+                        "O tamanho máximo permitido é 20 MB."
+                    );
+
+
+                    input.value = "";
+
+
+                    input.scrollIntoView({
+                        behavior: "smooth",
+                        block: "center"
+                    });
+
+
+                    return;
+                }
+
+                const extensaoPdf =
+                    arquivo.name
+                        .toLowerCase()
+                        .endsWith(".pdf");
+
+
+                const tipoPdf =
+                    arquivo.type ===
+                    "application/pdf";
+
+
+                if (
+                    !extensaoPdf ||
+                    !tipoPdf
+                ) {
+
+                    alert(
+                        `O arquivo "${arquivo.name}" não é um PDF válido.\n\n` +
+                        "Selecione um arquivo no formato PDF."
+                    );
+
+
+                    input.value = "";
+
+
+                    input.scrollIntoView({
+                        behavior: "smooth",
+                        block: "center"
+                    });
+
 
                     return;
                 }
