@@ -1594,17 +1594,79 @@ public class ProcessosController : ControllerBase
     public async Task<IActionResult> DeleteProcesso(int id)
     {
         var processo = await _context.Processos
+
             .Include(p => p.Trechos)
                 .ThenInclude(t => t.Fases)
+
+            .Include(p => p.Trechos)
+                .ThenInclude(t => t.FasesComplementares)
+
             .Include(p => p.Pendencias)
                 .ThenInclude(p => p.Historicos)
+
+            .Include(p => p.Pendencias)
+                .ThenInclude(p => p.PendenciasRegionais)
+
+            .Include(p => p.HistoricosAlteracoes)
+
             .FirstOrDefaultAsync(p => p.Id == id);
 
-        if (processo == null)
-            return NotFound();
 
-        _context.Processos.Remove(processo);
+        if (processo == null)
+        {
+            return NotFound();
+        }
+
+        foreach (var pendencia in processo.Pendencias)
+        {
+            _context.Historicos.RemoveRange(
+                pendencia.Historicos ??
+                new List<Historico>()
+            );
+
+
+            _context.PendenciasRegionais.RemoveRange(
+                pendencia.PendenciasRegionais ??
+                new List<PendenciaRegional>()
+            );
+        }
+
+
+        _context.Pendencias.RemoveRange(
+            processo.Pendencias
+        );
+
+        foreach (var trecho in processo.Trechos)
+        {
+            _context.FasesComplementares.RemoveRange(
+                trecho.FasesComplementares ??
+                new List<FaseComplementar>()
+            );
+
+
+            _context.FasesTrecho.RemoveRange(
+                trecho.Fases ??
+                new List<FaseTrecho>()
+            );
+        }
+
+
+        _context.Trechos.RemoveRange(
+            processo.Trechos
+        );
+
+        _context.HistoricosAlteracoes.RemoveRange(
+            processo.HistoricosAlteracoes ??
+            new List<HistoricoAlteracao>()
+        );
+
+        _context.Processos.Remove(
+            processo
+        );
+
+
         await _context.SaveChangesAsync();
+
 
         return NoContent();
     }
