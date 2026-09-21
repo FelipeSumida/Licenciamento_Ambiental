@@ -2268,11 +2268,6 @@ function validarFormularioNovoAcompanhamento() {
         return false;
     }
 
-
-    // ==========================================
-    // DADOS PRINCIPAIS
-    // ==========================================
-
     const empreendimento =
         document.getElementById("empreendimento");
 
@@ -2337,11 +2332,6 @@ function validarFormularioNovoAcompanhamento() {
         );
     }
 
-
-    // ==========================================
-    // TÉCNICO RESPONSÁVEL
-    // ==========================================
-
     const tecnicos =
         Array.from(
             document.querySelectorAll(
@@ -2361,11 +2351,6 @@ function validarFormularioNovoAcompanhamento() {
             )
         );
     }
-
-
-    // ==========================================
-    // TRECHOS
-    // ==========================================
 
     const cardsTrechos =
         Array.from(
@@ -2492,9 +2477,6 @@ function validarFormularioNovoAcompanhamento() {
             );
         }
 
-
-        // Limites cadastrados da rodovia
-
         const limiteInicial =
             Number(
                 rodoviaInput?.dataset
@@ -2529,11 +2511,6 @@ function validarFormularioNovoAcompanhamento() {
             }
         }
     }
-
-
-    // ==========================================
-    // PENDÊNCIAS
-    // ==========================================
 
     const cardsPendencias =
         Array.from(
@@ -2641,11 +2618,6 @@ function validarFormularioNovoAcompanhamento() {
             );
         }
 
-
-        // ======================================
-        // ATRIBUÍDO A
-        // ======================================
-
         const atribuicoes =
             Array.from(
                 card.querySelectorAll(
@@ -2696,11 +2668,6 @@ function validarFormularioNovoAcompanhamento() {
             }
         }
 
-
-        // ======================================
-        // PENDÊNCIA ATENDIDA
-        // ======================================
-
         if (
             situacaoInput.value === "Atendida" &&
             !dataSaidaInput?.value
@@ -2727,11 +2694,6 @@ function validarFormularioNovoAcompanhamento() {
                 dataSaidaInput
             );
         }
-
-
-        // ======================================
-        // HISTÓRICOS DA PENDÊNCIA
-        // ======================================
 
         const historicos =
             Array.from(
@@ -2767,9 +2729,6 @@ function validarFormularioNovoAcompanhamento() {
             const texto =
                 textoInput?.value?.trim() ?? "";
 
-
-            // Se os dois estiverem vazios,
-            // ignoramos o histórico.
             if (!data && !texto) {
                 continue;
             }
@@ -2795,11 +2754,6 @@ function validarFormularioNovoAcompanhamento() {
             }
         }
     }
-
-
-    // ==========================================
-    // HISTÓRICO DO ACOMPANHAMENTO
-    // ==========================================
 
     const historicoData =
         document.getElementById(
@@ -2968,11 +2922,6 @@ function configurarBotoes() {
                     .value
                     .trim();
 
-
-            // =========================
-            // TRECHOS
-            // =========================
-
             const trechos = [];
 
             const cardsTrechos =
@@ -3025,11 +2974,6 @@ function configurarBotoes() {
                         )
                         ?.value ?? "";
 
-
-                /*
-                * Se o trecho foi criado mas ficou
-                * completamente vazio, ignoramos.
-                */
                 const trechoVazio =
                     !rodoviaTexto &&
                     kmInicialValor === "" &&
@@ -3041,11 +2985,6 @@ function configurarBotoes() {
                     continue;
                 }
 
-
-                /*
-                * Se alguma coisa foi preenchida,
-                * precisa existir uma rodovia válida.
-                */
                 if (!rodId) {
 
                     alert(
@@ -3075,19 +3014,10 @@ function configurarBotoes() {
                             ? null
                             : Number(kmFinalValor),
 
-                    /*
-                    * Outros acompanhamentos
-                    * não possui fases.
-                    */
                     fases: []
 
                 });
             }
-
-
-            // =========================
-            // PENDÊNCIAS
-            // =========================
 
             const pendencias = [];
 
@@ -3155,11 +3085,6 @@ function configurarBotoes() {
                         )
                         ?.value ?? "";
 
-
-                // =========================
-                // ATRIBUIÇÕES
-                // =========================
-
                 const atribuicoes =
                     Array
                         .from(
@@ -3171,11 +3096,6 @@ function configurarBotoes() {
                             (checkbox) =>
                                 checkbox.value
                         );
-
-
-                // =========================
-                // REGIONAIS
-                // =========================
 
                 const selectRegionais =
                     card.querySelector(
@@ -3212,11 +3132,6 @@ function configurarBotoes() {
                         return;
                     }
                 }
-
-
-                // =========================
-                // HISTÓRICOS DA PENDÊNCIA
-                // =========================
 
                 const historicos =
                     Array
@@ -3260,15 +3175,6 @@ function configurarBotoes() {
                                 historico.texto
                         );
 
-
-                /*
-                * Se clicou em "+ Adicionar pendência"
-                * mas deixou a pendência completamente
-                * vazia, não cadastramos.
-                *
-                * A Situação "Aberta" não conta, pois
-                * é apenas o valor padrão.
-                */
                 const pendenciaVazia =
                     !descricao &&
                     !divisaoCap &&
@@ -3311,10 +3217,6 @@ function configurarBotoes() {
                     regionais:
                         regionais,
 
-                    /*
-                    * Outros acompanhamentos
-                    * não possui fase vinculada.
-                    */
                     faseVinculadaRef:
                         null,
 
@@ -3323,11 +3225,6 @@ function configurarBotoes() {
 
                 });
             }
-
-
-            // =========================
-            // PAYLOAD
-            // =========================
 
             const payload = {
 
@@ -3384,12 +3281,6 @@ function configurarBotoes() {
                         .value
                         .trim(),
 
-
-                /*
-                * Estes campos pertencem ao Processo,
-                * mas Outros acompanhamentos não os
-                * utiliza diretamente.
-                */
                 divisaoCap:
                     null,
 
@@ -3409,11 +3300,6 @@ function configurarBotoes() {
                 pendencias:
                     pendencias,
 
-
-                /*
-                * Outros acompanhamentos
-                * não possui fases.
-                */
                 fasesComplementares:
                     [],
 
@@ -3439,11 +3325,6 @@ function configurarBotoes() {
                 "Payload novo acompanhamento:",
                 payload
             );
-
-
-            // =========================
-            // POST
-            // =========================
 
             try {
 

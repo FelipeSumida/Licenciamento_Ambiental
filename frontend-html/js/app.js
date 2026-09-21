@@ -1,29 +1,29 @@
 const API_URL = "http://localhost:5161/api";
 
 const CORES_DIVISAO_CAP = {
-    "Meio Sócio": "#2563eb",          // azul
-    "Flora": "#16a34a",               // verde
-    "Meio Físico": "#f59e0b",         // amarelo/laranja
-    "Fauna": "#dc2626",                // vermelho
-    "Licenciamento": "#7c3aed",        // roxo
-    "INFRAÇÃO AMBIENTAL": "#0891b2",   // azul claro
-    "Concessionária": "#ea580c",       // laranja
-    "Supervisão obra": "#db2777",      // rosa
-    "Não Aplicável": "#64748b"         // cinza
+    "Meio Sócio": "#2563eb",
+    "Flora": "#16a34a",
+    "Meio Físico": "#f59e0b",
+    "Fauna": "#dc2626",
+    "Licenciamento": "#7c3aed",
+    "INFRAÇÃO AMBIENTAL": "#0891b2",
+    "Concessionária": "#ea580c",
+    "Supervisão obra": "#db2777",
+    "Não Aplicável": "#64748b"
 };
 
 
 const CORES_CLASSIFICACAO = {
-    "CP": "#2563eb",          // azul
-    "LP": "#16a34a",          // verde
-    "LI": "#f59e0b",          // amarelo/laranja
-    "LO": "#dc2626",          // vermelho
-    "ASV": "#7c3aed",         // roxo
-    "TCRA": "#0891b2",        // azul claro
-    "AMIS": "#ea580c",        // laranja
-    "SUP.OBRA": "#db2777",    // rosa
-    "OP-FAUNA": "#0d9488",    // verde azulado
-    "OUTROS": "#64748b"       // cinza
+    "CP": "#2563eb",
+    "LP": "#16a34a",
+    "LI": "#f59e0b",
+    "LO": "#dc2626",
+    "ASV": "#7c3aed",
+    "TCRA": "#0891b2",
+    "AMIS": "#ea580c",
+    "SUP.OBRA": "#db2777",
+    "OP-FAUNA": "#0d9488",
+    "OUTROS": "#64748b"
 };
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -58,11 +58,6 @@ async function carregarDashboard() {
             processos
         );
 
-
-        // =========================================
-        // CARDS
-        // =========================================
-
         const total =
             processos.length;
 
@@ -75,13 +70,6 @@ async function carregarDashboard() {
                 )
             ).length;
 
-
-        /*
-         * Consideramos concluído quando
-         * não existe nenhuma pendência aberta.
-         *
-         * Isso também inclui processo sem pendências.
-         */
         const concluidos =
             processos.filter((processo) =>
                 !processo.pendencias?.some(
@@ -114,23 +102,11 @@ async function carregarDashboard() {
             .textContent =
             aguardando;
 
-
-        // =========================================
-        // GRÁFICO - ÁREAS DA CAP
-        // =========================================
-
         const contagemAreas = {};
 
 
         processos.forEach((processo) => {
 
-            /*
-             * Um mesmo processo pode ter pendências
-             * de mais de uma divisão.
-             *
-             * Usamos Set para contar esse processo
-             * somente uma vez em cada divisão.
-             */
             const areasDoProcesso =
                 new Set();
 
@@ -272,32 +248,15 @@ async function carregarDashboard() {
 
         }
 
-
-        // =========================================
-        // GRÁFICO - TEMÁTICAS
-        // =========================================
-
         const contagemTematicas = {};
 
 
         processos.forEach((processo) => {
 
-            /*
-             * Primeiro tentamos a classificação.
-             */
             let tematica =
                 processo.classificacao
                     ?.trim();
 
-
-            /*
-             * Nos processos novos a classificação
-             * pode estar vazia, pois as fases agora
-             * ficam dentro dos trechos.
-             *
-             * Nesse caso usamos a última fase
-             * cadastrada como referência.
-             */
             if (!tematica) {
 
                 const fases = [];

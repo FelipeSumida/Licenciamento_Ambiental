@@ -26,8 +26,6 @@ async function carregarProcessos() {
 
         const dados = await response.json();
 
-        // A API possui Processos e Outros acompanhamentos.
-        // Nesta página mostramos somente Outros acompanhamentos.
         todosProcessos = dados.filter((processo) => {
 
             if (processo.pagina) {
@@ -350,7 +348,6 @@ function renderizarProcessos(processos) {
             botao.addEventListener("click", (event) => {
                 event.stopPropagation();
 
-                // Fecha qualquer menu já aberto
                 document
                     .querySelectorAll(".action-menu")
                     .forEach(menu => menu.remove());
@@ -411,7 +408,6 @@ function renderizarProcessos(processos) {
                 menu.style.left =
                     `${posicao.right + window.scrollX - menu.offsetWidth}px`;
 
-                // VER DETALHES
                 menu
                     .querySelector('[data-acao="visualizar"]')
                     .addEventListener("click", () => {
@@ -420,7 +416,6 @@ function renderizarProcessos(processos) {
                             `./acompanhamento.html?id=${id}`;
                     });
 
-                // EDITAR
                 menu
                     .querySelector('[data-acao="editar"]')
                     .addEventListener("click", () => {
@@ -429,7 +424,6 @@ function renderizarProcessos(processos) {
                             `./acompanhamento-editar.html?id=${id}`;
                     });
 
-                // EXCLUIR
                 menu
                     .querySelector('[data-acao="excluir"]')
                     .addEventListener("click", async () => {
@@ -1246,11 +1240,6 @@ async function exportarCSV() {
 
     try {
 
-        // ==========================================
-        // BUSCA O DETALHE COMPLETO SOMENTE DOS
-        // ACOMPANHAMENTOS EXIBIDOS APÓS OS FILTROS
-        // ==========================================
-
         const processosCompletos =
             await Promise.all(
 
@@ -1282,11 +1271,6 @@ async function exportarCSV() {
 
         const linhas = [];
 
-
-        // ==========================================
-        // CABEÇALHO
-        // ==========================================
-
         linhas.push([
             "Nº Empreendimento",
             "Tipo de Empreendimento",
@@ -1304,19 +1288,10 @@ async function exportarCSV() {
             "Histórico de Alterações"
         ]);
 
-
-        // ==========================================
-        // ACOMPANHAMENTOS
-        // ==========================================
-
         for (
             const processo
             of processosCompletos
         ) {
-
-            // ======================================
-            // TRECHOS + SIRGEO
-            // ======================================
 
             const trechosTexto = [];
 
@@ -1433,11 +1408,6 @@ async function exportarCSV() {
 
             }
 
-
-            // ======================================
-            // PENDÊNCIAS
-            // ======================================
-
             const pendenciasTexto =
                 (processo.pendencias ?? [])
                     .map(
@@ -1476,10 +1446,6 @@ async function exportarCSV() {
                     .join(" || ");
 
 
-            // ======================================
-            // HISTÓRICOS DAS PENDÊNCIAS
-            // ======================================
-
             const historicosPendenciasTexto =
                 (processo.pendencias ?? [])
                     .flatMap(
@@ -1501,11 +1467,6 @@ async function exportarCSV() {
                     )
                     .join(" || ");
 
-
-            // ======================================
-            // HISTÓRICO DE ALTERAÇÕES
-            // ======================================
-
             const historicoAlteracoesTexto =
                 (processo.historicosAlteracoes ?? [])
                     .map(
@@ -1523,10 +1484,6 @@ async function exportarCSV() {
                     )
                     .join(" || ");
 
-
-            // ======================================
-            // LINHA DO ACOMPANHAMENTO
-            // ======================================
 
             linhas.push([
 
@@ -1563,11 +1520,6 @@ async function exportarCSV() {
             ]);
 
         }
-
-
-        // ==========================================
-        // GERA O CSV
-        // ==========================================
 
         const csv =
             linhas

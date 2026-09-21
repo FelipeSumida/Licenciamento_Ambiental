@@ -820,12 +820,6 @@ function finalizarFase(cardAtual) {
             ".fase-passada-card"
         ).length;
 
-
-    /*
-     * A fase atual deixa de ser atual
-     * e vira uma fase passada.
-     */
-
     const wrapperPassada =
         document.createElement("div");
 
@@ -843,12 +837,6 @@ function finalizarFase(cardAtual) {
     cardAtual.replaceWith(
         cardPassada
     );
-
-
-    /*
-     * Criamos automaticamente
-     * uma nova fase atual vazia.
-     */
 
     const novaFase = {
 
@@ -2166,17 +2154,13 @@ function configurarInteracoesPendencias() {
                 "click",
                 () => {
 
-                    // Guarda o que está preenchido
-                    // antes de remover a pendência.
                     atualizarPendenciasCadastroPelaTela();
 
-                    // Remove do array.
                     pendenciasCadastro.splice(
                         pendenciaIndex,
                         1
                     );
 
-                    // Monta novamente a lista.
                     renderizarPendenciasEdicao(
                         pendenciasCadastro
                     );
@@ -4275,7 +4259,7 @@ function configurarBotoes() {
             }
 
             const TAMANHO_MAXIMO_PDF =
-                20 * 1024 * 1024; // 20 MB
+                20 * 1024 * 1024;
 
 
             const inputsAnexos =
@@ -4422,9 +4406,6 @@ function configurarBotoes() {
                         ?.value
                         ?.trim() ?? "",
 
-
-                // O backend recalcula depois,
-                // mas enviamos porque Processo.Situacao é obrigatório
                 situacao: "Aberta",
 
 
@@ -4432,9 +4413,6 @@ function configurarBotoes() {
                 prazo: null,
                 dataSaida: null,
 
-
-                // Campos antigos obrigatórios da tabela Processo.
-                // Pegamos da fase atual de um dos trechos.
                 fase:
                     primeiraFaseAtual.fase ?? "",
 
@@ -4660,21 +4638,13 @@ document.addEventListener(
             return;
         }
 
-
-        // Primeiro preservamos tudo que está
-        // preenchido atualmente na tela.
         atualizarTrechosCadastroPelaTela();
 
-
-        // Remove o trecho correspondente.
         trechosCadastro.splice(
             trechoIndex,
             1
         );
 
-
-        // Remove também os PDFs guardados
-        // daquele trecho.
         arquivosFasesComplementares.splice(
             trechoIndex,
             1

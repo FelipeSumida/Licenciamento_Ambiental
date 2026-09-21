@@ -449,12 +449,6 @@ function finalizarFase(cardAtual) {
             ".fase-passada-card"
         ).length;
 
-
-    /*
-     * A fase atual deixa de ser atual
-     * e vira uma fase passada.
-     */
-
     const wrapperPassada =
         document.createElement("div");
 
@@ -473,11 +467,6 @@ function finalizarFase(cardAtual) {
         cardPassada
     );
 
-
-    /*
-     * Criamos automaticamente
-     * uma nova fase atual vazia.
-     */
 
     const novaFase = {
 
@@ -2590,8 +2579,6 @@ document.addEventListener(
 
         cardPendencia.remove();
 
-
-        // Renumera as pendências restantes
         container
             ?.querySelectorAll(
                 ".edit-pendencia-card"
@@ -2612,8 +2599,6 @@ document.addEventListener(
                 }
             );
 
-
-        // Se não restar nenhuma pendência
         if (
             container &&
             !container.querySelector(
@@ -3099,8 +3084,6 @@ function adicionarNovaPendenciaEdicao() {
             "listaPendenciasEdicao"
         );
 
-
-    // Remove a mensagem "Nenhuma pendência cadastrada"
     const mensagemVazia =
         container.querySelector(".muted-text");
 
@@ -3365,12 +3348,8 @@ function adicionarNovaPendenciaEdicao() {
 
     configurarSelectsCustomizados();
     configurarMultiselectRegionais();
-    // Configura Regional e Adicionar histórico
-    // somente no card novo
     configurarInteracoesPendencias();
 
-
-    // Leva a tela até a nova pendência
     bloco.scrollIntoView({
         behavior: "smooth",
         block: "start"
@@ -3384,7 +3363,6 @@ function configurarInteracoesPendencias() {
         .querySelectorAll(".edit-pendencia-card")
         .forEach((pendenciaCard) => {
 
-            // Evita configurar o mesmo card mais de uma vez
             if (
                 pendenciaCard.dataset.interacoesConfiguradas === "true"
             ) {
@@ -4011,11 +3989,6 @@ function configurarBotoes() {
             const tecnicoResponsavel =
                 tecnicosResponsaveis.join("; ");
 
-
-            // ==========================================
-            // FUNÇÕES AUXILIARES
-            // ==========================================
-
             const numeroOuNull = (valor) => {
 
                 if (
@@ -4060,11 +4033,6 @@ function configurarBotoes() {
 
                 return valor || null;
             };
-
-
-            // ==========================================
-            // TRECHOS E FASES
-            // ==========================================
 
             const cardsTrechos =
                 Array.from(
@@ -4464,11 +4432,6 @@ function configurarBotoes() {
                     }
                 );
 
-
-            // ==========================================
-            // PENDÊNCIAS
-            // ==========================================
-
             const cardsPendencias =
                 Array.from(
                     document.querySelectorAll(
@@ -4490,11 +4453,6 @@ function configurarBotoes() {
                                     pendenciaIndex
                                 ] ?? {};
 
-
-                        // ------------------------------
-                        // ATRIBUIÇÕES
-                        // ------------------------------
-
                         const atribuicoes =
                             Array.from(
                                 card.querySelectorAll(
@@ -4506,10 +4464,6 @@ function configurarBotoes() {
                                     checkbox.value
                             );
 
-
-                        // ------------------------------
-                        // REGIONAIS
-                        // ------------------------------
 
                         const selectRegionais =
                             card.querySelector(
@@ -4528,10 +4482,6 @@ function configurarBotoes() {
                                 )
                                 : [];
 
-
-                        // ------------------------------
-                        // HISTÓRICOS DA PENDÊNCIA
-                        // ------------------------------
 
                         const cardsHistoricos =
                             Array.from(
@@ -4689,14 +4639,6 @@ function configurarBotoes() {
                 );
 
 
-            // ==========================================
-            // PRIMEIRA FASE
-            // ==========================================
-            //
-            // Esses campos antigos ainda existem na
-            // tabela Processos e não aceitam NULL.
-            //
-
             const primeiraFase =
                 trechos
                     .flatMap(
@@ -4704,10 +4646,6 @@ function configurarBotoes() {
                             trecho.fases ?? []
                     )[0];
 
-
-            // ==========================================
-            // PAYLOAD
-            // ==========================================
 
             const payload = {
 
@@ -4785,12 +4723,6 @@ function configurarBotoes() {
                     pendencias,
 
 
-                /*
-                * Mantemos os campos antigos de fase
-                * sincronizados com a primeira fase
-                * cadastrada.
-                */
-
                 fase:
                     primeiraFase?.fase ||
                     processoAtual.fase ||
@@ -4826,12 +4758,6 @@ function configurarBotoes() {
                 payload.pendencias
             );
 
-
-
-
-            // ==========================================
-            // PUT
-            // ==========================================
 
             try {
 

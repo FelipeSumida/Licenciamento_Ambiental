@@ -161,28 +161,15 @@ function preencherFormulario(processo) {
             "listaTecnicos"
         );
 
-
-    /*
-    * Remove técnicos adicionais antigos,
-    * mantendo somente o campo principal.
-    */
     listaTecnicos
         .querySelectorAll(
             ".tecnico-responsavel-item:not(.tecnico-principal)"
         )
         .forEach(item => item.remove());
 
-
-    /*
-    * Primeiro técnico fica no campo principal.
-    */
     inputPrincipal.value =
         tecnicos[0] ?? "";
 
-
-    /*
-    * Os demais viram campos adicionais.
-    */
     tecnicos
         .slice(1)
         .forEach(tecnico => {
@@ -1414,8 +1401,6 @@ document.addEventListener(
 
         cardPendencia.remove();
 
-
-        // Renumera as pendências restantes
         container
             ?.querySelectorAll(
                 ".edit-pendencia-card"
@@ -1436,8 +1421,6 @@ document.addEventListener(
                 }
             );
 
-
-        // Caso nenhuma pendência reste
         if (
             container &&
             !container.querySelector(
@@ -2283,11 +2266,6 @@ function validarFormularioEditarAcompanhamento() {
         return false;
     }
 
-
-    // ==========================================
-    // DADOS PRINCIPAIS
-    // ==========================================
-
     const empreendimento =
         document.getElementById("empreendimento");
 
@@ -2352,11 +2330,6 @@ function validarFormularioEditarAcompanhamento() {
         );
     }
 
-
-    // ==========================================
-    // TÉCNICO RESPONSÁVEL
-    // ==========================================
-
     const tecnicos =
         Array.from(
             document.querySelectorAll(
@@ -2376,11 +2349,6 @@ function validarFormularioEditarAcompanhamento() {
             )
         );
     }
-
-
-    // ==========================================
-    // TRECHOS
-    // ==========================================
 
     const cardsTrechos =
         Array.from(
@@ -2507,9 +2475,6 @@ function validarFormularioEditarAcompanhamento() {
             );
         }
 
-
-        // Limites cadastrados da rodovia
-
         const limiteInicial =
             Number(
                 rodoviaInput?.dataset
@@ -2544,11 +2509,6 @@ function validarFormularioEditarAcompanhamento() {
             }
         }
     }
-
-
-    // ==========================================
-    // PENDÊNCIAS
-    // ==========================================
 
     const cardsPendencias =
         Array.from(
@@ -2656,11 +2616,6 @@ function validarFormularioEditarAcompanhamento() {
             );
         }
 
-
-        // ======================================
-        // ATRIBUÍDO A
-        // ======================================
-
         const atribuicoes =
             Array.from(
                 card.querySelectorAll(
@@ -2711,11 +2666,6 @@ function validarFormularioEditarAcompanhamento() {
             }
         }
 
-
-        // ======================================
-        // PENDÊNCIA ATENDIDA
-        // ======================================
-
         if (
             situacaoInput.value === "Atendida" &&
             !dataSaidaInput?.value
@@ -2742,11 +2692,6 @@ function validarFormularioEditarAcompanhamento() {
                 dataSaidaInput
             );
         }
-
-
-        // ======================================
-        // HISTÓRICOS DA PENDÊNCIA
-        // ======================================
 
         const historicos =
             Array.from(
@@ -2782,9 +2727,6 @@ function validarFormularioEditarAcompanhamento() {
             const texto =
                 textoInput?.value?.trim() ?? "";
 
-
-            // Se os dois estiverem vazios,
-            // ignoramos o histórico.
             if (!data && !texto) {
                 continue;
             }
@@ -2810,11 +2752,6 @@ function validarFormularioEditarAcompanhamento() {
             }
         }
     }
-
-
-    // ==========================================
-    // HISTÓRICO DO ACOMPANHAMENTO
-    // ==========================================
 
     const historicoData =
         document.getElementById(
@@ -2912,11 +2849,6 @@ function configurarBotoes() {
         "click",
         () => {
 
-            /*
-            * Primeiro capturamos tudo que já está
-            * preenchido na tela para não perder
-            * nenhuma alteração ao renderizar novamente.
-            */
             processoAtual.trechos =
                 Array.from(
                     document.querySelectorAll(
@@ -2990,10 +2922,6 @@ function configurarBotoes() {
                     };
                 });
 
-
-            /*
-            * Agora adicionamos um novo trecho vazio.
-            */
             processoAtual.trechos.push({
 
                 id: 0,
@@ -3011,10 +2939,6 @@ function configurarBotoes() {
 
             });
 
-
-            /*
-            * Renderiza novamente todos os trechos.
-            */
             renderizarTrechosEdicao(
                 processoAtual.trechos
             );
@@ -3067,11 +2991,6 @@ function configurarBotoes() {
                 return;
             }
 
-
-            /*
-            * Primeiro captura todos os valores
-            * atuais da tela.
-            */
             processoAtual.trechos =
                 cards.map((card) => {
 
@@ -3152,20 +3071,11 @@ function configurarBotoes() {
 
                 });
 
-
-            /*
-            * Remove apenas o trecho clicado.
-            */
             processoAtual.trechos.splice(
                 indiceExcluir,
                 1
             );
 
-
-            /*
-            * Renderiza novamente.
-            * A numeração também se reorganiza.
-            */
             renderizarTrechosEdicao(
                 processoAtual.trechos
             );
@@ -3242,11 +3152,6 @@ function configurarBotoes() {
                 .map(input => input.value.trim())
                 .filter(valor => valor !== "");
 
-
-            // =========================
-            // TRECHOS
-            // =========================
-
             const trechos = Array
                 .from(
                     document.querySelectorAll(
@@ -3262,10 +3167,6 @@ function configurarBotoes() {
                                 ?.value ?? 0
                         );
 
-                    /*
-                    * Procuramos o trecho original para
-                    * preservar o rodId.
-                    */
                     const trechoOriginal =
                         (processoAtual.trechos ?? [])
                             .find(
@@ -3314,15 +3215,9 @@ function configurarBotoes() {
                                     kmFinalCampo.value
                                 ),
 
-                        // Outros acompanhamentos não possui fases.
                         fases: []
                     };
                 });
-
-
-            // =========================
-            // PENDÊNCIAS
-            // =========================
 
             const pendencias = [];
 
@@ -3383,11 +3278,6 @@ function configurarBotoes() {
                         return;
                     }
                 }
-
-
-                // =========================
-                // HISTÓRICOS DA PENDÊNCIA
-                // =========================
 
                 const historicos =
                     Array
@@ -3493,10 +3383,6 @@ function configurarBotoes() {
                     regionais:
                         regionais,
 
-                    /*
-                    * Outros acompanhamentos
-                    * não associa pendência a fase.
-                    */
                     faseTrechoId:
                         null,
 
@@ -3504,11 +3390,6 @@ function configurarBotoes() {
                         historicos
                 });
             }
-
-
-            // =========================
-            // PAYLOAD
-            // =========================
 
             const payload = {
 
@@ -3560,11 +3441,6 @@ function configurarBotoes() {
                         .value
                         .trim(),
 
-                /*
-                * Estes campos existem no Processo
-                * e o PUT também os atualiza.
-                * Preservamos os valores existentes.
-                */
                 divisaoCap:
                     processoAtual.divisaoCap ?? null,
 
@@ -3583,10 +3459,6 @@ function configurarBotoes() {
                 pendencias:
                     pendencias,
 
-                /*
-                * Outros acompanhamentos não utiliza
-                * fases complementares.
-                */
                 fasesComplementares:
                     [],
 
@@ -3611,11 +3483,6 @@ function configurarBotoes() {
                 "Payload acompanhamento:",
                 payload
             );
-
-
-            // =========================
-            // PUT
-            // =========================
 
             try {
 

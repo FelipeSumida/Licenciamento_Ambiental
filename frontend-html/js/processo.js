@@ -1503,8 +1503,6 @@ function formatarData(valor) {
     const texto =
         String(valor).trim();
 
-    // Pega somente a parte da data,
-    // ignorando horário e fuso.
     const dataTexto =
         texto.split("T")[0];
 

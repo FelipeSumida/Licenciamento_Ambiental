@@ -26,8 +26,6 @@ async function carregarProcessos() {
 
         const dados = await response.json();
 
-        // A API possui Processos e Outros acompanhamentos.
-        // Nesta página mostramos somente Processos.
         todosProcessos = dados.filter((processo) => {
 
             if (processo.pagina) {
@@ -601,7 +599,6 @@ function renderizarProcessos(processos) {
             botao.addEventListener("click", (event) => {
                 event.stopPropagation();
 
-                // Fecha qualquer menu que já esteja aberto
                 document
                     .querySelectorAll(".action-menu")
                     .forEach(menu => menu.remove());
@@ -1166,7 +1163,6 @@ function formatarData(valor) {
 
 function preencherFiltros() {
 
-    // Técnico continua vindo dos processos cadastrados
     const tecnicos = todosProcessos
         .flatMap((processo) =>
             String(
@@ -1187,8 +1183,6 @@ function preencherFiltros() {
         tecnicos
     );
 
-
-    // Fases fixas do sistema
     preencherSelect(
         "filtroFase",
         [
@@ -1199,8 +1193,6 @@ function preencherFiltros() {
         ]
     );
 
-
-    // Divisões CAP fixas do sistema
     preencherSelect(
         "filtroDivisao",
         [
@@ -1216,8 +1208,6 @@ function preencherFiltros() {
         ]
     );
 
-
-    // Rodovia continua vindo dos processos cadastrados
     preencherSelect(
         "filtroRodovia",
         todosProcessos
@@ -1304,11 +1294,6 @@ async function exportarCSV() {
 
     try {
 
-        // ==========================================
-        // BUSCA O DETALHE COMPLETO DOS PROCESSOS
-        // QUE ESTÃO EXIBIDOS APÓS OS FILTROS
-        // ==========================================
-
         const processosCompletos =
             await Promise.all(
 
@@ -1340,11 +1325,6 @@ async function exportarCSV() {
 
         const linhas = [];
 
-
-        // ==========================================
-        // CABEÇALHO
-        // ==========================================
-
         linhas.push([
             "Nº Empreendimento",
             "Tipo de Empreendimento",
@@ -1365,19 +1345,10 @@ async function exportarCSV() {
             "Histórico de Alterações"
         ]);
 
-
-        // ==========================================
-        // PROCESSOS
-        // ==========================================
-
         for (
             const processo
             of processosCompletos
         ) {
-
-            // ======================================
-            // TRECHOS + DADOS SIRGEO
-            // ======================================
 
             const trechosTexto = [];
 
@@ -1494,11 +1465,6 @@ async function exportarCSV() {
 
             }
 
-
-            // ======================================
-            // FASES DOS TRECHOS
-            // ======================================
-
             const fasesTexto =
                 (processo.trechos ?? [])
                     .flatMap(
@@ -1524,11 +1490,6 @@ async function exportarCSV() {
                     )
                     .join(" || ");
 
-
-            // ======================================
-            // FASES COMPLEMENTARES
-            // ======================================
-
             const fasesComplementaresTexto =
                 (processo.trechos ?? [])
                     .flatMap(
@@ -1550,11 +1511,6 @@ async function exportarCSV() {
 
                     )
                     .join(" || ");
-
-
-            // ======================================
-            // PENDÊNCIAS
-            // ======================================
 
             const pendenciasTexto =
                 (processo.pendencias ?? [])
@@ -1594,11 +1550,6 @@ async function exportarCSV() {
                     )
                     .join(" || ");
 
-
-            // ======================================
-            // HISTÓRICOS DAS PENDÊNCIAS
-            // ======================================
-
             const historicosPendenciasTexto =
                 (processo.pendencias ?? [])
                     .flatMap(
@@ -1621,10 +1572,6 @@ async function exportarCSV() {
                     .join(" || ");
 
 
-            // ======================================
-            // HISTÓRICO DE ALTERAÇÕES
-            // ======================================
-
             const historicoAlteracoesTexto =
                 (processo.historicosAlteracoes ?? [])
                     .map(
@@ -1642,10 +1589,6 @@ async function exportarCSV() {
                     )
                     .join(" || ");
 
-
-            // ======================================
-            // LINHA DO PROCESSO
-            // ======================================
 
             linhas.push([
 
@@ -1688,11 +1631,6 @@ async function exportarCSV() {
             ]);
 
         }
-
-
-        // ==========================================
-        // MONTA O CSV
-        // ==========================================
 
         const csv =
             linhas

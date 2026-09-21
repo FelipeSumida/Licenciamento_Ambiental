@@ -2641,10 +2641,6 @@ button.button-secondary:disabled:hover {
     background: #169b58;
 }
 
-/* =========================================
-   DADOS SIRGEO DO TRECHO
-   ========================================= */
-
 .trecho-sirgeo-info {
     margin-top: 18px;
     margin-bottom: 18px;
@@ -2711,17 +2707,9 @@ button.button-secondary:disabled:hover {
 
 }
 
-/* =========================================
-   CABEÇALHO EXCLUSIVO DO PDF
-   ========================================= */
-
 .pdf-header {
     display: none;
 }
-
-/* =========================================
-   PDF / IMPRESSÃO - PROCESSO
-   ========================================= */
 
 @media print {
 
@@ -2742,21 +2730,11 @@ button.button-secondary:disabled:hover {
         print-color-adjust: exact;
     }
 
-
-    /* =====================================
-       ESCONDER ELEMENTOS DA TELA
-       ===================================== */
-
     .sidebar,
     .back-link,
     .detail-header {
         display: none !important;
     }
-
-
-    /* =====================================
-       REMOVER ESPAÇO DA SIDEBAR
-       ===================================== */
 
     .app {
         min-height: 0 !important;
@@ -2800,11 +2778,6 @@ button.button-secondary:disabled:hover {
         margin: 0 !important;
         padding: 0 !important;
     }
-
-
-    /* =====================================
-       MOSTRAR CABEÇALHO DO PDF
-       ===================================== */
 
     .pdf-header {
         display: block !important;
@@ -2919,11 +2892,6 @@ button.button-secondary:disabled:hover {
         color: #202923;
     }
 
-
-    /* =====================================
-       TRANSFORMA AS DUAS COLUNAS EM UMA
-       ===================================== */
-
     .detail-layout {
         display: block !important;
     }
@@ -2933,11 +2901,6 @@ button.button-secondary:disabled:hover {
         width: 100% !important;
         max-width: none !important;
     }
-
-
-    /* =====================================
-       CARDS
-       ===================================== */
 
     .detail-card {
         margin-bottom: 12px !important;
@@ -2963,11 +2926,6 @@ button.button-secondary:disabled:hover {
         color: #124c35 !important;
     }
 
-
-    /* =====================================
-       TRECHOS / FASES / PENDÊNCIAS
-       ===================================== */
-
     .trecho-card,
     .fase-card,
     .pendencia-card {
@@ -2991,21 +2949,11 @@ button.button-secondary:disabled:hover {
         page-break-inside: avoid;
     }
 
-
-    /* =====================================
-       SIRGEO
-       ===================================== */
-
     .trecho-sirgeo-box {
         background: #ffffff !important;
 
         border-color: #d3dbd7 !important;
     }
-
-
-    /* =====================================
-       TEXTAREAS
-       ===================================== */
 
     .dados-processo-texto-scroll {
         overflow: visible !important;
@@ -3016,11 +2964,6 @@ button.button-secondary:disabled:hover {
 
         border-color: #d3dbd7 !important;
     }
-
-
-    /* =====================================
-       TIPOGRAFIA
-       ===================================== */
 
     body {
         font-size: 9pt !important;
@@ -3109,9 +3052,6 @@ button.button-secondary:disabled:hover {
     background: #f8faf9;
 }
 
-
-/* linha superior */
-
 .alteracao-linha-principal {
     display: flex;
     align-items: center;
@@ -3164,8 +3104,6 @@ button.button-secondary:disabled:hover {
     font-size: 12px;
 }
 
-
-/* linha dos valores */
 
 .alteracao-linha-valores {
     display: flex;
@@ -3278,10 +3216,6 @@ button.button-secondary:disabled:hover {
 .alteracao-vazio {
     color: #78817c;
 }
-
-/* ==========================================
-   LOGIN
-   ========================================== */
 
 .pagina-login {
     margin: 0;
