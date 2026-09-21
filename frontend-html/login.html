@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Entrar | Comunique-se</title>
+
+    <link
+        rel="stylesheet"
+        href="./css/styles.css"
+    >
+</head>
+
+<body class="pagina-login">
+
+    <main class="login-page">
+
+        <div class="login-card">
+
+            <div class="login-header">
+
+                <img
+                    src="./assets/logoder.png"
+                    alt="DER-SP"
+                    class="login-logo-der"
+                >
+
+                <div class="login-brand">
+                    <strong>Comunique-se</strong>
+                    <span>Licenciamento Ambiental</span>
+                </div>
+
+            </div>
+
+
+            <div class="login-title">
+
+                <h1>Acesso ao sistema</h1>
+
+                <p>
+                    Informe seu usuário e senha para continuar.
+                </p>
+
+            </div>
+
+
+            <form id="formLogin">
+
+                <div class="login-field">
+
+                    <label for="usuario">
+                        Usuário
+                    </label>
+
+                    <input
+                        id="usuario"
+                        type="text"
+                        autocomplete="username"
+                        placeholder="Digite seu usuário"
+                    >
+
+                </div>
+
+
+                <div class="login-field">
+
+                    <label for="senha">
+                        Senha
+                    </label>
+
+                    <input
+                        id="senha"
+                        type="password"
+                        autocomplete="current-password"
+                        placeholder="Digite sua senha"
+                    >
+
+                </div>
+
+
+                <div
+                    id="erroLogin"
+                    class="login-error"
+                    hidden
+                >
+                    Usuário ou senha inválidos.
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="login-button"
+                >
+                    Entrar
+                </button>
+
+            </form>
+
+        </div>
+
+    </main>
+
+
+    <script src="./js/login.js"></script>
+
+</body>
+
+</html>
