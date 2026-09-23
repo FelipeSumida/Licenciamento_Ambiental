@@ -2840,8 +2840,9 @@ function atualizarPendenciasCadastroPelaTela() {
                         regionais,
 
                     faseVinculadaRef:
-                        pendenciasCadastro[index]
-                            ?.faseVinculadaRef ?? null,
+                        card
+                            .querySelector(".pendencia-fase-vinculada")
+                            ?.value || null,
 
                     historicos:
                         historicos

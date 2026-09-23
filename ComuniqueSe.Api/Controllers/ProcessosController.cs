@@ -769,40 +769,6 @@ public class ProcessosController : ControllerBase
             processo.DataSaida?.ToString("dd/MM/yyyy")
         );
 
-        RegistrarAlteracao(
-            processoExistente.Id,
-            "Fase atual",
-            processoExistente.Fase,
-            processo.Fase
-        );
-
-        RegistrarAlteracao(
-            processoExistente.Id,
-            "Situação da fase",
-            processoExistente.StatusFase,
-            processo.StatusFase
-        );
-
-        RegistrarAlteracao(
-            processoExistente.Id,
-            "Número da fase",
-            processoExistente.NumeroFase,
-            processo.NumeroFase
-        );
-
-        RegistrarAlteracao(
-            processoExistente.Id,
-            "Data de emissão da fase",
-            processoExistente.DataEmissaoFase?.ToString("dd/MM/yyyy"),
-            processo.DataEmissaoFase?.ToString("dd/MM/yyyy")
-        );
-
-        RegistrarAlteracao(
-            processoExistente.Id,
-            "Data de validade da fase",
-            processoExistente.DataValidadeFase?.ToString("dd/MM/yyyy"),
-            processo.DataValidadeFase?.ToString("dd/MM/yyyy")
-        );
 
         RegistrarAlteracao(
             processoExistente.Id,
@@ -997,74 +963,108 @@ public class ProcessosController : ControllerBase
             );
         }
 
-        var trechosHistoricoAntigos = processoExistente.Trechos.ToList();
-        var trechosHistoricoNovos = processo.Trechos ?? new List<Trecho>();
+        var trechosHistoricoAntigos =
+            processoExistente.Trechos.ToList();
 
-        var quantidadeTrechosHistorico = Math.Min(
-            trechosHistoricoAntigos.Count,
-            trechosHistoricoNovos.Count
-        );
+        var trechosHistoricoNovos =
+            processo.Trechos ?? new List<Trecho>();
 
-        for (var trechoIndex = 0; trechoIndex < quantidadeTrechosHistorico; trechoIndex++)
+
+        for (
+            var trechoIndex = 0;
+            trechoIndex < trechosHistoricoNovos.Count;
+            trechoIndex++
+        )
         {
-            var trechoAntigo = trechosHistoricoAntigos[trechoIndex];
-            var trechoNovo = trechosHistoricoNovos[trechoIndex];
+            var trechoNovo =
+                trechosHistoricoNovos[trechoIndex];
 
-            var fasesAntigas = trechoAntigo.Fases ?? new List<FaseTrecho>();
-            var fasesNovas = trechoNovo.Fases ?? new List<FaseTrecho>();
 
-            var quantidadeFasesHistorico = Math.Min(
-                fasesAntigas.Count,
-                fasesNovas.Count
-            );
+            var trechoAntigo =
+                trechoNovo.Id > 0
+                    ? trechosHistoricoAntigos
+                        .FirstOrDefault(t =>
+                            t.Id == trechoNovo.Id
+                        )
+                    : null;
 
-            for (var faseIndex = 0; faseIndex < quantidadeFasesHistorico; faseIndex++)
+
+            var fasesAntigas =
+                trechoAntigo?.Fases
+                ?? new List<FaseTrecho>();
+
+            var fasesNovas =
+                trechoNovo.Fases
+                ?? new List<FaseTrecho>();
+
+
+            for (
+                var faseIndex = 0;
+                faseIndex < fasesNovas.Count;
+                faseIndex++
+            )
             {
-                var faseAntiga = fasesAntigas[faseIndex];
-                var faseNova = fasesNovas[faseIndex];
+                var faseNova =
+                    fasesNovas[faseIndex];
+
+
+                var faseAntiga =
+                    faseNova.Id > 0
+                        ? fasesAntigas
+                            .FirstOrDefault(f =>
+                                f.Id == faseNova.Id
+                            )
+                        : null;
+
 
                 var identificacao =
                     $"Trecho {trechoIndex + 1} / Fase {faseIndex + 1}";
 
+
                 RegistrarAlteracao(
                     processoExistente.Id,
                     $"Número do processo - {identificacao}",
-                    faseAntiga.NumeroProcesso,
+                    faseAntiga?.NumeroProcesso,
                     faseNova.NumeroProcesso
                 );
+
 
                 RegistrarAlteracao(
                     processoExistente.Id,
                     $"Fase - {identificacao}",
-                    faseAntiga.Fase,
+                    faseAntiga?.Fase,
                     faseNova.Fase
                 );
+
 
                 RegistrarAlteracao(
                     processoExistente.Id,
                     $"Situação da fase - {identificacao}",
-                    faseAntiga.StatusFase,
+                    faseAntiga?.StatusFase,
                     faseNova.StatusFase
                 );
+
 
                 RegistrarAlteracao(
                     processoExistente.Id,
                     $"N° da fase - {identificacao}",
-                    faseAntiga.NumeroFase,
+                    faseAntiga?.NumeroFase,
                     faseNova.NumeroFase
                 );
+
 
                 RegistrarAlteracao(
                     processoExistente.Id,
                     $"Data de emissão - {identificacao}",
-                    faseAntiga.DataEmissaoFase,
+                    faseAntiga?.DataEmissaoFase,
                     faseNova.DataEmissaoFase
                 );
+
 
                 RegistrarAlteracao(
                     processoExistente.Id,
                     $"Data de validade - {identificacao}",
-                    faseAntiga.DataValidadeFase,
+                    faseAntiga?.DataValidadeFase,
                     faseNova.DataValidadeFase
                 );
             }
