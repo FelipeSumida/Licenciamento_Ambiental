@@ -403,6 +403,7 @@ public class ProcessosController : ControllerBase
             var novaPendencia = new Pendencia
             {
                 Descricao = pendenciaRecebida.Descricao,
+                Providencia = pendenciaRecebida.Providencia,
                 Situacao = pendenciaRecebida.Situacao,
                 DivisaoCap = pendenciaRecebida.DivisaoCap,
                 DataEntrada = pendenciaRecebida.DataEntrada,
@@ -883,6 +884,13 @@ public class ProcessosController : ControllerBase
                 $"{nomeBase} - Descrição",
                 pendenciaAntiga?.Descricao,
                 pendenciaNova?.Descricao
+            );
+
+            RegistrarAlteracao(
+                processoExistente.Id,
+                $"{nomeBase} - Providência",
+                pendenciaAntiga?.Providencia,
+                pendenciaNova?.Providencia
             );
 
             RegistrarAlteracao(
@@ -1476,6 +1484,9 @@ public class ProcessosController : ControllerBase
 
             pendenciaDestino.Descricao =
                 pendenciaDto.Descricao;
+
+            pendenciaDestino.Providencia =
+                pendenciaDto.Providencia;
 
             pendenciaDestino.Situacao =
                 pendenciaDto.Situacao;

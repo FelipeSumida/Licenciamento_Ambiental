@@ -2404,6 +2404,17 @@ function renderizarPendenciasEdicao(pendencias) {
 
                     </div>
 
+                    <div class="form-field">
+                        <label>Providência</label>
+
+                        <textarea
+                            class="pendencia-providencia"
+                            rows="3"
+                        >${escapeHtml(
+                            pendencia.providencia ?? ""
+                        )}</textarea>
+                    </div>
+
 
                     <div class="form-field">
 
@@ -3208,6 +3219,19 @@ function adicionarNovaPendenciaEdicao() {
 
                 <textarea
                     class="pendencia-descricao"
+                    rows="3"
+                ></textarea>
+
+            </div>
+
+            <div class="form-field">
+
+                <label>
+                    Providência
+                </label>
+
+                <textarea
+                    class="pendencia-providencia"
                     rows="3"
                 ></textarea>
 
@@ -4654,6 +4678,12 @@ function configurarBotoes() {
                                 valorElemento(
                                     card,
                                     ".pendencia-descricao"
+                                ),
+
+                            providencia:
+                                valorElemento(
+                                    card,
+                                    ".pendencia-providencia"
                                 ),
 
                             divisaoCap:

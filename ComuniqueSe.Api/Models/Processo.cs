@@ -74,6 +74,7 @@ public class Pendencia
     public List<string> Regionais { get; set; } = new();
     public ICollection<PendenciaRegional> PendenciasRegionais { get; set; } = new List<PendenciaRegional>();
     public string Descricao { get; set; } = "";
+    public string? Providencia { get; set; }
     public string DivisaoCap { get; set; } = "Licenciamento";
     public string Situacao { get; set; } = "Aberta";
     public DateTime? DataEntrada { get; set; }

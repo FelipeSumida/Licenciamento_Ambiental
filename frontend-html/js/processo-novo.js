@@ -1965,6 +1965,16 @@ function renderizarPendenciasEdicao(pendencias) {
 
                     </div>
 
+                    <div class="form-field">
+                        <label>Providência</label>
+
+                        <textarea
+                            class="pendencia-providencia"
+                        >${escapeHtml(
+                            pendencia.providencia ?? ""
+                        )}</textarea>
+                    </div>
+
 
                     <div class="form-field">
 
@@ -2848,6 +2858,11 @@ function atualizarPendenciasCadastroPelaTela() {
                     descricao:
                         card
                             .querySelector(".pendencia-descricao")
+                            ?.value?.trim() || "",
+
+                    providencia:
+                        card
+                            .querySelector(".pendencia-providencia")
                             ?.value?.trim() || "",
 
                     divisaoCap:
@@ -4292,6 +4307,7 @@ function configurarBotoes() {
             pendenciasCadastro.push({
                 id: 0,
                 descricao: "",
+                providencia: "",
                 divisaoCap: "",
                 situacao: "Aberta",
                 dataEntrada: null,
