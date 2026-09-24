@@ -1174,6 +1174,22 @@ function renderizarPendenciasEdicao(pendencias) {
                     <div class="form-field">
 
                         <label>
+                            Providência
+                        </label>
+
+                        <textarea
+                            class="pendencia-providencia"
+                            rows="3"
+                        >${escapeHtml(
+                            pendencia.providencia ?? ""
+                        )}</textarea>
+
+                    </div>
+
+
+                    <div class="form-field">
+
+                        <label>
                             Divisão CAP
                         </label>
 
@@ -2098,6 +2114,11 @@ function atualizarPendenciasCadastroPelaTela() {
                     ".pendencia-descricao"
                 )?.value?.trim() ?? "";
 
+            const providencia =
+                card.querySelector(
+                    ".pendencia-providencia"
+                )?.value?.trim() ?? "";
+
             const divisaoCap =
                 card.querySelector(
                     ".pendencia-divisao"
@@ -2216,6 +2237,8 @@ function atualizarPendenciasCadastroPelaTela() {
                 id: id,
 
                 descricao: descricao,
+
+                providencia: providencia,
 
                 divisaoCap: divisaoCap,
 
@@ -3097,6 +3120,8 @@ function configurarBotoes() {
 
                 descricao: "",
 
+                providencia: "",
+
                 divisaoCap: "",
 
                 situacao: "Aberta",
@@ -3350,6 +3375,14 @@ function configurarBotoes() {
                         card
                             .querySelector(
                                 ".pendencia-descricao"
+                            )
+                            ?.value
+                            ?.trim() ?? "",
+
+                    providencia:
+                        card
+                            .querySelector(
+                                ".pendencia-providencia"
                             )
                             ?.value
                             ?.trim() ?? "",

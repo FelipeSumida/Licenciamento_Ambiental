@@ -590,6 +590,21 @@ function renderizarPendencias(pendencias) {
 
             </div>
 
+            
+            <div class="pendencia-descricao-bloco">
+
+                <span class="detail-label">
+                    PROVIDÊNCIA
+                </span>
+
+                <p class="pendencia-descricao-texto">
+                    ${escapeHtml(
+                        pendencia.providencia || "—"
+                    )}
+                </p>
+
+            </div>
+
 
             <div class="pendencia-informacoes-grid">
 

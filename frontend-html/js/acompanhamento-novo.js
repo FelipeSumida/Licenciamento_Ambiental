@@ -104,7 +104,6 @@ function preencherFormulario(processo) {
         processo.caracterizacaoEmpreendimento
         ?? "";
 
-
     document
         .getElementById("empreendimento")
         .value =
@@ -863,6 +862,21 @@ function renderizarPendenciasEdicao(pendencias) {
                             rows="3"
                         >${escapeHtml(
                             pendencia.descricao ?? ""
+                        )}</textarea>
+
+                    </div>
+
+                    <div class="form-field">
+
+                        <label>
+                            Providência
+                        </label>
+
+                        <textarea
+                            class="pendencia-providencia"
+                            rows="3"
+                        >${escapeHtml(
+                            pendencia.providencia ?? ""
                         )}</textarea>
 
                     </div>
@@ -2078,6 +2092,11 @@ function atualizarPendenciasCadastroPelaTela() {
                         ".pendencia-descricao"
                     )?.value?.trim() ?? "",
 
+                providencia:
+                    card.querySelector(
+                        ".pendencia-providencia"
+                    )?.value?.trim() ?? "",
+
                 divisaoCap:
                     card.querySelector(
                         ".pendencia-divisao"
@@ -2880,6 +2899,8 @@ function configurarBotoes() {
 
                 descricao: "",
 
+                providencia: "",
+
                 divisaoCap: "",
 
                 situacao: "Aberta",
@@ -3045,6 +3066,14 @@ function configurarBotoes() {
                         ?.value
                         ?.trim() ?? "";
 
+                const providencia =
+                    card
+                        .querySelector(
+                            ".pendencia-providencia"
+                        )
+                        ?.value
+                        ?.trim() ?? "";
+
 
                 const divisaoCap =
                     card
@@ -3177,6 +3206,7 @@ function configurarBotoes() {
 
                 const pendenciaVazia =
                     !descricao &&
+                    !providencia &&
                     !divisaoCap &&
                     !dataEntrada &&
                     !prazo &&
@@ -3195,6 +3225,9 @@ function configurarBotoes() {
 
                     descricao:
                         descricao,
+                    
+                    providencia:
+                        providencia,
 
                     situacao:
                         situacao,
