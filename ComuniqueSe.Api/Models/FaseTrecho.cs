@@ -21,6 +21,9 @@ public class FaseTrecho
 
     public string NumeroFase { get; set; } = string.Empty;
 
+    [MaxLength(100)]
+    public string? NumeroLicenciamento { get; set; }
+
     public string? DataEmissaoFase { get; set; }
     public string? DataValidadeFase { get; set; }
     

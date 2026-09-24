@@ -371,6 +371,7 @@ public class ProcessosController : ControllerBase
                             Ordem = faseIndex + 1,
                             Fase = f.Fase,
                             NumeroProcesso = f.NumeroProcesso,
+                            NumeroLicenciamento = f.NumeroLicenciamento,
                             StatusFase = f.StatusFase,
                             NumeroFase = f.NumeroFase,
                             DataEmissaoFase = f.DataEmissaoFase,
@@ -989,6 +990,7 @@ public class ProcessosController : ControllerBase
                     : null;
 
 
+
             var fasesAntigas =
                 trechoAntigo?.Fases
                 ?? new List<FaseTrecho>();
@@ -1028,6 +1030,12 @@ public class ProcessosController : ControllerBase
                     faseNova.NumeroProcesso
                 );
 
+                RegistrarAlteracao(
+                    processoExistente.Id,
+                    $"N° do licenciamento - {identificacao}",
+                    faseAntiga?.NumeroLicenciamento,
+                    faseNova.NumeroLicenciamento
+                );
 
                 RegistrarAlteracao(
                     processoExistente.Id,
@@ -1274,6 +1282,7 @@ public class ProcessosController : ControllerBase
                     faseExistente.Fase = faseDto.Fase;
                     faseExistente.StatusFase = faseDto.StatusFase;
                     faseExistente.NumeroProcesso = faseDto.NumeroProcesso;
+                    faseExistente.NumeroLicenciamento = faseDto.NumeroLicenciamento;
                     faseExistente.NumeroFase = faseDto.NumeroFase;
                     faseExistente.DataEmissaoFase = faseDto.DataEmissaoFase;
                     faseExistente.DataValidadeFase = faseDto.DataValidadeFase;
@@ -1287,6 +1296,7 @@ public class ProcessosController : ControllerBase
                         Fase = faseDto.Fase,
                         StatusFase = faseDto.StatusFase,
                         NumeroProcesso = faseDto.NumeroProcesso,
+                        NumeroLicenciamento = faseDto.NumeroLicenciamento,
                         NumeroFase = faseDto.NumeroFase,
                         DataEmissaoFase = faseDto.DataEmissaoFase,
                         DataValidadeFase = faseDto.DataValidadeFase,

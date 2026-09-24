@@ -388,6 +388,11 @@ function lerFaseDoCard(card) {
                 ".fase-numero-processo"
             )?.value?.trim() ?? "",
 
+        numeroLicenciamento:
+            card.querySelector(
+                ".fase-numero-licenciamento"
+            )?.value?.trim() ?? "",
+
         statusFase:
             card.querySelector(
                 ".fase-status"
@@ -479,6 +484,8 @@ function finalizarFase(cardAtual) {
 
         numeroProcesso: "",
 
+        numeroLicenciamento: "",
+
         statusFase:
             "Em andamento",
 
@@ -552,7 +559,7 @@ function criarFaseAtualHtml(fase, faseIndex) {
             </div>
 
 
-            <div class="form-grid form-grid-3">
+            <div class="form-grid form-grid-4">
 
                 <div class="form-field">
 
@@ -578,6 +585,23 @@ function criarFaseAtualHtml(fase, faseIndex) {
                         class="fase-numero-processo"
                         value="${escapeHtml(
                             fase.numeroProcesso ?? ""
+                        )}"
+                    >
+
+                </div>
+
+
+                <div class="form-field">
+
+                    <label>
+                        Nº do licenciamento
+                    </label>
+
+                    <input
+                        type="text"
+                        class="fase-numero-licenciamento"
+                        value="${escapeHtml(
+                            fase.numeroLicenciamento ?? ""
                         )}"
                     >
 
@@ -720,6 +744,14 @@ function criarFasePassadaHtml(
 
             <input
                 type="hidden"
+                class="fase-numero-licenciamento"
+                value="${escapeHtml(
+                    fase.numeroLicenciamento ?? ""
+                )}"
+            >
+
+            <input
+                type="hidden"
                 class="fase-status"
                 value="${escapeHtml(
                     fase.statusFase ?? ""
@@ -816,6 +848,19 @@ function criarFasePassadaHtml(
 
                     <div>
                         <span class="detail-label">
+                            Nº DO LICENCIAMENTO
+                        </span>
+
+                        <strong>
+                            ${escapeHtml(
+                                fase.numeroLicenciamento || "—"
+                            )}
+                        </strong>
+                    </div>
+
+
+                    <div>
+                        <span class="detail-label">
                             SITUAÇÃO
                         </span>
 
@@ -883,7 +928,7 @@ function criarFasePassadaHtml(
                 hidden
             >
 
-                <div class="form-grid form-grid-3">
+                <div class="form-grid form-grid-4">
 
                     <div class="form-field">
 
@@ -909,6 +954,23 @@ function criarFasePassadaHtml(
                             class="fase-passada-edicao-numero-processo"
                             value="${escapeHtml(
                                 fase.numeroProcesso ?? ""
+                            )}"
+                        >
+
+                    </div>
+
+
+                    <div class="form-field">
+
+                        <label>
+                            Nº do licenciamento
+                        </label>
+
+                        <input
+                            type="text"
+                            class="fase-passada-edicao-numero-licenciamento"
+                            value="${escapeHtml(
+                                fase.numeroLicenciamento ?? ""
                             )}"
                         >
 
@@ -1159,6 +1221,11 @@ document.addEventListener(
                 numeroProcesso:
                     card.querySelector(
                         ".fase-passada-edicao-numero-processo"
+                    )?.value?.trim() ?? "",
+
+                numeroLicenciamento:
+                    card.querySelector(
+                        ".fase-passada-edicao-numero-licenciamento"
                     )?.value?.trim() ?? "",
 
                 statusFase:
@@ -1450,6 +1517,7 @@ function renderizarTrechosEdicao(
                     ordem: 1,
                     fase: "",
                     numeroProcesso: "",
+                    numeroLicenciamento: "",
                     statusFase: "Em andamento",
                     numeroFase: "",
                     dataEmissaoFase: null,
@@ -3943,8 +4011,8 @@ function configurarBotoes() {
                         ordem: 1,
                         fase: "CP",
                         numeroProcesso: "",
-                        statusFase:
-                            "Em andamento",
+                        numeroLicenciamento: "",
+                        statusFase: "Em andamento",
                         numeroFase: "",
                         dataEmissaoFase: null,
                         dataValidadeFase: null
@@ -4239,6 +4307,14 @@ function configurarBotoes() {
                                         faseOriginal.numeroProcesso ||
                                         "";
 
+                                    const numeroLicenciamento =
+                                        valorElemento(
+                                            faseCard,
+                                            ".fase-numero-licenciamento"
+                                        ) ||
+                                        faseOriginal.numeroLicenciamento ||
+                                        "";
+
 
                                     const statusFase =
                                         valorElemento(
@@ -4284,6 +4360,8 @@ function configurarBotoes() {
                                             fase,
                                         numeroProcesso:
                                             numeroProcesso,
+                                        numeroLicenciamento:
+                                            numeroLicenciamento,
                                         statusFase:
                                             statusFase,
                                         numeroFase:

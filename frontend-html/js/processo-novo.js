@@ -367,10 +367,9 @@ function criarFaseAtualHtml(fase, faseIndex) {
             </div>
 
 
-            <div class="form-grid form-grid-3">
+            <div class="form-grid form-grid-4">
 
                 <div class="form-field">
-
                     <label>Fase</label>
 
                     <select class="fase-tipo">
@@ -378,7 +377,6 @@ function criarFaseAtualHtml(fase, faseIndex) {
                             fase.fase
                         )}
                     </select>
-
                 </div>
 
 
@@ -393,6 +391,23 @@ function criarFaseAtualHtml(fase, faseIndex) {
                         class="fase-numero-processo"
                         value="${escapeHtml(
                             fase.numeroProcesso ?? ""
+                        )}"
+                    >
+
+                </div>
+
+
+                <div class="form-field">
+
+                    <label>
+                        N° do licenciamento
+                    </label>
+
+                    <input
+                        type="text"
+                        class="fase-numero-licenciamento"
+                        value="${escapeHtml(
+                            fase.numeroLicenciamento ?? ""
                         )}"
                     >
 
@@ -538,6 +553,14 @@ function criarFasePassadaHtml(
 
             <input
                 type="hidden"
+                class="fase-numero-licenciamento"
+                value="${escapeHtml(
+                    fase.numeroLicenciamento ?? ""
+                )}"
+            >
+
+            <input
+                type="hidden"
                 class="fase-status"
                 value="${escapeHtml(
                     fase.statusFase ?? ""
@@ -601,6 +624,18 @@ function criarFasePassadaHtml(
                     <strong>
                         ${escapeHtml(
                             fase.numeroProcesso || "—"
+                        )}
+                    </strong>
+                </div>
+
+                <div>
+                    <span class="detail-label">
+                        Nº DO LICENCIAMENTO
+                    </span>
+
+                    <strong>
+                        ${escapeHtml(
+                            fase.numeroLicenciamento || "—"
                         )}
                     </strong>
                 </div>
@@ -738,6 +773,11 @@ function lerFaseDoCard(card) {
                 ".fase-numero-processo"
             )?.value?.trim() ?? "",
 
+        numeroLicenciamento:
+            card.querySelector(
+                ".fase-numero-licenciamento"
+            )?.value?.trim() ?? "",
+
         statusFase:
             card.querySelector(
                 ".fase-status"
@@ -848,6 +888,8 @@ function finalizarFase(cardAtual) {
         fase: "",
 
         numeroProcesso: "",
+
+        numeroLicenciamento: "",
 
         statusFase:
             "Em andamento",
@@ -3577,6 +3619,11 @@ function validarFormularioNovoProcesso() {
                     ".fase-numero-processo"
                 );
 
+            const numeroLicenciamentoInput =
+                faseCard.querySelector(
+                    ".fase-numero-licenciamento"
+                );
+
             const situacaoInput =
                 faseCard.querySelector(
                     ".fase-status, " +
@@ -3590,6 +3637,11 @@ function validarFormularioNovoProcesso() {
 
             const numeroProcesso =
                 numeroProcessoInput
+                    ?.value
+                    ?.trim() ?? "";
+
+            const numeroLicenciamento =
+                numeroLicenciamentoInput
                     ?.value
                     ?.trim() ?? "";
 
@@ -3617,6 +3669,16 @@ function validarFormularioNovoProcesso() {
                     `Fase ${faseIndex + 1}: ` +
                     "informe o Número do processo.",
                     numeroProcessoInput
+                );
+            }
+
+            if (!numeroLicenciamento) {
+
+                return erro(
+                    `Trecho ${trechoIndex + 1}, ` +
+                    `Fase ${faseIndex + 1}: ` +
+                    "informe o Nº do licenciamento.",
+                    numeroLicenciamentoInput
                 );
             }
 
@@ -4203,6 +4265,7 @@ function configurarBotoes() {
                         ordem: 1,
                         fase: "",
                         numeroProcesso: "",
+                        numeroLicenciamento: "",
                         statusFase: "",
                         numeroFase: "",
                         dataEmissaoFase: null,

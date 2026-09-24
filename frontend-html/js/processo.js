@@ -377,6 +377,17 @@ function renderizarTrechos(trechos) {
                                                 </p>
                                             </div>
 
+                                            <div>
+                                                <span class="detail-label">
+                                                    Nº DO LICENCIAMENTO
+                                                </span>
+
+                                                <p>
+                                                    ${escapeHtml(
+                                                        fase.numeroLicenciamento ?? "—"
+                                                    )}
+                                                </p>
+                                            </div>
 
                                             <div>
                                                 <span class="detail-label">
