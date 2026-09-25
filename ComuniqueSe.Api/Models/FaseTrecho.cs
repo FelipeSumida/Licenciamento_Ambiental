@@ -28,6 +28,10 @@ public class FaseTrecho
     public string? DataValidadeFase { get; set; }
     
     public string? AnexoFase { get; set; }
+    public string? AnexoFaseTipo { get; set; }
+
+    [JsonIgnore]
+    public byte[]? AnexoFaseArquivo { get; set; }
 
     [JsonIgnore]
     public Trecho? Trecho { get; set; }

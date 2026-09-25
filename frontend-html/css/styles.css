@@ -3406,3 +3406,41 @@ button.button-secondary:disabled:hover {
 
     font-size: 13px;
 }
+
+.fase-passada-edicao {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.fase-passada-edicao .form-grid {
+    gap: 18px 16px;
+}
+
+.fase-passada-edicao .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.fase-passada-edicao .form-field label {
+    margin-bottom: 2px;
+}
+
+.fase-passada-edicao .form-field input,
+.fase-passada-edicao .form-field select {
+    min-height: 38px;
+}
+
+.fase-passada-edicao .arquivo-preservado {
+    margin-top: 8px;
+}
+
+.fase-passada-edicao-acoes {
+    margin-top: 20px;
+    padding-top: 14px;
+
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}

@@ -1,6 +1,7 @@
 const API_URL = "http://localhost:5161/api";
 
 let processoAtual = null;
+let arquivosFasesTrecho = [];
 
 
 document.addEventListener(
@@ -298,12 +299,6 @@ document.addEventListener("click", (event) => {
     }
 
 
-    console.log(
-        "Finalizando fase:",
-        cardAtual
-    );
-
-
     finalizarFase(
         cardAtual
     );
@@ -530,6 +525,10 @@ function criarFaseAtualHtml(fase, faseIndex) {
     const emitido =
         fase.statusFase === "Emitido";
 
+    const nomeAnexo =
+        fase.anexoFase ||
+        "";
+
     return `
         <div
             class="edit-fase-card fase-atual-card"
@@ -683,6 +682,34 @@ function criarFaseAtualHtml(fase, faseIndex) {
                 </div>
 
 
+                <div class="form-field fase-anexo-container">
+
+                    <label>
+                        Anexo
+                    </label>
+
+                    <input
+                        type="file"
+                        class="fase-anexo"
+                        accept=".pdf,application/pdf"
+                    >
+
+                    ${
+                        nomeAnexo
+                            ? `
+                                <div class="arquivo-preservado">
+                                    Arquivo atual:
+                                    <strong>
+                                        ${escapeHtml(nomeAnexo)}
+                                    </strong>
+                                </div>
+                            `
+                            : ""
+                    }
+
+                </div>
+
+
                 <div class="fase-acoes">
 
                     <button
@@ -707,6 +734,10 @@ function criarFasePassadaHtml(
 
     const emitida =
         fase.statusFase === "Emitido";
+
+    const nomeAnexo =
+        fase.anexoFase ||
+        "";
 
     return `
         <div
@@ -780,6 +811,12 @@ function criarFasePassadaHtml(
                 value="${normalizarDataInput(
                     fase.dataValidadeFase
                 )}"
+            >
+
+            <input
+                type="hidden"
+                class="fase-anexo-nome"
+                value="${escapeHtml(nomeAnexo)}"
             >
 
 
@@ -918,6 +955,26 @@ function criarFasePassadaHtml(
                         </strong>
                     </div>
 
+                    ${
+                        emitida
+                            ? `
+                                <div>
+                                    <span class="detail-label">
+                                        ANEXO
+                                    </span>
+
+                                    <strong>
+                                        ${
+                                            nomeAnexo
+                                                ? escapeHtml(nomeAnexo)
+                                                : "—"
+                                        }
+                                    </strong>
+                                </div>
+                            `
+                            : ""
+                    }
+
                 </div>
 
             </div>
@@ -1043,6 +1100,34 @@ function criarFasePassadaHtml(
                         >
 
                     </div>
+
+                </div>
+
+
+                <div class="form-field fase-passada-edicao-anexo-container">
+
+                    <label>
+                        Anexo
+                    </label>
+
+                    <input
+                        type="file"
+                        class="fase-passada-edicao-anexo"
+                        accept=".pdf,application/pdf"
+                    >
+
+                    ${
+                        nomeAnexo
+                            ? `
+                                <div class="arquivo-preservado">
+                                    Arquivo atual:
+                                    <strong>
+                                        ${escapeHtml(nomeAnexo)}
+                                    </strong>
+                                </div>
+                            `
+                            : ""
+                    }
 
                 </div>
 
@@ -1196,6 +1281,16 @@ document.addEventListener(
                     ".lista-fases-edicao"
                 );
 
+            const arquivoNovo =
+                card.querySelector(
+                    ".fase-passada-edicao-anexo"
+                )?.files?.[0] ?? null;
+
+            const nomeAnexoAtual =
+                card.querySelector(
+                    ".fase-anexo-nome"
+                )?.value ?? "";
+
 
             const faseAtualizada = {
 
@@ -1244,7 +1339,12 @@ document.addEventListener(
                 dataValidadeFase:
                     card.querySelector(
                         ".fase-passada-edicao-data-validade"
-                    )?.value || null
+                    )?.value || null,
+
+                anexoFase:
+                    arquivoNovo
+                        ? arquivoNovo.name
+                        : nomeAnexoAtual
 
             };
 
@@ -1268,6 +1368,45 @@ document.addEventListener(
 
             const numeroPassada =
                 passadas.indexOf(card) + 1;
+
+            const faseIndex =
+                passadas.indexOf(card);
+
+            const trechoCard =
+                card.closest(
+                    ".edit-trecho-card"
+                );
+
+            const cardsTrechos =
+                Array.from(
+                    document.querySelectorAll(
+                        ".edit-trecho-card"
+                    )
+                );
+
+            const trechoIndex =
+                cardsTrechos.indexOf(
+                    trechoCard
+                );
+
+
+            if (
+                arquivoNovo &&
+                trechoIndex >= 0 &&
+                faseIndex >= 0
+            ) {
+
+                arquivosFasesTrecho[
+                    trechoIndex
+                ] ??= [];
+
+                arquivosFasesTrecho[
+                    trechoIndex
+                ][
+                    faseIndex
+                ] = arquivoNovo;
+
+            }
 
 
             const wrapper =
@@ -1942,11 +2081,6 @@ function configurarBuscaRodovias() {
             function selecionarRodovia(
                 rodovia
             ) {
-
-                console.log(
-                    "RODOVIA SELECIONADA:",
-                    rodovia
-                );
 
                 inputRodovia.value =
                     rodovia.rodCodigo ?? "";
@@ -4643,24 +4777,6 @@ function configurarBotoes() {
                                     []
                                 );
 
-                        console.log(
-                            "PENDENCIA DEBUG:",
-                            {
-                                indice: pendenciaIndex,
-
-                                idInput:
-                                    card
-                                        .querySelector(
-                                            ".pendencia-id"
-                                        )
-                                        ?.value,
-
-                                idOriginal:
-                                    pendenciaOriginal.id
-                            }
-                        );
-
-
                         return {
 
                             id:
@@ -4902,6 +5018,71 @@ function configurarBotoes() {
 
                 const resultadoPut =
                     await response.json();
+
+                for (
+                    const [trechoIndex, trechoResultado]
+                    of (resultadoPut.trechos ?? []).entries()
+                ) {
+
+                    const arquivosFasesDoTrecho =
+                        arquivosFasesTrecho[
+                            trechoIndex
+                        ] ?? [];
+
+
+                    for (
+                        const [faseIndex, faseResultado]
+                        of (
+                            trechoResultado.fases ?? []
+                        ).entries()
+                    ) {
+
+                        const arquivo =
+                            arquivosFasesDoTrecho[
+                                faseIndex
+                            ];
+
+
+                        if (!arquivo) {
+                            continue;
+                        }
+
+                        const formData =
+                            new FormData();
+
+
+                        formData.append(
+                            "arquivo",
+                            arquivo
+                        );
+
+
+                        const uploadResponse =
+                            await fetch(
+                                `${API_URL}/processos/fases/${faseResultado.id}/anexo`,
+                                {
+                                    method: "POST",
+                                    body: formData
+                                }
+                            );
+
+
+                        if (!uploadResponse.ok) {
+
+                            const mensagemUpload =
+                                await uploadResponse.text();
+
+
+                            throw new Error(
+                                mensagemUpload ||
+                                "Erro ao enviar anexo da fase emitida."
+                            );
+
+                        }
+
+                    }
+
+                }
 
 
                 for (

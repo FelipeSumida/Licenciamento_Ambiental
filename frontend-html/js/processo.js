@@ -443,6 +443,36 @@ function renderizarTrechos(trechos) {
                                                                 }
                                                             </p>
                                                         </div>
+
+                                                        <div>
+                                                            <span class="detail-label">
+                                                                ANEXO
+                                                            </span>
+
+                                                            ${
+                                                                fase.anexoFase
+                                                                    ? `
+                                                                        <a
+                                                                            class="fase-complementar-anexo-link"
+                                                                            href="${API_URL}/processos/fases/${fase.id}/anexo"
+                                                                            target="_blank"
+                                                                            rel="noopener noreferrer"
+                                                                        >
+                                                                            <i
+                                                                                data-lucide="paperclip"
+                                                                                class="fase-complementar-anexo-icon"
+                                                                            ></i>
+
+                                                                            ${escapeHtml(fase.anexoFase)}
+                                                                        </a>
+                                                                    `
+                                                                    : `
+                                                                        <p class="muted-text">
+                                                                            Sem anexo
+                                                                        </p>
+                                                                    `
+                                                            }
+                                                        </div>
                                                     `
                                                     : ""
                                             }

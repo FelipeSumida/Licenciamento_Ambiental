@@ -4,6 +4,7 @@ let processoAtual = null;
 let trechosCadastro = [];
 let pendenciasCadastro = [];
 let arquivosFasesComplementares = [];
+let arquivosFasesTrecho = [];
 
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -434,7 +435,7 @@ function criarFaseAtualHtml(fase, faseIndex) {
                 ${emitido ? "" : "hidden"}
             >
 
-                <div class="form-grid form-grid-3">
+                <div class="form-grid form-grid-4">
 
                     <div class="form-field">
 
@@ -486,6 +487,20 @@ function criarFaseAtualHtml(fase, faseIndex) {
 
                     </div>
 
+                    <div class="form-field">
+
+                        <label>
+                            Anexo
+                        </label>
+
+                        <input
+                            type="file"
+                            class="fase-anexo"
+                            accept=".pdf,application/pdf"
+                        >
+
+                    </div>
+
                 </div>
 
 
@@ -511,6 +526,14 @@ function criarFasePassadaHtml(
     numeroPassada
 ) {
 
+    const emitida =
+        fase.statusFase === "Emitido";
+
+    const nomeAnexo =
+        fase.anexoFase ||
+        fase.anexoNome ||
+        "";
+
     return `
         <div
             class="edit-fase-card fase-passada-card"
@@ -533,6 +556,12 @@ function criarFasePassadaHtml(
                 type="hidden"
                 class="fase-ordem"
                 value="${fase.ordem ?? numeroPassada}"
+            >
+
+            <input
+                type="hidden"
+                class="fase-anexo-nome"
+                value="${escapeHtml(nomeAnexo)}"
             >
 
             <input
@@ -594,110 +623,328 @@ function criarFasePassadaHtml(
 
             <div class="edit-section-header">
 
-                <h5>
+                <h5 class="fase-titulo-passada">
                     Fase passada ${numeroPassada}
                 </h5>
 
+                ${
+                    emitida
+                        ? `
+                            <div class="fase-passada-acoes">
+
+                                <button
+                                    type="button"
+                                    class="button-secondary btn-editar-fase-passada"
+                                >
+                                    Editar
+                                </button>
+
+                                <button
+                                    type="button"
+                                    class="button-danger btn-excluir-fase-passada"
+                                >
+                                    Excluir
+                                </button>
+
+                            </div>
+                        `
+                        : ""
+                }
+
             </div>
 
+            <div class="fase-passada-visualizacao">
 
-            <div class="fase-passada-grid">
+                <div class="fase-passada-grid">
 
-                <div>
-                    <span class="detail-label">
-                        FASE
-                    </span>
+                    <div>
+                        <span class="detail-label">
+                            FASE
+                        </span>
 
-                    <strong>
-                        ${escapeHtml(
-                            fase.fase || "—"
-                        )}
-                    </strong>
+                        <strong>
+                            ${escapeHtml(
+                                fase.fase || "—"
+                            )}
+                        </strong>
+                    </div>
+
+
+                    <div>
+                        <span class="detail-label">
+                            NÚMERO DO PROCESSO
+                        </span>
+
+                        <strong>
+                            ${escapeHtml(
+                                fase.numeroProcesso || "—"
+                            )}
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span class="detail-label">
+                            Nº DO LICENCIAMENTO
+                        </span>
+
+                        <strong>
+                            ${escapeHtml(
+                                fase.numeroLicenciamento || "—"
+                            )}
+                        </strong>
+                    </div>
+
+
+                    <div>
+                        <span class="detail-label">
+                            SITUAÇÃO
+                        </span>
+
+                        <strong>
+                            ${escapeHtml(
+                                fase.statusFase || "—"
+                            )}
+                        </strong>
+                    </div>
+
+
+                    <div>
+                        <span class="detail-label">
+                            Nº DA FASE
+                        </span>
+
+                        <strong>
+                            ${escapeHtml(
+                                fase.numeroFase || "—"
+                            )}
+                        </strong>
+                    </div>
+
+
+                    <div>
+                        <span class="detail-label">
+                            DATA DE EMISSÃO
+                        </span>
+
+                        <strong>
+                            ${
+                                fase.dataEmissaoFase
+                                    ? formatarData(
+                                        fase.dataEmissaoFase
+                                    )
+                                    : "—"
+                            }
+                        </strong>
+                    </div>
+
+
+                    <div>
+                        <span class="detail-label">
+                            DATA DE VALIDADE
+                        </span>
+
+                        <strong>
+                            ${
+                                fase.dataValidadeFase
+                                    ? formatarData(
+                                        fase.dataValidadeFase
+                                    )
+                                    : "—"
+                            }
+                        </strong>
+                    </div>
+
+                    ${
+                        emitida
+                            ? `
+                                <div>
+                                    <span class="detail-label">
+                                        ANEXO
+                                    </span>
+
+                                    <strong>
+                                        ${
+                                            nomeAnexo
+                                                ? escapeHtml(nomeAnexo)
+                                                : "—"
+                                        }
+                                    </strong>
+                                </div>
+                            `
+                            : ""
+                    }
+
+                </div>
+            </div>
+
+            <div
+                class="fase-passada-edicao"
+                hidden
+            >
+
+                <div class="form-grid form-grid-4">
+
+                    <div class="form-field">
+
+                        <label>Fase</label>
+
+                        <select class="fase-passada-edicao-tipo">
+                            ${criarOpcoesFase(
+                                fase.fase
+                            )}
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-field">
+
+                        <label>
+                            Número do processo
+                        </label>
+
+                        <input
+                            type="text"
+                            class="fase-passada-edicao-numero-processo"
+                            value="${escapeHtml(
+                                fase.numeroProcesso ?? ""
+                            )}"
+                        >
+
+                    </div>
+
+
+                    <div class="form-field">
+
+                        <label>
+                            Nº do licenciamento
+                        </label>
+
+                        <input
+                            type="text"
+                            class="fase-passada-edicao-numero-licenciamento"
+                            value="${escapeHtml(
+                                fase.numeroLicenciamento ?? ""
+                            )}"
+                        >
+
+                    </div>
+
+
+                    <div class="form-field">
+
+                        <label>Situação</label>
+
+                        <input
+                            type="text"
+                            value="Emitido"
+                            disabled
+                        >
+
+                    </div>
+
                 </div>
 
 
-                <div>
-                    <span class="detail-label">
-                        NÚMERO DO PROCESSO
-                    </span>
+                <div class="form-grid form-grid-4">
 
-                    <strong>
-                        ${escapeHtml(
-                            fase.numeroProcesso || "—"
-                        )}
-                    </strong>
-                </div>
+                    <div class="form-field">
 
-                <div>
-                    <span class="detail-label">
-                        Nº DO LICENCIAMENTO
-                    </span>
+                        <label>
+                            Nº da fase
+                        </label>
 
-                    <strong>
-                        ${escapeHtml(
-                            fase.numeroLicenciamento || "—"
-                        )}
-                    </strong>
-                </div>
+                        <input
+                            type="text"
+                            class="fase-passada-edicao-numero"
+                            value="${escapeHtml(
+                                fase.numeroFase ?? ""
+                            )}"
+                        >
+
+                    </div>
 
 
-                <div>
-                    <span class="detail-label">
-                        SITUAÇÃO
-                    </span>
+                    <div class="form-field">
 
-                    <strong>
-                        ${escapeHtml(
-                            fase.statusFase || "—"
-                        )}
-                    </strong>
-                </div>
+                        <label>
+                            Data de emissão
+                        </label>
 
+                        <input
+                            type="date"
+                            class="fase-passada-edicao-data-emissao"
+                            value="${normalizarDataInput(
+                                fase.dataEmissaoFase
+                            )}"
+                        >
 
-                <div>
-                    <span class="detail-label">
-                        Nº DA FASE
-                    </span>
-
-                    <strong>
-                        ${escapeHtml(
-                            fase.numeroFase || "—"
-                        )}
-                    </strong>
-                </div>
+                    </div>
 
 
-                <div>
-                    <span class="detail-label">
-                        DATA DE EMISSÃO
-                    </span>
+                    <div class="form-field">
 
-                    <strong>
+                        <label>
+                            Data de validade
+                        </label>
+
+                        <input
+                            type="date"
+                            class="fase-passada-edicao-data-validade"
+                            value="${normalizarDataInput(
+                                fase.dataValidadeFase
+                            )}"
+                        >
+
+                    </div>
+
+
+                    <div class="form-field">
+
+                        <label>
+                            Anexo
+                        </label>
+
+                        <input
+                            type="file"
+                            class="fase-passada-edicao-anexo"
+                            accept=".pdf,application/pdf"
+                        >
+
                         ${
-                            fase.dataEmissaoFase
-                                ? formatarData(
-                                    fase.dataEmissaoFase
-                                )
-                                : "—"
+                            nomeAnexo
+                                ? `
+                                    <div class="arquivo-preservado">
+                                        Arquivo atual:
+                                        <strong>
+                                            ${escapeHtml(nomeAnexo)}
+                                        </strong>
+                                    </div>
+                                `
+                                : ""
                         }
-                    </strong>
+
+                    </div>
+
                 </div>
 
 
-                <div>
-                    <span class="detail-label">
-                        DATA DE VALIDADE
-                    </span>
+                <div class="fase-passada-edicao-acoes">
 
-                    <strong>
-                        ${
-                            fase.dataValidadeFase
-                                ? formatarData(
-                                    fase.dataValidadeFase
-                                )
-                                : "—"
-                        }
-                    </strong>
+                    <button
+                        type="button"
+                        class="button-secondary btn-cancelar-edicao-fase-passada"
+                    >
+                        Cancelar
+                    </button>
+
+                    <button
+                        type="button"
+                        class="button-primary btn-salvar-edicao-fase-passada"
+                    >
+                        Salvar edição
+                    </button>
+
                 </div>
 
             </div>
@@ -705,6 +952,330 @@ function criarFasePassadaHtml(
         </div>
     `;
 }
+
+document.addEventListener(
+    "click",
+    (event) => {
+
+        const btnEditar =
+            event.target.closest(
+                ".btn-editar-fase-passada"
+            );
+
+        if (btnEditar) {
+
+            const card =
+                btnEditar.closest(
+                    ".fase-passada-card"
+                );
+
+            if (!card) {
+                return;
+            }
+
+            const visualizacao =
+                card.querySelector(
+                    ".fase-passada-visualizacao"
+                );
+
+            const edicao =
+                card.querySelector(
+                    ".fase-passada-edicao"
+                );
+
+            if (
+                !visualizacao ||
+                !edicao
+            ) {
+                return;
+            }
+
+            visualizacao.hidden = true;
+            edicao.hidden = false;
+
+            return;
+        }
+
+
+        const btnCancelar =
+            event.target.closest(
+                ".btn-cancelar-edicao-fase-passada"
+            );
+
+        if (btnCancelar) {
+
+            const card =
+                btnCancelar.closest(
+                    ".fase-passada-card"
+                );
+
+            if (!card) {
+                return;
+            }
+
+            const visualizacao =
+                card.querySelector(
+                    ".fase-passada-visualizacao"
+                );
+
+            const edicao =
+                card.querySelector(
+                    ".fase-passada-edicao"
+                );
+
+            if (
+                !visualizacao ||
+                !edicao
+            ) {
+                return;
+            }
+
+            edicao.hidden = true;
+            visualizacao.hidden = false;
+
+            return;
+        }
+
+        const btnSalvar =
+            event.target.closest(
+                ".btn-salvar-edicao-fase-passada"
+            );
+
+        if (btnSalvar) {
+
+            const card =
+                btnSalvar.closest(
+                    ".fase-passada-card"
+                );
+
+            const lista =
+                card.closest(
+                    ".lista-fases-edicao"
+                );
+
+            const arquivoNovo =
+                card.querySelector(
+                    ".fase-passada-edicao-anexo"
+                )?.files?.[0] ?? null;
+
+            const nomeAnexoAtual =
+                card.querySelector(
+                    ".fase-anexo-nome"
+                )?.value ?? "";
+
+            const faseAtualizada = {
+
+                id:
+                    Number(
+                        card.querySelector(
+                            ".fase-id"
+                        )?.value ?? 0
+                    ),
+
+                ordem:
+                    Number(
+                        card.querySelector(
+                            ".fase-ordem"
+                        )?.value ?? 1
+                    ),
+
+                fase:
+                    card.querySelector(
+                        ".fase-passada-edicao-tipo"
+                    )?.value ?? "",
+
+                numeroProcesso:
+                    card.querySelector(
+                        ".fase-passada-edicao-numero-processo"
+                    )?.value?.trim() ?? "",
+
+                numeroLicenciamento:
+                    card.querySelector(
+                        ".fase-passada-edicao-numero-licenciamento"
+                    )?.value?.trim() ?? "",
+
+                statusFase:
+                    "Emitido",
+
+                numeroFase:
+                    card.querySelector(
+                        ".fase-passada-edicao-numero"
+                    )?.value?.trim() ?? "",
+
+                dataEmissaoFase:
+                    card.querySelector(
+                        ".fase-passada-edicao-data-emissao"
+                    )?.value || null,
+
+                dataValidadeFase:
+                    card.querySelector(
+                        ".fase-passada-edicao-data-validade"
+                    )?.value || null,
+
+                anexoNome:
+                    arquivoNovo
+                        ? arquivoNovo.name
+                        : nomeAnexoAtual
+            };
+
+            if (!faseAtualizada.fase) {
+
+                alert(
+                    "Selecione a fase."
+                );
+
+                return;
+            }
+
+            const passadas =
+                Array.from(
+                    lista.querySelectorAll(
+                        ".fase-passada-card"
+                    )
+                );
+
+            const faseIndex =
+                passadas.indexOf(card);
+
+            const trechoCard =
+                card.closest(
+                    ".edit-trecho-card"
+                );
+
+            const cardsTrechos =
+                Array.from(
+                    document.querySelectorAll(
+                        ".edit-trecho-card"
+                    )
+                );
+
+            const trechoIndex =
+                cardsTrechos.indexOf(
+                    trechoCard
+                );
+
+            if (
+                arquivoNovo &&
+                trechoIndex >= 0 &&
+                faseIndex >= 0
+            ) {
+
+                arquivosFasesTrecho[
+                    trechoIndex
+                ] ??= [];
+
+                arquivosFasesTrecho[
+                    trechoIndex
+                ][
+                    faseIndex
+                ] = arquivoNovo;
+            }
+
+            const numeroPassada =
+                passadas.indexOf(card) + 1;
+
+            const wrapper =
+                document.createElement("div");
+
+            wrapper.innerHTML =
+                criarFasePassadaHtml(
+                    faseAtualizada,
+                    numeroPassada
+                ).trim();
+
+            card.replaceWith(
+                wrapper.firstElementChild
+            );
+
+            return;
+        }
+
+        const btnExcluir =
+            event.target.closest(
+                ".btn-excluir-fase-passada"
+            );
+
+        if (btnExcluir) {
+
+            const card =
+                btnExcluir.closest(
+                    ".fase-passada-card"
+                );
+
+            if (!card) {
+                return;
+            }
+
+            const confirmar =
+                window.confirm(
+                    "Deseja realmente excluir esta fase emitida?"
+                );
+
+            if (!confirmar) {
+                return;
+            }
+
+            const lista =
+                card.closest(
+                    ".lista-fases-edicao"
+                );
+
+            const passadas =
+                Array.from(
+                    lista.querySelectorAll(
+                        ".fase-passada-card"
+                    )
+                );
+
+            const faseIndex =
+                passadas.indexOf(card);
+
+            const trechoCard =
+                card.closest(
+                    ".edit-trecho-card"
+                );
+
+            const cardsTrechos =
+                Array.from(
+                    document.querySelectorAll(
+                        ".edit-trecho-card"
+                    )
+                );
+
+            const trechoIndex =
+                cardsTrechos.indexOf(
+                    trechoCard
+                );
+
+            if (
+                trechoIndex >= 0 &&
+                faseIndex >= 0 &&
+                arquivosFasesTrecho[
+                    trechoIndex
+                ]
+            ) {
+
+                arquivosFasesTrecho[
+                    trechoIndex
+                ].splice(
+                    faseIndex,
+                    1
+                );
+            }
+
+            card.remove();
+
+            if (lista) {
+                reordenarFasesDaLista(
+                    lista
+                );
+            }
+
+            return;
+        }
+
+    }
+);
 
 function configurarFaseAtual(card) {
 
@@ -806,6 +1377,14 @@ function finalizarFase(cardAtual) {
     const fase =
         lerFaseDoCard(cardAtual);
 
+    const arquivoSelecionado =
+        cardAtual
+            .querySelector(".fase-anexo")
+            ?.files?.[0] ?? null;
+
+    fase.anexoNome =
+        arquivoSelecionado?.name || "";
+
 
     if (
         fase.statusFase !== "Emitido"
@@ -847,6 +1426,8 @@ function finalizarFase(cardAtual) {
 
         return;
     }
+
+    atualizarTrechosCadastroPelaTela();
 
 
     const lista =
@@ -2941,17 +3522,53 @@ function atualizarTrechosCadastroPelaTela() {
                         .querySelector(".trecho-km-final")
                         ?.value ?? "";
 
+                const arquivosFasesAnteriores =
+                    arquivosFasesTrecho[
+                        trechoIndex
+                    ] ?? [];
+
+                const novosArquivosFases = [];
+
                 const fases =
                     Array.from(
                         card.querySelectorAll(
                             ".edit-fase-card"
                         )
                     ).map(
-                        faseCard =>
-                            lerFaseDoCard(
+                        (faseCard, faseIndex) => {
+
+                            const fase =
+                                lerFaseDoCard(
+                                    faseCard
+                                );
+
+                            const arquivoSelecionado =
                                 faseCard
-                            )
+                                    .querySelector(
+                                        ".fase-anexo"
+                                    )
+                                    ?.files?.[0] ?? null;
+
+                            novosArquivosFases[
+                                faseIndex
+                            ] =
+                                fase.statusFase === "Emitido"
+                                    ? (
+                                        arquivoSelecionado ||
+                                        arquivosFasesAnteriores[
+                                            faseIndex
+                                        ] ||
+                                        null
+                                    )
+                                    : null;
+
+                            return fase;
+                        }
                     );
+
+                arquivosFasesTrecho[
+                    trechoIndex
+                ] = novosArquivosFases;
 
                 const complementaresDoTrecho =
                     Array.from(
@@ -4345,7 +4962,7 @@ function configurarBotoes() {
             const inputsAnexos =
                 Array.from(
                     document.querySelectorAll(
-                        ".fase-complementar-anexo"
+                        ".fase-anexo, .fase-complementar-anexo"
                     )
                 );
 
@@ -4579,6 +5196,59 @@ function configurarBotoes() {
                     of (processoCriado.trechos ?? []).entries()
                 ) {
 
+                    const arquivosFasesDoTrecho =
+                        arquivosFasesTrecho[
+                            trechoIndex
+                        ] ?? [];
+
+                    for (
+                        const [faseIndex, faseResultado]
+                        of (
+                            trechoResultado.fases ?? []
+                        ).entries()
+                    ) {
+
+                        const arquivo =
+                            arquivosFasesDoTrecho[
+                                faseIndex
+                            ];
+
+                        if (
+                            !arquivo ||
+                            faseResultado.statusFase !== "Emitido"
+                        ) {
+                            continue;
+                        }
+
+                        const formData =
+                            new FormData();
+
+                        formData.append(
+                            "arquivo",
+                            arquivo
+                        );
+
+                        const uploadResponse =
+                            await fetch(
+                                `${API_URL}/processos/fases/${faseResultado.id}/anexo`,
+                                {
+                                    method: "POST",
+                                    body: formData
+                                }
+                            );
+
+                        if (!uploadResponse.ok) {
+
+                            const mensagemUpload =
+                                await uploadResponse.text();
+
+                            throw new Error(
+                                mensagemUpload ||
+                                "Erro ao enviar anexo da fase."
+                            );
+                        }
+                    }
+
                     const arquivosDoTrecho =
                         arquivosFasesComplementares[
                             trechoIndex
@@ -4726,6 +5396,11 @@ document.addEventListener(
         );
 
         arquivosFasesComplementares.splice(
+            trechoIndex,
+            1
+        );
+
+        arquivosFasesTrecho.splice(
             trechoIndex,
             1
         );

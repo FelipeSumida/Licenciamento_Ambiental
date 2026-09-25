@@ -3353,12 +3353,6 @@ function configurarBotoes() {
 
             };
 
-
-            console.log(
-                "Payload novo acompanhamento:",
-                payload
-            );
-
             try {
 
                 const response =

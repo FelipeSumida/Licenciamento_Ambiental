@@ -3511,12 +3511,6 @@ function configurarBotoes() {
                     null
             };
 
-
-            console.log(
-                "Payload acompanhamento:",
-                payload
-            );
-
             try {
 
                 const response =

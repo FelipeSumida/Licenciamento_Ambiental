@@ -484,35 +484,152 @@ public class ProcessosController : ControllerBase
         );
     }
 
-    [HttpPost("{id}/anexo-fase")]
-    public async Task<IActionResult> UploadAnexoFase(int id, IFormFile arquivo)
+    [HttpPost("fases/{faseTrechoId}/anexo")]
+    public async Task<IActionResult> UploadAnexoFase(
+        int faseTrechoId,
+        IFormFile arquivo
+    )
     {
-        var processo = await _context.Processos.FindAsync(id);
+        var fase =
+            await _context.FasesTrecho
+                .FindAsync(faseTrechoId);
 
-        if (processo == null)
-            return NotFound();
+        if (fase == null)
+        {
+            return NotFound(
+                "Fase não encontrada."
+            );
+        }
+
+        if (
+            !string.Equals(
+                fase.StatusFase,
+                "Emitido",
+                StringComparison.OrdinalIgnoreCase
+            )
+        )
+        {
+            return BadRequest(
+                "O anexo só pode ser enviado para uma fase emitida."
+            );
+        }
 
         if (arquivo == null || arquivo.Length == 0)
-            return BadRequest("Nenhum arquivo enviado.");
+        {
+            return BadRequest(
+                "Nenhum arquivo enviado."
+            );
+        }
 
-        if (arquivo.ContentType != "application/pdf")
-            return BadRequest("Apenas arquivos PDF são permitidos.");
+        const long tamanhoMaximo =
+            20 * 1024 * 1024;
 
-        using var memoryStream = new MemoryStream();
-        await arquivo.CopyToAsync(memoryStream);
+        if (arquivo.Length > tamanhoMaximo)
+        {
+            return BadRequest(
+                "O arquivo deve possuir no máximo 20 MB."
+            );
+        }
 
-        processo.AnexoFaseNome = arquivo.FileName;
-        processo.AnexoFaseTipo = arquivo.ContentType;
-        processo.AnexoFaseArquivo = memoryStream.ToArray();
+        var extensao =
+            Path.GetExtension(
+                arquivo.FileName
+            );
+
+        if (
+            !string.Equals(
+                extensao,
+                ".pdf",
+                StringComparison.OrdinalIgnoreCase
+            )
+        )
+        {
+            return BadRequest(
+                "Apenas arquivos PDF são permitidos."
+            );
+        }
+
+        if (
+            !string.Equals(
+                arquivo.ContentType,
+                "application/pdf",
+                StringComparison.OrdinalIgnoreCase
+            )
+        )
+        {
+            return BadRequest(
+                "O arquivo enviado não é um PDF válido."
+            );
+        }
+
+        using var memoryStream =
+            new MemoryStream();
+
+        await arquivo.CopyToAsync(
+            memoryStream
+        );
+
+        fase.AnexoFase =
+            Path.GetFileName(
+                arquivo.FileName
+            );
+
+        fase.AnexoFaseTipo =
+            arquivo.ContentType;
+
+        fase.AnexoFaseArquivo =
+            memoryStream.ToArray();
 
         await _context.SaveChangesAsync();
 
         return Ok(new
         {
-            processo.AnexoFaseNome,
-            processo.AnexoFaseTipo
+            id = fase.Id,
+            anexoFase =
+                fase.AnexoFase
         });
     }
+
+    [HttpGet("fases/{faseTrechoId}/anexo")]
+    public async Task<IActionResult> ObterAnexoFase(
+        int faseTrechoId
+    )
+    {
+        var fase =
+            await _context.FasesTrecho
+                .FindAsync(faseTrechoId);
+
+        if (fase == null)
+        {
+            return NotFound(
+                "Fase não encontrada."
+            );
+        }
+
+        if (
+            fase.AnexoFaseArquivo == null ||
+            fase.AnexoFaseArquivo.Length == 0
+        )
+        {
+            return NotFound(
+                "Esta fase não possui anexo."
+            );
+        }
+
+        var tipo =
+            string.IsNullOrWhiteSpace(
+                fase.AnexoFaseTipo
+            )
+                ? "application/pdf"
+                : fase.AnexoFaseTipo;
+
+        return File(
+            fase.AnexoFaseArquivo,
+            tipo
+        );
+    }
+
+
 
     [HttpPost("fases-complementares/{faseComplementarId}/anexo")]
     public async Task<IActionResult> UploadAnexoFaseComplementar(
@@ -1193,6 +1310,10 @@ public class ProcessosController : ControllerBase
                 Trecho Trecho,
                 List<(
                     int Indice,
+                    FaseTrecho Fase
+                )> Fases,
+                List<(
+                    int Indice,
                     FaseComplementar Fase
                 )> Complementares
             )>();
@@ -1257,6 +1378,12 @@ public class ProcessosController : ControllerBase
                 processoExistente.Trechos.Add(trechoExistente);
             }
 
+            var mapaFases =
+                new List<(
+                    int Indice,
+                    FaseTrecho Fase
+                )>();
+
 
             var fasesRecebidas = trechoDto.Fases ?? new List<FaseTrecho>();
 
@@ -1294,22 +1421,39 @@ public class ProcessosController : ControllerBase
                     faseExistente.NumeroFase = faseDto.NumeroFase;
                     faseExistente.DataEmissaoFase = faseDto.DataEmissaoFase;
                     faseExistente.DataValidadeFase = faseDto.DataValidadeFase;
-                    faseExistente.AnexoFase = faseDto.AnexoFase;
+
+                    mapaFases.Add(
+                        (
+                            faseIndex,
+                            faseExistente
+                        )
+                    );
                 }
                 else
                 {
-                    trechoExistente.Fases.Add(new FaseTrecho
-                    {
-                        Ordem = faseIndex + 1,
-                        Fase = faseDto.Fase,
-                        StatusFase = faseDto.StatusFase,
-                        NumeroProcesso = faseDto.NumeroProcesso,
-                        NumeroLicenciamento = faseDto.NumeroLicenciamento,
-                        NumeroFase = faseDto.NumeroFase,
-                        DataEmissaoFase = faseDto.DataEmissaoFase,
-                        DataValidadeFase = faseDto.DataValidadeFase,
-                        AnexoFase = faseDto.AnexoFase
-                    });
+                    var novaFase =
+                        new FaseTrecho
+                        {
+                            Ordem = faseIndex + 1,
+                            Fase = faseDto.Fase,
+                            StatusFase = faseDto.StatusFase,
+                            NumeroProcesso = faseDto.NumeroProcesso,
+                            NumeroLicenciamento = faseDto.NumeroLicenciamento,
+                            NumeroFase = faseDto.NumeroFase,
+                            DataEmissaoFase = faseDto.DataEmissaoFase,
+                            DataValidadeFase = faseDto.DataValidadeFase,
+                        };
+
+                    trechoExistente.Fases.Add(
+                        novaFase
+                    );
+
+                    mapaFases.Add(
+                        (
+                            faseIndex,
+                            novaFase
+                        )
+                    );
                 }
             }
 
@@ -1430,6 +1574,7 @@ public class ProcessosController : ControllerBase
                 (
                     trechoIndex,
                     trechoExistente,
+                    mapaFases,
                     mapaComplementares
                 )
             );
@@ -1594,6 +1739,18 @@ public class ProcessosController : ControllerBase
                         indice = t.Indice,
 
                         id = t.Trecho.Id,
+
+                        fases =
+                            t.Fases
+                                .Select(f => new
+                                {
+                                    indice =
+                                        f.Indice,
+
+                                    id =
+                                        f.Fase.Id
+                                })
+                                .ToList(),
 
                         fasesComplementares =
                             t.Complementares
